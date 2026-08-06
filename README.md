@@ -1,66 +1,81 @@
 # Northern Lines Studio
 
-**Native Travel Publishing for macOS**
+**Travel Publishing für macOS – Build 001**
 
-Northern Lines Studio is a specialized visual and editorial workspace for Northern Lines Travel Fieldbooks. It is not a general-purpose DTP application.
+Northern Lines Studio ist eine spezialisierte visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
 ## Build 001
 
-Build 001 proves one narrow workflow:
+Der erste Build beweist ausschließlich den kleinsten vollständigen Workflow:
 
-1. open a local `.nls` project package
-2. decode and validate `project.json`
-3. display the project's page structure
-4. select a page
-5. show a static A5 portrait preview
+1. ein `.nls`-Projektverzeichnis auswählen,
+2. `project.json` lesen und validieren,
+3. die Seitenstruktur anzeigen,
+4. eine Seite auswählen,
+5. eine statische A5-Vorschau und Metadaten darstellen.
 
-The preview is intentionally not editable.
+Nicht enthalten sind Bearbeitung, Drag-and-drop, freie Layoutobjekte, Publisher-Aufruf, PDF-Export und Preflight.
 
-## Architecture
+## Architektur
 
-- **SwiftUI** — app shell, navigation, toolbar and inspector
-- **AppKit** — A5 canvas drawing and desktop interaction foundation
-- **Northern Lines Publisher** — remains an external publishing engine
-- **Initial integration boundary** — versioned CLI, not yet invoked in Build 001
-- **Project format** — open `.nls` package with a JSON manifest and relative content paths
+- **Tauri 2** – Desktop-Shell, Dateidialog und sichere Rust-Bridge
+- **Svelte 5 + TypeScript** – Benutzeroberfläche
+- **HTML/CSS** – statische A5-Vorschau
+- **Rust** – Laden und Validieren des `.nls`-Projektmanifests
+- **Northern Lines Publisher** – bleibt eine eigenständige Engine; die CLI-Anbindung ist für einen späteren Build vorgesehen
 
-## Requirements
+Die frühere SwiftUI-/AppKit-Hypothese wurde durch [ADR-002](docs/adr/ADR-002-TAURI-SVELTE-PUBLISHER-CLI.md) ersetzt.
 
-- macOS 14 or newer
-- Xcode 16 or newer
-- Swift 6 toolchain
+## Voraussetzungen
 
-## Open in Xcode
+- macOS
+- Xcode Command Line Tools
+- Node.js 22 oder neuer
+- pnpm 10 oder neuer
+- Rust über `rustup`
 
 ```bash
-open Package.swift
+xcode-select --install
+corepack enable
+rustup update stable
 ```
 
-Run the `NorthernLinesStudio` executable scheme and open:
+## Entwicklung starten
+
+```bash
+pnpm install
+pnpm tauri dev
+```
+
+Nach dem Start über **Projekt öffnen** das Verzeichnis auswählen:
 
 ```text
-Examples/Norway-Sample.nls
+examples/Norway-Sample.nls
 ```
 
-## Test
+## Tests und Build
 
 ```bash
-swift test
+pnpm check
+pnpm test
+cd src-tauri && cargo test && cd ..
+pnpm tauri build
 ```
 
-Tests require macOS because the executable target uses SwiftUI and AppKit.
+## Repository-Struktur
 
-## Build 001 boundaries
+```text
+northern-lines-studio/
+├── src/                         # Svelte-Oberfläche
+├── src-tauri/                   # Tauri/Rust-Desktop-Layer
+├── examples/Norway-Sample.nls/ # Beispielprojekt
+├── docs/                        # Architektur und Build-Dokumentation
+├── package.json
+└── README.md
+```
 
-Not included:
+## Commit-Vorschlag
 
-- text or object editing
-- drag-and-drop
-- selection handles
-- zoom controls
-- layout variants
-- Publisher execution
-- PDF export
-- preflight
-
-See [`docs/builds/BUILD-001.md`](docs/builds/BUILD-001.md).
+```text
+feat(studio): rebuild Build 001 with Tauri and Svelte
+```

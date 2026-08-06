@@ -1,37 +1,43 @@
-# Build 001 setup
+# Initialisierung von Build 001
 
-## Open the project
+## Werkzeuge installieren
 
 ```bash
-open Package.swift
+xcode-select --install
+corepack enable
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
 ```
 
-Xcode creates the executable scheme from the Swift Package. Select the `NorthernLinesStudio` scheme and run it on macOS 14 or newer.
+Node.js kann beispielsweise über Homebrew installiert werden:
 
-## Open the example project
+```bash
+brew install node
+```
 
-In the running app, choose **Open Project…** and select:
+## Repository vorbereiten
+
+```bash
+pnpm install
+pnpm check
+cd src-tauri && cargo test && cd ..
+pnpm tauri dev
+```
+
+## Beispielprojekt
+
+Im Öffnen-Dialog das komplette Verzeichnis auswählen:
 
 ```text
-Examples/Norway-Sample.nls
+examples/Norway-Sample.nls
 ```
 
-## Validate
+Nicht die darin enthaltene `project.json` auswählen.
+
+## Release-Build
 
 ```bash
-swift test
+pnpm tauri build
 ```
 
-Then complete the manual checklist in:
-
-```text
-docs/validation/BUILD-001-VALIDATION.md
-```
-
-## Commit
-
-```bash
-git add README.md Package.swift Sources Tests Examples docs .gitignore INITIALIZATION.md SHA256SUMS.txt
-git commit -m "feat(studio): add Build 001 project reader and A5 preview"
-git push -u origin feature/build-001-foundation
-```
+Build-Produkte werden unter `src-tauri/target/release/bundle/` erzeugt.

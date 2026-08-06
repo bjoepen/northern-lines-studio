@@ -1,99 +1,51 @@
-# Architecture
+# Architektur
 
 ## Status
 
-ADR-001 now fixes the Build 001 architecture boundary. Later architecture decisions remain open.
-
-## Proposed System Boundary
+Verbindlich für Build 001.
 
 ```text
-Northern Lines Studio
-        │
-        │ structured project data
+Svelte + TypeScript UI
+        │ Tauri invoke
         ▼
-Northern Lines Publisher
-        │
-        │ validated render job
+Rust Desktop Bridge
+        │ liest und validiert
         ▼
-Preview / PDF / Affinity Handoff
+.nls-Projekt / project.json
+
+Northern Lines Publisher CLI
+        │
+        └── spätere Integration, nicht Teil von Build 001
 ```
 
-## Proposed Components
+## Verantwortungsgrenzen
 
-### Studio App
+### Northern Lines Studio
 
-The native macOS application and user-facing workspace.
+- Projekt auswählen
+- Seitenstruktur darstellen
+- redaktionelle Auswahlzustände verwalten
+- Vorschau und Inspector darstellen
+- später Publisher-Workflows auslösen
 
-Potential responsibilities:
+### Northern Lines Publisher
 
-- project library
-- navigation
-- content editing
-- image assignment
-- layout selection
-- preview orchestration
-- publishing commands
+- Schemas und fachliche Validierung
+- Layout Grammar
+- Content Fit
+- Render Jobs
+- Assets
+- Preflight
+- Produktionsausgabe
 
-### Studio Project Format
+Studio darf diese Publishing-Regeln nicht duplizieren.
 
-A versioned, transparent project representation.
+## Technische Bausteine
 
-Preferred characteristics:
+- Tauri 2 für Desktop-Fenster, Rechte und Rust-Kommandos
+- Svelte und TypeScript für die Benutzeroberfläche
+- HTML/CSS für die statische A5-Seite
+- Rust für kontrollierten Dateisystemzugriff und Manifestvalidierung
+- Publisher später als externe CLI bzw. Sidecar
 
-- text-based where practical
-- deterministic
-- diff-friendly
-- migration-capable
-- independent of generated output
-
-### Publisher Integration Layer
-
-Connects Studio to Northern Lines Publisher.
-
-Potential integration models:
-
-1. local CLI invocation
-2. shared Python service
-3. local HTTP or IPC bridge
-4. later native library boundary
-
-The initial implementation should prefer the simplest reliable boundary and
-avoid premature coupling.
-
-### Preview Renderer
-
-Provides visual feedback inside Studio.
-
-Possible approaches to evaluate:
-
-- HTML/CSS preview
-- PDF-based preview
-- native Core Graphics rendering
-- generated raster previews
-- template-driven renderer
-
-Preview fidelity and implementation cost must be assessed before selection.
-
-### Output Layer
-
-Potential outputs:
-
-- validated project data
-- render job
-- Desktop staging bundle
-- PDF
-- Affinity handoff
-- later native publication package
-
-## Architectural Principles
-
-- Northern Lines Publisher remains the source of truth for publishing rules.
-- Studio must not duplicate schema and composition logic.
-- Generated files are outputs, not primary project data.
-- Every project format change requires migration support.
-- Preview rendering and production rendering must not silently diverge.
-- Product identity and editorial decisions remain explicit.
-
-## Accepted Build 001 direction
-
-Build 001 uses a SwiftUI application shell, an AppKit canvas and a future Publisher CLI boundary. See `docs/adr/ADR-001-swiftui-appkit-publisher-cli.md`.
+Die Entscheidung ist in ADR-002 dokumentiert.

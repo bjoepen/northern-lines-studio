@@ -1,0 +1,52 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: #14212a;
+  background: #e9eef0;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 980px; min-height: 700px; overflow: hidden; }
+button { font: inherit; }
+
+.app-shell { height: 100vh; display: grid; grid-template-rows: 64px auto 1fr; }
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #132a3a; color: #fff; border-bottom: 1px solid #0b1c27;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #aac4d2; border-radius: 50%; font-size: 11px; letter-spacing: .08em; }
+.brand strong, .brand small { display: block; }
+.brand small { color: #b8c8d1; margin-top: 2px; }
+.primary-action { border: 1px solid #d5e3e9; border-radius: 7px; padding: 8px 14px; background: #f8fbfc; color: #132a3a; cursor: pointer; }
+.primary-action:disabled { opacity: .6; cursor: default; }
+.error-banner { padding: 10px 20px; background: #f7e6e3; color: #7c251d; border-bottom: 1px solid #d9b2ac; }
+.workspace { min-height: 0; display: grid; grid-template-columns: 250px minmax(500px, 1fr) 260px; }
+.sidebar, .inspector { background: #f7f9fa; overflow: auto; }
+.sidebar { border-right: 1px solid #ccd6da; }
+.inspector { border-left: 1px solid #ccd6da; }
+.panel-heading { padding: 18px 16px 14px; border-bottom: 1px solid #dbe2e5; }
+.panel-heading span, .panel-heading strong { display: block; }
+.panel-heading span { text-transform: uppercase; letter-spacing: .1em; font-size: 10px; color: #687b85; margin-bottom: 5px; }
+.panel-heading strong { font-size: 14px; }
+.page-list { padding: 8px; }
+.page-list button { width: 100%; display: grid; grid-template-columns: 28px 1fr; gap: 8px; text-align: left; border: 0; border-radius: 7px; padding: 9px 8px; background: transparent; cursor: pointer; color: inherit; }
+.page-list button:hover { background: #e9eef0; }
+.page-list button.active { background: #dbe8ee; box-shadow: inset 3px 0 #35677f; }
+.page-list strong, .page-list small { display: block; }
+.page-list small { margin-top: 2px; color: #72838c; text-transform: capitalize; }
+.page-order { color: #82939b; font-variant-numeric: tabular-nums; font-size: 12px; padding-top: 2px; }
+.empty-state { padding: 18px 16px; color: #66777f; line-height: 1.5; }
+.canvas-area { min-width: 0; overflow: auto; display: flex; flex-direction: column; align-items: center; padding: 22px 32px 48px; background: #dfe6e8; }
+.canvas-label { align-self: stretch; text-align: center; font-size: 11px; color: #657780; margin-bottom: 18px; }
+.a5-page { position: relative; flex: 0 0 auto; width: 420px; height: 594px; padding: 58px 52px 42px; background: #fff; box-shadow: 0 8px 30px rgba(31, 53, 64, .18); display: flex; flex-direction: column; }
+.a5-page.cover-page { justify-content: center; background: linear-gradient(150deg, #f7faf9 0%, #e9f0ef 100%); }
+.page-rule { width: 54px; height: 3px; background: #35677f; margin-bottom: 30px; }
+.eyebrow { margin: 0 0 15px; text-transform: uppercase; letter-spacing: .16em; font-size: 11px; color: #547181; }
+.a5-page h1 { margin: 0; max-width: 300px; font-family: Georgia, "Times New Roman", serif; font-size: 38px; font-weight: 500; line-height: 1.08; color: #172a34; }
+.preview-body { max-width: 300px; margin: 24px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.55; color: #4e6068; }
+.a5-page footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #d9e0e2; padding-top: 12px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #75868e; }
+.inspector dl { margin: 0; padding: 12px 16px; }
+.inspector dt { margin-top: 14px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #71828a; }
+.inspector dd { margin: 4px 0 0; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }

@@ -1,22 +1,28 @@
-# Build 001 validation
+# Build 001 – Validierung
 
-## Automated checks
+## Automatisiert
 
-- [ ] package builds on macOS 14+
-- [ ] all unit tests pass
-- [x] `Package.swift` parses successfully
-- [x] example `project.json` is valid JSON
-- [x] example content paths exist
+```bash
+pnpm install
+pnpm check
+pnpm test
+cd src-tauri
+cargo test
+```
 
-## Manual macOS checks
+## Manuell unter macOS
 
-- [ ] application launches
-- [ ] Open Project selects `Examples/Norway-Sample.nls`
-- [ ] page list contains Cover, Willkommen and Bergen
-- [ ] selection updates the A5 preview
-- [ ] selection updates the inspector
-- [ ] unsupported project version shows an error
+- [ ] App mit `pnpm tauri dev` gestartet
+- [ ] `examples/Norway-Sample.nls` geöffnet
+- [ ] Projektname wird angezeigt
+- [ ] fünf Seiten werden korrekt sortiert angezeigt
+- [ ] jede Seite kann ausgewählt werden
+- [ ] A5-Vorschau aktualisiert sich
+- [ ] Inspector aktualisiert sich
+- [ ] ungültiger Ordner erzeugt eine verständliche Fehlermeldung
+- [ ] App bleibt stabil
+- [ ] keine Bearbeitungs- oder Publishing-Funktion vorhanden
 
-## Environment limitation
+## Noch ausstehend
 
-The repository package was assembled in a Linux validation environment. SwiftUI and AppKit compilation must therefore be completed on macOS/Xcode before release approval.
+Die vollständige Tauri-/Rust-Kompilierung und visuelle Prüfung müssen auf macOS erfolgen. Das bereitgestellte Paket wurde strukturell und im Frontend-Build geprüft, soweit die Ausführungsumgebung dies zulässt.

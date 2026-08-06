@@ -1,66 +1,35 @@
-# Scope
+# Scope – Build 001
 
-## In Scope
+## Ziel
 
-Northern Lines Studio is planned as a macOS application for the visual and
-editorial workflow around Northern Lines Travel Fieldbooks.
+Northern Lines Studio öffnet ein vorbereitetes `.nls`-Projekt, zeigt dessen Seitenstruktur und stellt eine statische A5-Seite dar.
 
-Initial product scope may include:
+## Enthalten
 
-- project creation and management
-- journey metadata
-- destinations and sections
-- supported Northern Lines page types
-- structured content entry
-- image and asset assignment
-- curated layout variants
-- visual preview
-- validation feedback
-- publishing workflow
-- integration with Northern Lines Publisher
+- Tauri-Desktopfenster
+- Svelte-Dreispaltenansicht
+- Verzeichnisauswahl für `.nls`
+- Lesen und minimale Validierung von `project.json`
+- sortierte Seitenliste
+- Seitenauswahl
+- statische A5-Vorschau
+- schreibgeschützter Inspector
+- Beispielprojekt
+- Unit Tests der Rust-Validierung
 
-## Out of Scope for the Initial Product
+## Ausgeschlossen
 
-The first product should not attempt to provide:
+- Inhaltsbearbeitung
+- Drag-and-drop
+- Auswahl und Transformation von Objekten
+- frei platzierbare Rahmen
+- Zoomwerkzeuge
+- Layoutvarianten-Editor
+- Publisher-CLI-Ausführung
+- PDF-Export
+- Preflight
+- Autosave
+- mehrere geöffnete Projekte
+- App-Signierung, Notarisierung und Distribution
 
-- a complete general-purpose DTP engine
-- arbitrary free-form vector drawing
-- professional illustration tools
-- unrestricted font engineering
-- full photo editing
-- universal import of third-party publication formats
-- replacement of Affinity Publisher or Adobe InDesign
-- arbitrary layout scripting by end users
-
-## Product Boundary
-
-### Northern Lines Publisher
-
-Responsible for:
-
-- schemas
-- validation
-- content normalization
-- asset resolution
-- composition contracts
-- content-fit calculations
-- render jobs
-- staging
-- output preparation
-
-### Northern Lines Studio
-
-Responsible for:
-
-- macOS user experience
-- project navigation
-- visual editing
-- content entry
-- preview
-- layout-variant selection
-- editorial decisions
-- publishing orchestration
-
-## Initial Non-Goals
-
-Build 001 authorizes only the project reader, page navigation and static A5 preview described in `docs/builds/BUILD-001.md`. Signing, packaging and release automation remain out of scope.
+Eine ausgeschlossene Funktion darf Build 001 nicht stillschweigend erweitern.

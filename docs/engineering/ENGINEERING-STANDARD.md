@@ -1,16 +1,16 @@
 # Engineering Standard
 
-Northern Lines Studio is developed in numbered, reviewable builds.
+Für jeden Northern-Lines-Studio-Build gelten:
 
-Each build must contain:
+1. klarer Scope mit ausdrücklichen Nicht-Zielen
+2. dokumentierte Architekturänderungen als ADR
+3. technische Änderungen mit ECR, sobald bestehendes Verhalten geändert wird
+4. automatisierte Tests für validierbare Kernlogik
+5. manuelle Validierung des vollständigen Nutzerwegs
+6. dokumentierte bekannte Einschränkungen
+7. GitHub-taugliches vollständiges Repository-Paket
+8. ein eindeutiger Commit-Vorschlag und reproduzierbarer Git-Ablauf
 
-- one explicit objective
-- an included and excluded scope
-- relevant ADRs or ECRs
-- automated tests where practical
-- a manual validation record
-- known limitations
-- one proposed commit message
-- reproducible Git steps
+## Definition of Done
 
-A build is not expanded merely because a later feature is foreseeable. New scope requires a separate ECR and a later build assignment.
+Ein Build ist erst abgeschlossen, wenn Quellcode, Dokumentation, Tests und Validierungsnachweis denselben freigegebenen Scope abbilden.

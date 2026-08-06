@@ -1,44 +1,21 @@
-# Build 001: Project reader and static A5 preview
+# Build 001 – Projektleser und statische A5-Vorschau
 
-## Objective
+## Ziel
 
-Prove that Northern Lines Studio can open one prepared `.nls` project, show its ordered page list and display a static A5 portrait preview for the selected page.
+Der Build beweist den kleinsten vollständigen Studio-Ablauf: Projekt auswählen, Manifest laden, Seitenstruktur anzeigen und eine statische Vorschau darstellen.
 
-## Included
+## Abnahmekriterien
 
-- Swift Package-based native macOS executable
-- SwiftUI app shell
-- AppKit A5 canvas
-- `.nls` package selection
-- `project.json` decoding
-- format and version validation
-- duplicate page-ID validation
-- page sidebar
-- read-only inspector
-- example project
-- unit tests for core manifest validation
+- `pnpm tauri dev` startet die Anwendung.
+- Das Beispielverzeichnis `examples/Norway-Sample.nls` kann ausgewählt werden.
+- Fünf Seiten erscheinen in Manifestreihenfolge.
+- Die Auswahl einer Seite aktualisiert Vorschau und Inspector.
+- Ein Verzeichnis ohne `.nls`-Endung wird abgewiesen.
+- Eine falsche Projektformat-Version wird abgewiesen.
+- Ungültige Projekte führen nicht zum App-Absturz.
+- Keine ausgeschlossene DTP-Funktion ist vorhanden.
 
-## Explicitly excluded
+## Version
 
-- creating or saving projects
-- editing content
-- moving or resizing objects
-- page thumbnails
-- zoom controls
-- drag-and-drop
-- layout selection
-- asset management
-- Publisher CLI execution
-- rendering, PDF export and preflight
-
-## Acceptance criteria
-
-Build 001 is complete when:
-
-- the package opens and builds in Xcode on macOS 14+
-- `Examples/Norway-Sample.nls` can be opened
-- all three pages appear in manifest order
-- selecting a page updates preview and inspector
-- invalid format versions are rejected without crashing
-- automated tests pass on macOS
-- no excluded feature has been added
+- App: `0.1.0`
+- `.nls`-Format: `0.1.0`
