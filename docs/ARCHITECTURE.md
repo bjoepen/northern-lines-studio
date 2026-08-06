@@ -2,8 +2,7 @@
 
 ## Status
 
-This document records an initial architecture hypothesis only.
-No implementation decision is final.
+ADR-001 now fixes the Build 001 architecture boundary. Later architecture decisions remain open.
 
 ## Proposed System Boundary
 
@@ -95,20 +94,6 @@ Potential outputs:
 - Preview rendering and production rendering must not silently diverge.
 - Product identity and editorial decisions remain explicit.
 
-## First Architecture Decision Required
+## Accepted Build 001 direction
 
-Before Build 001, create an ADR comparing:
-
-- native SwiftUI shell with Publisher CLI integration
-- embedded web UI
-- hybrid desktop architecture
-
-The ADR should include:
-
-- macOS integration
-- preview options
-- distribution
-- maintainability
-- testing
-- dependency management
-- reuse of the existing Python publishing engine
+Build 001 uses a SwiftUI application shell, an AppKit canvas and a future Publisher CLI boundary. See `docs/adr/ADR-001-swiftui-appkit-publisher-cli.md`.

@@ -1,68 +1,66 @@
 # Northern Lines Studio
 
-**Travel Publishing for macOS**
+**Native Travel Publishing for macOS**
 
-Northern Lines Studio is the planned visual macOS workspace for creating,
-previewing and publishing Northern Lines Travel Fieldbooks.
+Northern Lines Studio is a specialized visual and editorial workspace for Northern Lines Travel Fieldbooks. It is not a general-purpose DTP application.
 
-The repository currently contains the project foundation only. No product
-implementation has started yet.
+## Build 001
 
-## Purpose
+Build 001 proves one narrow workflow:
 
-Northern Lines Studio will provide the visual application layer around the
-existing Northern Lines publishing system.
+1. open a local `.nls` project package
+2. decode and validate `project.json`
+3. display the project's page structure
+4. select a page
+5. show a static A5 portrait preview
 
-The intended separation is:
+The preview is intentionally not editable.
 
-- **Northern Lines Publisher** — publishing engine, schemas, validation,
-  composition, rendering contracts and output preparation
-- **Northern Lines Studio** — macOS application, project workspace, visual
-  editing, previews and publishing workflow
+## Architecture
 
-## Current Status
+- **SwiftUI** — app shell, navigation, toolbar and inspector
+- **AppKit** — A5 canvas drawing and desktop interaction foundation
+- **Northern Lines Publisher** — remains an external publishing engine
+- **Initial integration boundary** — versioned CLI, not yet invoked in Build 001
+- **Project format** — open `.nls` package with a JSON manifest and relative content paths
 
-**Status:** Vision and repository foundation  
-**Implementation:** Not started  
-**First planned milestone:** Product discovery and architecture decision
+## Requirements
 
-## Initial Repository Structure
+- macOS 14 or newer
+- Xcode 16 or newer
+- Swift 6 toolchain
 
-```text
-northern-lines-studio/
-├── README.md
-├── .gitignore
-└── docs/
-    ├── VISION.md
-    ├── SCOPE.md
-    └── ARCHITECTURE.md
+## Open in Xcode
+
+```bash
+open Package.swift
 ```
 
-## Product Principles
-
-Northern Lines Studio should:
-
-- support travel publishing rather than imitate a general-purpose DTP suite
-- preserve Northern Lines design language and editorial quality
-- combine structured content with curated page templates
-- keep final editorial control with the user
-- reuse the Northern Lines Publisher instead of duplicating its engine
-- produce transparent, reproducible and versioned project output
-
-## Not Yet Decided
-
-The following remain open for a future discovery phase:
-
-- native SwiftUI versus another macOS UI technology
-- integration boundary with Northern Lines Publisher
-- live preview renderer
-- template authoring model
-- direct PDF output versus Affinity handoff
-- project file format
-- release and distribution model
-
-## Suggested First Commit
+Run the `NorthernLinesStudio` executable scheme and open:
 
 ```text
-chore: initialize Northern Lines Studio project foundation
+Examples/Norway-Sample.nls
 ```
+
+## Test
+
+```bash
+swift test
+```
+
+Tests require macOS because the executable target uses SwiftUI and AppKit.
+
+## Build 001 boundaries
+
+Not included:
+
+- text or object editing
+- drag-and-drop
+- selection handles
+- zoom controls
+- layout variants
+- Publisher execution
+- PDF export
+- preflight
+
+See [`docs/builds/BUILD-001.md`](docs/builds/BUILD-001.md).

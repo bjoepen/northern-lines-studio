@@ -1,39 +1,37 @@
-# Repository Initialization
+# Build 001 setup
 
-## Copy into the repository
-
-Extract this package into the root of the empty `northern-lines-studio`
-repository.
-
-## Verify
+## Open the project
 
 ```bash
-git status --short
-find . -maxdepth 3 -type f | sort
+open Package.swift
 ```
 
-Expected files:
+Xcode creates the executable scheme from the Swift Package. Select the `NorthernLinesStudio` scheme and run it on macOS 14 or newer.
+
+## Open the example project
+
+In the running app, choose **Open Project…** and select:
 
 ```text
-.gitignore
-README.md
-INITIALIZATION.md
-docs/ARCHITECTURE.md
-docs/SCOPE.md
-docs/VISION.md
+Examples/Norway-Sample.nls
 ```
 
-## Initial Commit
+## Validate
 
 ```bash
-git add README.md .gitignore INITIALIZATION.md docs
-git commit -m "chore: initialize Northern Lines Studio project foundation"
-git push
+swift test
 ```
 
-## Important
+Then complete the manual checklist in:
 
-This package establishes documentation and repository structure only.
+```text
+docs/validation/BUILD-001-VALIDATION.md
+```
 
-Do not start product implementation before the dedicated discovery and
-architecture phase has been approved.
+## Commit
+
+```bash
+git add README.md Package.swift Sources Tests Examples docs .gitignore INITIALIZATION.md SHA256SUMS.txt
+git commit -m "feat(studio): add Build 001 project reader and A5 preview"
+git push -u origin feature/build-001-foundation
+```
