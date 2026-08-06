@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode / Swift
+DerivedData/
+.build/
+.swiftpm/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+
+# Python integration
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IDEs
+.idea/
+.vscode/
+
+# Generated output
+build/
+dist/
+output/
+staging/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*~
+.fuse_hidden*
