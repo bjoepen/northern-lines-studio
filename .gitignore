@@ -1,41 +1,10 @@
-# macOS
 .DS_Store
-.AppleDouble
-.LSOverride
-
-# Xcode / Swift
-DerivedData/
-.build/
-.swiftpm/
-*.xcuserstate
-xcuserdata/
-*.xccheckout
-*.moved-aside
-*.xcscmblueprint
-
-# Python integration
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
-venv/
-
-# IDEs
-.idea/
-.vscode/
-
-# Generated output
-build/
+node_modules/
 dist/
-output/
-staging/
+.vite/
 *.log
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*~
-.fuse_hidden*
+src-tauri/target/
+src-tauri/gen/
+.env
+.env.*
+!.env.example

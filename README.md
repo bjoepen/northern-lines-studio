@@ -1,68 +1,81 @@
 # Northern Lines Studio
 
-**Travel Publishing for macOS**
+**Travel Publishing für macOS – Build 001**
 
-Northern Lines Studio is the planned visual macOS workspace for creating,
-previewing and publishing Northern Lines Travel Fieldbooks.
+Northern Lines Studio ist eine spezialisierte visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
-The repository currently contains the project foundation only. No product
-implementation has started yet.
+## Build 001
 
-## Purpose
+Der erste Build beweist ausschließlich den kleinsten vollständigen Workflow:
 
-Northern Lines Studio will provide the visual application layer around the
-existing Northern Lines publishing system.
+1. ein `.nls`-Projektverzeichnis auswählen,
+2. `project.json` lesen und validieren,
+3. die Seitenstruktur anzeigen,
+4. eine Seite auswählen,
+5. eine statische A5-Vorschau und Metadaten darstellen.
 
-The intended separation is:
+Nicht enthalten sind Bearbeitung, Drag-and-drop, freie Layoutobjekte, Publisher-Aufruf, PDF-Export und Preflight.
 
-- **Northern Lines Publisher** — publishing engine, schemas, validation,
-  composition, rendering contracts and output preparation
-- **Northern Lines Studio** — macOS application, project workspace, visual
-  editing, previews and publishing workflow
+## Architektur
 
-## Current Status
+- **Tauri 2** – Desktop-Shell, Dateidialog und sichere Rust-Bridge
+- **Svelte 5 + TypeScript** – Benutzeroberfläche
+- **HTML/CSS** – statische A5-Vorschau
+- **Rust** – Laden und Validieren des `.nls`-Projektmanifests
+- **Northern Lines Publisher** – bleibt eine eigenständige Engine; die CLI-Anbindung ist für einen späteren Build vorgesehen
 
-**Status:** Vision and repository foundation  
-**Implementation:** Not started  
-**First planned milestone:** Product discovery and architecture decision
+Die frühere SwiftUI-/AppKit-Hypothese wurde durch [ADR-002](docs/adr/ADR-002-TAURI-SVELTE-PUBLISHER-CLI.md) ersetzt.
 
-## Initial Repository Structure
+## Voraussetzungen
+
+- macOS
+- Xcode Command Line Tools
+- Node.js 22 oder neuer
+- pnpm 10 oder neuer
+- Rust über `rustup`
+
+```bash
+xcode-select --install
+corepack enable
+rustup update stable
+```
+
+## Entwicklung starten
+
+```bash
+pnpm install
+pnpm tauri dev
+```
+
+Nach dem Start über **Projekt öffnen** das Verzeichnis auswählen:
+
+```text
+examples/Norway-Sample.nls
+```
+
+## Tests und Build
+
+```bash
+pnpm check
+pnpm test
+cd src-tauri && cargo test && cd ..
+pnpm tauri build
+```
+
+## Repository-Struktur
 
 ```text
 northern-lines-studio/
-├── README.md
-├── .gitignore
-└── docs/
-    ├── VISION.md
-    ├── SCOPE.md
-    └── ARCHITECTURE.md
+├── src/                         # Svelte-Oberfläche
+├── src-tauri/                   # Tauri/Rust-Desktop-Layer
+├── examples/Norway-Sample.nls/ # Beispielprojekt
+├── docs/                        # Architektur und Build-Dokumentation
+├── package.json
+└── README.md
 ```
 
-## Product Principles
-
-Northern Lines Studio should:
-
-- support travel publishing rather than imitate a general-purpose DTP suite
-- preserve Northern Lines design language and editorial quality
-- combine structured content with curated page templates
-- keep final editorial control with the user
-- reuse the Northern Lines Publisher instead of duplicating its engine
-- produce transparent, reproducible and versioned project output
-
-## Not Yet Decided
-
-The following remain open for a future discovery phase:
-
-- native SwiftUI versus another macOS UI technology
-- integration boundary with Northern Lines Publisher
-- live preview renderer
-- template authoring model
-- direct PDF output versus Affinity handoff
-- project file format
-- release and distribution model
-
-## Suggested First Commit
+## Commit-Vorschlag
 
 ```text
-chore: initialize Northern Lines Studio project foundation
+feat(studio): rebuild Build 001 with Tauri and Svelte
 ```

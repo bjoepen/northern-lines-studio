@@ -1,39 +1,43 @@
-# Repository Initialization
+# Initialisierung von Build 001
 
-## Copy into the repository
-
-Extract this package into the root of the empty `northern-lines-studio`
-repository.
-
-## Verify
+## Werkzeuge installieren
 
 ```bash
-git status --short
-find . -maxdepth 3 -type f | sort
+xcode-select --install
+corepack enable
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
 ```
 
-Expected files:
+Node.js kann beispielsweise über Homebrew installiert werden:
+
+```bash
+brew install node
+```
+
+## Repository vorbereiten
+
+```bash
+pnpm install
+pnpm check
+cd src-tauri && cargo test && cd ..
+pnpm tauri dev
+```
+
+## Beispielprojekt
+
+Im Öffnen-Dialog das komplette Verzeichnis auswählen:
 
 ```text
-.gitignore
-README.md
-INITIALIZATION.md
-docs/ARCHITECTURE.md
-docs/SCOPE.md
-docs/VISION.md
+examples/Norway-Sample.nls
 ```
 
-## Initial Commit
+Nicht die darin enthaltene `project.json` auswählen.
+
+## Release-Build
 
 ```bash
-git add README.md .gitignore INITIALIZATION.md docs
-git commit -m "chore: initialize Northern Lines Studio project foundation"
-git push
+pnpm tauri build
 ```
 
-## Important
-
-This package establishes documentation and repository structure only.
-
-Do not start product implementation before the dedicated discovery and
-architecture phase has been approved.
+Build-Produkte werden unter `src-tauri/target/release/bundle/` erzeugt.
