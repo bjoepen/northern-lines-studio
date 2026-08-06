@@ -63,13 +63,4 @@ Responsible for:
 
 ## Initial Non-Goals
 
-The repository foundation does not yet authorize:
-
-- Swift implementation
-- framework selection
-- UI design production
-- app signing
-- packaging
-- release automation
-
-Those decisions require a dedicated discovery and architecture phase.
+Build 001 authorizes only the project reader, page navigation and static A5 preview described in `docs/builds/BUILD-001.md`. Signing, packaging and release automation remain out of scope.

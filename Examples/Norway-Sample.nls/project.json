@@ -1,0 +1,29 @@
+{
+  "format": "northern-lines-studio-project",
+  "formatVersion": "0.1",
+  "title": "Norwegen Fieldbook",
+  "pageSize": {
+    "widthMillimetres": 148,
+    "heightMillimetres": 210
+  },
+  "pages": [
+    {
+      "id": "cover",
+      "title": "Norwegen Fieldbook",
+      "type": "cover",
+      "content": "content/cover.md"
+    },
+    {
+      "id": "welcome",
+      "title": "Willkommen",
+      "type": "editorial",
+      "content": "content/welcome.md"
+    },
+    {
+      "id": "bergen",
+      "title": "Bergen",
+      "type": "destination",
+      "content": "content/bergen.md"
+    }
+  ]
+}
