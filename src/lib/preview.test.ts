@@ -17,6 +17,12 @@ describe('responsive A5 preview', () => {
   });
 
   it('remains usable in a compact workspace', () => {
-    expect(computePreviewScale(300, 420)).toBeGreaterThanOrEqual(0.55);
+    expect(computePreviewScale(300, 420)).toBeGreaterThanOrEqual(0.50);
+  });
+
+  it('uses the additional space of a maximized editorial desk without becoming oversized', () => {
+    const scale = computePreviewScale(1200, 800);
+    expect(scale).toBeGreaterThan(1.2);
+    expect(scale).toBeLessThanOrEqual(PREVIEW_MAX_SCALE);
   });
 });

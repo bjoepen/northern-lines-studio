@@ -1,6 +1,6 @@
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.4.0",
+  "formatVersion": "0.3.0",
   "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
   "edition": "2.0",
@@ -38,12 +38,7 @@
       "role": "front_matter",
       "title": "Cover",
       "content": "content/pages/001-cover.md",
-      "layout": "cover-standard",
-      "components": [
-        "hero",
-        "title",
-        "subtitle"
-      ]
+      "layout": "cover-standard"
     },
     {
       "id": "page-welcome",
@@ -52,13 +47,7 @@
       "role": "front_matter",
       "title": "Willkommen",
       "content": "content/pages/002-welcome.md",
-      "layout": "welcome-standard",
-      "components": [
-        "hero",
-        "title",
-        "introduction",
-        "quote"
-      ]
+      "layout": "welcome-standard"
     },
     {
       "id": "page-contents",
@@ -67,11 +56,7 @@
       "role": "front_matter",
       "title": "Inhaltsverzeichnis",
       "content": "content/pages/003-contents.md",
-      "layout": "contents-standard",
-      "components": [
-        "title",
-        "contents"
-      ]
+      "layout": "contents-standard"
     },
     {
       "id": "page-bergen",
@@ -81,16 +66,7 @@
       "title": "Bergen",
       "content": "content/pages/010-bergen.md",
       "layout": "destination-standard",
-      "journeyStage": "bergen",
-      "components": [
-        "hero",
-        "title",
-        "introduction",
-        "history",
-        "photography",
-        "knowledge",
-        "qr"
-      ]
+      "journeyStage": "bergen"
     },
     {
       "id": "page-geiranger",
@@ -100,16 +76,7 @@
       "title": "Geiranger",
       "content": "content/pages/020-geiranger.md",
       "layout": "destination-standard",
-      "journeyStage": "geiranger",
-      "components": [
-        "hero",
-        "title",
-        "introduction",
-        "history",
-        "photography",
-        "knowledge",
-        "qr"
-      ]
+      "journeyStage": "geiranger"
     },
     {
       "id": "page-light",
@@ -119,14 +86,7 @@
       "title": "Licht",
       "content": "content/pages/030-light.md",
       "layout": "knowledge-light",
-      "knowledgeType": "photography_light",
-      "components": [
-        "hero",
-        "title",
-        "light_phases",
-        "photography",
-        "quote"
-      ]
+      "knowledgeType": "photography_light"
     },
     {
       "id": "page-weather",
@@ -136,13 +96,7 @@
       "title": "Wetter",
       "content": "content/pages/040-weather.md",
       "layout": "knowledge-weather",
-      "knowledgeType": "travel_weather",
-      "components": [
-        "hero",
-        "title",
-        "weather_guidance",
-        "photography"
-      ]
+      "knowledgeType": "travel_weather"
     },
     {
       "id": "page-on1",
@@ -152,12 +106,7 @@
       "title": "ON1 Photo RAW",
       "content": "content/pages/050-on1.md",
       "layout": "workflow-on1",
-      "knowledgeType": "workflow_on1_photo_raw",
-      "components": [
-        "title",
-        "workflow_steps",
-        "workflow_tip"
-      ]
+      "knowledgeType": "workflow_on1_photo_raw"
     },
     {
       "id": "page-luminar",
@@ -167,12 +116,7 @@
       "title": "Luminar Neo",
       "content": "content/pages/060-luminar.md",
       "layout": "workflow-luminar",
-      "knowledgeType": "workflow_luminar_neo",
-      "components": [
-        "title",
-        "workflow_steps",
-        "workflow_tip"
-      ]
+      "knowledgeType": "workflow_luminar_neo"
     },
     {
       "id": "page-notes",
@@ -181,11 +125,7 @@
       "role": "notes",
       "title": "Notizen",
       "content": "content/pages/090-notes.md",
-      "layout": "notes-standard",
-      "components": [
-        "title",
-        "notes_area"
-      ]
+      "layout": "notes-standard"
     },
     {
       "id": "page-closing",
@@ -194,13 +134,7 @@
       "role": "closing_memory",
       "title": "Abschluss",
       "content": "content/pages/099-closing.md",
-      "layout": "closing-memory",
-      "components": [
-        "hero",
-        "title",
-        "quote",
-        "closing_text"
-      ]
+      "layout": "closing-memory"
     }
   ],
   "editorialWorldId": "fjord"

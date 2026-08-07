@@ -116,8 +116,14 @@ const previewCopy: Record<PageType, PreviewContent> = {
   }
 };
 
+const emptyPreview: PreviewContent = {
+  eyebrow: 'Northern Lines',
+  heading: 'Deine Reise beginnt hier.',
+  body: 'Öffne ein Travelbook und gib der nächsten Reise ihren eigenen Raum.'
+};
+
 export function previewFor(page: StudioPage | null): PreviewContent {
-  if (!page) return previewCopy.cover;
+  if (!page) return emptyPreview;
   const base = previewCopy[page.type];
   return { ...base, heading: page.title };
 }

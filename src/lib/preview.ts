@@ -1,8 +1,8 @@
 export const PREVIEW_BASE_WIDTH = 420;
 export const PREVIEW_BASE_HEIGHT = 594;
-export const PREVIEW_MAX_SCALE = 1.35;
-export const PREVIEW_MIN_SCALE = 0.55;
-export const PREVIEW_PADDING = 24;
+export const PREVIEW_MAX_SCALE = 1.45;
+export const PREVIEW_MIN_SCALE = 0.50;
+export const PREVIEW_PADDING = 18;
 
 export function computePreviewScale(
   containerWidth: number,
