@@ -1,20 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioPage } from '../project';
-import {
-  authoringCompletion,
-  authoringViewFor,
-  withAuthoringEntry
-} from './index';
+import { authoringCompletion, authoringViewFor, withAuthoringEntry } from './index';
 
 const page: StudioPage = {
-  id: 'page-bergen',
-  order: 10,
-  type: 'destination',
-  role: 'destination',
-  title: 'Bergen',
-  content: 'content/pages/010-bergen.md',
-  layout: 'destination-standard',
-  components: ['title', 'introduction']
+  id: 'page-bergen', order: 10, type: 'destination', role: 'destination', title: 'Bergen',
+  content: 'content/pages/010-bergen.md', layout: 'destination-standard', components: ['title', 'introduction']
 };
 
 describe('semantic authoring', () => {
@@ -30,7 +20,6 @@ describe('semantic authoring', () => {
     });
 
     const introduction = updated.authoring?.introduction;
-
     if (!introduction) {
       throw new Error('Expected introduction authoring entry to exist');
     }
@@ -39,12 +28,7 @@ describe('semantic authoring', () => {
   });
 
   it('reports completion only for persisted non-empty authored components', () => {
-    const updated = withAuthoringEntry(page, {
-      componentId: 'introduction',
-      content: 'Text',
-      status: 'revised'
-    });
-
+    const updated = withAuthoringEntry(page, { componentId: 'introduction', content: 'Text', status: 'revised' });
     expect(authoringCompletion(updated)).toBe(50);
   });
 });
