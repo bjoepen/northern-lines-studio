@@ -75,7 +75,7 @@
 
 <div class="app-shell">
   <header class="toolbar">
-    <div class="brand">
+    <div class="brand toolbar-zone toolbar-zone-start">
       <span class="brand-mark">NL</span>
       <div>
         <strong>Northern Lines Studio</strong>
@@ -84,18 +84,23 @@
     </div>
 
     {#if editorialWorld}
-      <div class="toolbar-context" aria-label="Aktive Editorial World">
+      <div class="toolbar-context toolbar-zone toolbar-zone-center" aria-label="Aktiver Travelbook-Kontext">
         <span class="world-wave" aria-hidden="true">≈</span>
         <div>
-          <small>{editorialWorld.isReference ? `Reference World ${String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}` : 'Editorial World'}</small>
-          <strong>{editorialWorld.name}</strong>
+          <strong>{project?.title ?? editorialWorld.name}</strong>
+          <small>Editorial World · {editorialWorld.name}</small>
         </div>
       </div>
     {/if}
 
-    <button class="primary-action" on:click={openProject} disabled={isLoading}>
-      {isLoading ? 'Projekt wird geöffnet …' : 'Projekt öffnen'}
-    </button>
+    <div class="toolbar-zone toolbar-zone-end">
+      <button class="primary-action" on:click={openProject} disabled={isLoading}>
+        <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+        </svg>
+        <span>{isLoading ? 'Öffnen …' : 'Projekt'}</span>
+      </button>
+    </div>
   </header>
 
   {#if errorMessage}

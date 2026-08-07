@@ -1,12 +1,19 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 006**
+**Travel Publishing für macOS – Build 007**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
 > Die Seite ist der Mittelpunkt der Arbeitsumgebung. Alles andere dient der Geschichte.
 
 Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
+
+
+## Build 007 – Editorial Header Balance
+
+Build 007 follows the **Polish before Power** principle. It does not add an authoring feature; it balances the persistent Studio header so brand, active Travelbook context and project control sit on one calm vertical axis.
+
+The center of the header now names the work first (`Norwegen Fieldbook`) and treats `Editorial World · Fjord` as context. The project control is deliberately quieter and more compact. The `.nls` project format remains `0.4.0`.
 
 ## Build 006 – Editorial Workspace Refinement
 
@@ -89,9 +96,12 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ## Build-Dokumentation
 
+- `docs/builds/BUILD-007.md`
 - `docs/builds/BUILD-006.md`
 - `docs/ecr/ECR-005-EDITORIAL-WORKSPACE-REFINEMENT.md`
+- `docs/validation/BUILD-007-VALIDATION.md`
 - `docs/validation/BUILD-006-VALIDATION.md`
+- `docs/git/BUILD-007-GIT-WORKFLOW.md`
 - `docs/git/BUILD-006-GIT-WORKFLOW.md`
 - `docs/engineering/DROP-IN-STANDARD.md`
 

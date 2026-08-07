@@ -17,4 +17,4 @@ Ein Build ist erst abgeschlossen, wenn Quellcode, Dokumentation, Tests und Valid
 
 ## Repository Drop-ins
 
-Repository Drop-ins follow [`DROP-IN-STANDARD.md`](DROP-IN-STANDARD.md). Beginning with Studio Build 006, `rsync` dry-run + merge is the required application method; Finder folder replacement is not part of the engineering workflow.
+Repository Drop-ins follow [`DROP-IN-STANDARD.md`](DROP-IN-STANDARD.md). Beginning with Studio Build 007, Drop-ins mirror repository paths directly and are applied with `rsync` dry-run + merge; Finder folder replacement and the temporary `payload/` wrapper are not part of the engineering workflow.

@@ -6,20 +6,22 @@ A Drop-in updates an existing repository without replacing complete directories 
 
 ## Package shape
 
-Beginning with Studio Build 006, a Drop-in archive contains:
+Beginning with Studio Build 007, the Drop-in root mirrors the repository directly:
 
 ```text
 <Build-DropIn>/
 ├── APPLY-DROPIN.md
-└── payload/
-    └── <repository-relative files>
+├── src/
+├── src-tauri/
+├── docs/
+└── <other repository-relative files>
 ```
 
-Only `payload/` is merged into the repository.
+There is **no `payload/` wrapper**. The instruction file is excluded from the merge command so it does not become a repository file.
 
 ## Standard procedure
 
-From a clean or deliberately understood working tree:
+From the repository root:
 
 ```bash
 git status --short
@@ -28,14 +30,30 @@ git status --short
 Preview the merge:
 
 ```bash
-rsync -avn --exclude='.DS_Store' /path/to/DropIn/payload/ /path/to/repository/
+rsync -avn \
+  --exclude='.DS_Store' \
+  --exclude='APPLY-DROPIN.md' \
+  /Pfad/zum/Northern-Lines-Studio-Build-XXX-DropIn/ \
+  ./
 ```
 
 Apply it:
 
 ```bash
-rsync -av --exclude='.DS_Store' /path/to/DropIn/payload/ /path/to/repository/
+rsync -av \
+  --exclude='.DS_Store' \
+  --exclude='APPLY-DROPIN.md' \
+  /Pfad/zum/Northern-Lines-Studio-Build-XXX-DropIn/ \
+  ./
 ```
+
+A typical macOS repository location may be written generically as:
+
+```bash
+cd ~/Projekte/northern-lines-studio
+```
+
+No personal user name is stored in documentation.
 
 Then inspect and validate:
 
