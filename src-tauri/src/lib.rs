@@ -3,12 +3,30 @@ use std::{fs, path::Path};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
 const SUPPORTED_FORMAT_VERSION: &str = "0.1.0";
+const REFERENCE_WORLD_ID: &str = "fjord";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DocumentSettings {
     page_format: String,
     orientation: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EditorialCompanion {
+    id: String,
+    name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EditorialWorld {
+    id: String,
+    name: String,
+    #[serde(default)]
+    reference: bool,
+    companion: EditorialCompanion,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,6 +50,7 @@ struct StudioProject {
     title: String,
     edition: Option<String>,
     language: String,
+    editorial_world: Option<EditorialWorld>,
     document: DocumentSettings,
     page_manifest: Vec<StudioPage>,
     #[serde(default)]
@@ -67,10 +86,25 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         ));
     }
     if project.document.page_format != "A5" || project.document.orientation != "portrait" {
-        return Err("Build 001 unterstützt ausschließlich A5 im Hochformat.".into());
+        return Err("Build 002 unterstützt ausschließlich A5 im Hochformat.".into());
     }
     if project.page_manifest.is_empty() {
         return Err("Das Projekt enthält keine Seiten.".into());
+    }
+
+    if let Some(world) = &project.editorial_world {
+        if world.id.trim().is_empty() || world.name.trim().is_empty() {
+            return Err("Editorial World besitzt keine gültige ID oder keinen Namen.".into());
+        }
+        if world.companion.id.trim().is_empty() || world.companion.name.trim().is_empty() {
+            return Err("Editorial World besitzt keinen gültigen Companion.".into());
+        }
+        if world.reference && world.id != REFERENCE_WORLD_ID {
+            return Err(format!(
+                "Build 002 kennt ausschließlich '{}' als Reference World.",
+                REFERENCE_WORLD_ID
+            ));
+        }
     }
 
     for (index, page) in project.page_manifest.iter().enumerate() {
@@ -110,6 +144,15 @@ mod tests {
             title: "Sample".into(),
             edition: Some("1.0".into()),
             language: "de".into(),
+            editorial_world: Some(EditorialWorld {
+                id: REFERENCE_WORLD_ID.into(),
+                name: "Fjord".into(),
+                reference: true,
+                companion: EditorialCompanion {
+                    id: "puffin".into(),
+                    name: "Papageientaucher".into(),
+                },
+            }),
             document: DocumentSettings {
                 page_format: "A5".into(),
                 orientation: "portrait".into(),
@@ -127,8 +170,15 @@ mod tests {
     }
 
     #[test]
-    fn accepts_valid_build_001_project() {
+    fn accepts_valid_build_002_project() {
         assert!(validate_project(&sample_project()).is_ok());
+    }
+
+    #[test]
+    fn accepts_build_001_project_without_editorial_world() {
+        let mut project = sample_project();
+        project.editorial_world = None;
+        assert!(validate_project(&project).is_ok());
     }
 
     #[test]
@@ -142,6 +192,13 @@ mod tests {
     fn rejects_duplicate_page_ids() {
         let mut project = sample_project();
         project.page_manifest.push(project.page_manifest[0].clone());
+        assert!(validate_project(&project).is_err());
+    }
+
+    #[test]
+    fn rejects_unknown_reference_world() {
+        let mut project = sample_project();
+        project.editorial_world.as_mut().unwrap().id = "arctic".into();
         assert!(validate_project(&project).is_err());
     }
 }

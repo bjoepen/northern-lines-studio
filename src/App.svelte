@@ -3,6 +3,7 @@
   import { open } from '@tauri-apps/plugin-dialog';
   import type { StudioPage, StudioProject } from './lib/project';
   import { previewFor } from './lib/project';
+  import { editorialWorldFor, groupPages, projectStatus } from './lib/workspace';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -37,6 +38,9 @@
   }
 
   $: preview = previewFor(selectedPage);
+  $: sections = groupPages(project?.pageManifest ?? []);
+  $: editorialWorld = editorialWorldFor(project);
+  $: statusText = projectStatus(project);
 </script>
 
 <svelte:head>
@@ -52,6 +56,17 @@
         <small>Travel Publishing</small>
       </div>
     </div>
+
+    {#if editorialWorld}
+      <div class="toolbar-context" aria-label="Aktive Editorial World">
+        <span class="world-wave" aria-hidden="true">≈</span>
+        <div>
+          <small>Editorial World</small>
+          <strong>{editorialWorld.name}</strong>
+        </div>
+      </div>
+    {/if}
+
     <button class="primary-action" on:click={openProject} disabled={isLoading}>
       {isLoading ? 'Projekt wird geöffnet …' : 'Projekt öffnen'}
     </button>
@@ -62,43 +77,71 @@
   {/if}
 
   <main class="workspace">
-    <aside class="sidebar" aria-label="Seitenstruktur">
+    <aside class="sidebar" aria-label="Travelbook-Navigation">
       <div class="panel-heading">
-        <span>Projekt</span>
+        <span>Travelbook</span>
         <strong>{project?.title ?? 'Kein Projekt geöffnet'}</strong>
+        {#if project?.edition}<small>Edition {project.edition}</small>{/if}
       </div>
 
+      {#if editorialWorld}
+        <section class="world-card" aria-label="Reference Editorial World">
+          <div class="world-icon" aria-hidden="true">≈</div>
+          <div>
+            <small>{editorialWorld.isReference ? 'Reference World' : 'Editorial World'}</small>
+            <strong>{editorialWorld.name}</strong>
+            <span>Companion · {editorialWorld.companionName}</span>
+          </div>
+        </section>
+      {/if}
+
       {#if project}
-        <nav class="page-list" aria-label="Seiten">
-          {#each project.pageManifest as page}
-            <button
-              class:active={selectedPage?.id === page.id}
-              on:click={() => selectPage(page)}
-            >
-              <span class="page-order">{String(page.order).padStart(2, '0')}</span>
-              <span>
-                <strong>{page.title}</strong>
-                <small>{page.type}</small>
-              </span>
-            </button>
+        <nav class="page-list" aria-label="Travelbook-Struktur">
+          {#each sections as section}
+            <section class="navigation-section">
+              <div class="section-heading">
+                <strong>{section.label}</strong>
+                <small>{section.description}</small>
+              </div>
+              {#each section.pages as page}
+                <button
+                  class:active={selectedPage?.id === page.id}
+                  on:click={() => selectPage(page)}
+                >
+                  <span class="page-order">{String(page.order).padStart(2, '0')}</span>
+                  <span>
+                    <strong>{page.title}</strong>
+                    <small>{page.type === 'destination' ? 'Ort' : page.type}</small>
+                  </span>
+                </button>
+              {/each}
+            </section>
           {/each}
         </nav>
       {:else}
         <div class="empty-state">
-          Öffne das Beispielprojekt oder ein anderes gültiges <code>.nls</code>-Verzeichnis.
+          <strong>Deine Reise beginnt hier.</strong>
+          <span>Öffne ein gültiges <code>.nls</code>-Travelbook, um seine Struktur zu erkunden.</span>
         </div>
       {/if}
     </aside>
 
     <section class="canvas-area" aria-label="A5-Vorschau">
-      <div class="canvas-label">Statische A5-Vorschau · {selectedPage?.layout ?? 'ohne Layout'}</div>
+      <div class="canvas-header">
+        <div>
+          <span>Editorial Preview</span>
+          <strong>{selectedPage?.title ?? 'Keine Seite ausgewählt'}</strong>
+        </div>
+        <small>{selectedPage?.layout ?? 'ohne Layout'}</small>
+      </div>
+
       <article class="a5-page" class:cover-page={selectedPage?.type === 'cover'}>
         <div class="page-rule"></div>
         <p class="eyebrow">{preview.eyebrow}</p>
         <h1>{preview.heading}</h1>
         <p class="preview-body">{preview.body}</p>
         <footer>
-          <span>{project?.title ?? 'Northern Lines Studio'}</span>
+          <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
           <span>{selectedPage?.order ?? '–'}</span>
         </footer>
       </article>
@@ -107,8 +150,17 @@
     <aside class="inspector" aria-label="Inspector">
       <div class="panel-heading">
         <span>Inspector</span>
-        <strong>Nur Lesen</strong>
+        <strong>{selectedPage ? 'Seite' : 'Projekt'}</strong>
       </div>
+
+      {#if editorialWorld}
+        <section class="inspector-card">
+          <span class="inspector-label">Editorial World</span>
+          <strong>{editorialWorld.name}</strong>
+          <small>{editorialWorld.isReference ? 'Reference World 001' : 'Aktive World'} · {editorialWorld.companionName}</small>
+        </section>
+      {/if}
+
       <dl>
         <dt>Seitentitel</dt><dd>{selectedPage?.title ?? '–'}</dd>
         <dt>Seitentyp</dt><dd>{selectedPage?.type ?? '–'}</dd>
@@ -119,4 +171,9 @@
       </dl>
     </aside>
   </main>
+
+  <footer class="status-bar" aria-label="Projektstatus">
+    <span>{editorialWorld ? `${editorialWorld.name} · ${editorialWorld.isReference ? 'Reference World' : 'Editorial World'}` : 'Northern Lines Studio'}</span>
+    <span class:status-ok={project}>{statusText}</span>
+  </footer>
 </div>
