@@ -18,3 +18,7 @@ Ein Build ist erst abgeschlossen, wenn Quellcode, Dokumentation, Tests und Valid
 ## Repository Drop-ins
 
 Repository Drop-ins follow [`DROP-IN-STANDARD.md`](DROP-IN-STANDARD.md). Beginning with Studio Build 007, Drop-ins mirror repository paths directly and are applied with `rsync` dry-run + merge; Finder folder replacement and the temporary `payload/` wrapper are not part of the engineering workflow.
+
+## Editorial layer discipline
+
+Beginning with Build 008, user-facing page structure is modeled by editorial meaning: **Editorial Frame**, **Story**, and future **Annotations**. Generic DTP object/layer vocabulary must not be introduced without an approved ADR demonstrating why a semantic Northern Lines expression is insufficient.

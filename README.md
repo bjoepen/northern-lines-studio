@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 007**
+**Travel Publishing für macOS – Build 008**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -8,6 +8,26 @@ Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung 
 
 Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
 
+
+
+## Build 008 – Story Components Foundation
+
+Build 008 introduces the first explicit **Story Components** layer. Studio no longer sees only that a Destination grammar expects `Hero`, `Northern Lines Wissen` or `Fotografie`; it materializes these as semantic expression possibilities with purpose, role and status.
+
+The layer model is now executable domain logic:
+
+```text
+Editorial Frame
+  Header · Footer · Seitenzahl · Companion
+
+Story
+  Hero · Titel · Einleitung · Ortswissen · Fotografie · Knowledge · QR · ...
+
+Annotations
+  reserviert für spätere Bearbeitungshilfen
+```
+
+Story Components are **not** freely positioned DTP objects and Build 008 adds no authoring controls. The `.nls` project format therefore remains deliberately at `0.4.0`; the new model is derived deterministically from the existing page manifest plus Editorial Grammar.
 
 ## Build 007 – Editorial Header Balance
 
@@ -96,6 +116,11 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ## Build-Dokumentation
 
+- `docs/builds/BUILD-008.md`
+- `docs/adr/ADR-006-EDITORIAL-LAYER-MODEL.md`
+- `docs/ecr/ECR-007-STORY-COMPONENTS-FOUNDATION.md`
+- `docs/validation/BUILD-008-VALIDATION.md`
+- `docs/git/BUILD-008-GIT-WORKFLOW.md`
 - `docs/builds/BUILD-007.md`
 - `docs/builds/BUILD-006.md`
 - `docs/ecr/ECR-005-EDITORIAL-WORKSPACE-REFINEMENT.md`
@@ -108,5 +133,5 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ## Commit-Vorschlag
 
 ```text
-feat(studio): refine the editorial workspace experience
+feat(studio): introduce story components foundation
 ```

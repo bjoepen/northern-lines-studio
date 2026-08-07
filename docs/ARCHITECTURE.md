@@ -71,3 +71,24 @@ Editorial Grammar
 ```
 
 The grammar layer does not render geometry and does not call Northern Lines Publisher. Its responsibility is to explain page intent and editorial completeness in the language of the author. Publisher integration remains a later boundary.
+
+
+## Story Components Layer (Build 008)
+
+Build 008 makes the approved editorial layer model explicit in the Studio domain:
+
+```text
+Journey Project
+      ↓
+Editorial World
+      ↓
+Page Grammar
+      ↓
+Story Components
+      ↓
+future authored Content
+```
+
+A Story Component is an author-facing semantic expression such as `Hero`, `Fotografie`, `Northern Lines Wissen`, `Zitat` or `Mitbringsel & Souvenirs`. It is not a rectangle, text frame or generic layer. Components are derived from the page manifest and grammar; no geometry is introduced.
+
+The persistent page identity remains a separate **Editorial Frame** (`Header`, `Footer`, dynamic page number, `Companion`). **Annotations** are reserved for future selection/guides and never belong to published content.
