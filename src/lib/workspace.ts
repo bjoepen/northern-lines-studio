@@ -1,4 +1,6 @@
 import type { PageRole, StudioPage, StudioProject } from './project';
+import { loadEditorialWorld } from './worlds';
+import type { EditorialWorldDefinition } from './worlds/types';
 
 export type WorkspaceSectionId = 'book' | 'destinations' | 'journey' | 'workflow' | 'memories';
 
@@ -15,6 +17,10 @@ export interface EditorialWorldView {
   companionName: string;
   companionId: string;
   isReference: boolean;
+  referenceNumber?: number;
+  character: readonly string[];
+  designLanguage: readonly string[];
+  pageGrammars: EditorialWorldDefinition['pageGrammars'];
 }
 
 const sectionForRole: Record<PageRole, WorkspaceSectionId> = {
@@ -70,14 +76,19 @@ export function groupPages(pages: StudioPage[]): WorkspaceSection[] {
 }
 
 export function editorialWorldFor(project: StudioProject | null): EditorialWorldView | null {
-  if (!project?.editorialWorld) return null;
+  const world = loadEditorialWorld(project?.editorialWorldId);
+  if (!world) return null;
 
   return {
-    id: project.editorialWorld.id,
-    name: project.editorialWorld.name,
-    companionName: project.editorialWorld.companion.name,
-    companionId: project.editorialWorld.companion.id,
-    isReference: project.editorialWorld.reference === true
+    id: world.id,
+    name: world.name,
+    companionName: world.companion.name,
+    companionId: world.companion.id,
+    isReference: world.status === 'reference',
+    referenceNumber: world.referenceNumber,
+    character: world.character,
+    designLanguage: world.designLanguage,
+    pageGrammars: world.pageGrammars
   };
 }
 

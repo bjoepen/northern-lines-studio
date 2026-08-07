@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashSet, fs, path::Path};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.2.0";
+const CURRENT_FORMAT_VERSION: &str = "0.3.0";
+const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
 const REFERENCE_WORLD_ID: &str = "fjord";
 
@@ -82,7 +83,10 @@ struct StudioProject {
     title: String,
     edition: Option<String>,
     language: String,
-    editorial_world: Option<EditorialWorld>,
+    #[serde(default)]
+    editorial_world_id: Option<String>,
+    #[serde(default, rename = "editorialWorld", skip_serializing)]
+    legacy_editorial_world: Option<EditorialWorld>,
     #[serde(default)]
     journey: Option<Journey>,
     document: DocumentSettings,
@@ -131,9 +135,27 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_003_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_003_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            if project.editorial_world_id.is_none() {
+                project.editorial_world_id = project
+                    .legacy_editorial_world
+                    .as_ref()
+                    .map(|world| world.id.clone());
+            }
+        }
         LEGACY_FORMAT_VERSION => {
             project.migrated_from_version = Some(LEGACY_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
+
+            if project.editorial_world_id.is_none() {
+                project.editorial_world_id = project
+                    .legacy_editorial_world
+                    .as_ref()
+                    .map(|world| world.id.clone())
+                    .or_else(|| Some(REFERENCE_WORLD_ID.into()));
+            }
 
             if project.journey.is_none() {
                 project.journey = Some(infer_legacy_journey(&project));
@@ -161,6 +183,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
             return Err(format!("Nicht unterstützte Projektformat-Version: {version}"));
         }
     }
+    project.legacy_editorial_world = None;
     Ok(project)
 }
 
@@ -194,25 +217,18 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         ));
     }
     if project.document.page_format != "A5" || project.document.orientation != "portrait" {
-        return Err("Build 003 unterstützt ausschließlich A5 im Hochformat.".into());
+        return Err("Build 004 unterstützt ausschließlich A5 im Hochformat.".into());
     }
     if project.page_manifest.is_empty() {
         return Err("Das Projekt enthält keine Seiten.".into());
     }
 
-    if let Some(world) = &project.editorial_world {
-        if world.id.trim().is_empty() || world.name.trim().is_empty() {
-            return Err("Editorial World besitzt keine gültige ID oder keinen Namen.".into());
-        }
-        if world.companion.id.trim().is_empty() || world.companion.name.trim().is_empty() {
-            return Err("Editorial World besitzt keinen gültigen Companion.".into());
-        }
-        if world.reference && world.id != REFERENCE_WORLD_ID {
-            return Err(format!(
-                "Build 003 kennt ausschließlich '{}' als Reference World.",
-                REFERENCE_WORLD_ID
-            ));
-        }
+    let world_id = project
+        .editorial_world_id
+        .as_deref()
+        .ok_or_else(|| "Das Projekt referenziert keine Editorial World.".to_string())?;
+    if world_id.trim().is_empty() {
+        return Err("Das Projekt besitzt eine leere Editorial-World-ID.".into());
     }
 
     let journey = project
@@ -286,16 +302,21 @@ mod tests {
             title: "Sample".into(),
             edition: Some("1.0".into()),
             language: "de".into(),
-            editorial_world: Some(EditorialWorld {
-                id: REFERENCE_WORLD_ID.into(),
-                name: "Fjord".into(),
-                reference: true,
-                companion: EditorialCompanion {
-                    id: "puffin".into(),
-                    name: "Papageientaucher".into(),
-                },
-            }),
-            journey: if version == CURRENT_FORMAT_VERSION {
+            editorial_world_id: if version == CURRENT_FORMAT_VERSION { Some(REFERENCE_WORLD_ID.into()) } else { None },
+            legacy_editorial_world: if version == CURRENT_FORMAT_VERSION {
+                None
+            } else {
+                Some(EditorialWorld {
+                    id: REFERENCE_WORLD_ID.into(),
+                    name: "Fjord".into(),
+                    reference: true,
+                    companion: EditorialCompanion {
+                        id: "puffin".into(),
+                        name: "Papageientaucher".into(),
+                    },
+                })
+            },
+            journey: if version != LEGACY_FORMAT_VERSION {
                 Some(Journey {
                     id: "sample-journey".into(),
                     title: "Sample Journey".into(),
@@ -320,11 +341,11 @@ mod tests {
                 id: "page-bergen".into(),
                 order: 10,
                 page_type: "destination".into(),
-                role: if version == CURRENT_FORMAT_VERSION { Some("destination".into()) } else { None },
+                role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
                 layout: "destination-standard".into(),
-                journey_stage: if version == CURRENT_FORMAT_VERSION { Some("bergen".into()) } else { None },
+                journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
             }],
             project_path: String::new(),
@@ -333,18 +354,28 @@ mod tests {
     }
 
     #[test]
-    fn accepts_valid_build_003_project() {
+    fn accepts_valid_build_004_project() {
         assert!(validate_project(&sample_project(CURRENT_FORMAT_VERSION)).is_ok());
     }
 
     #[test]
-    fn migrates_build_002_project_to_0_2_0() {
+    fn migrates_build_002_project_to_0_3_0() {
         let migrated = migrate_project(sample_project(LEGACY_FORMAT_VERSION)).unwrap();
         assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(LEGACY_FORMAT_VERSION));
         assert_eq!(migrated.page_manifest[0].role.as_deref(), Some("destination"));
         assert_eq!(migrated.page_manifest[0].journey_stage.as_deref(), Some("bergen"));
         assert!(migrated.journey.is_some());
+        assert!(validate_project(&migrated).is_ok());
+    }
+
+    #[test]
+    fn migrates_build_003_project_to_0_3_0() {
+        let migrated = migrate_project(sample_project(BUILD_003_FORMAT_VERSION)).unwrap();
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_003_FORMAT_VERSION));
+        assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
+        assert!(migrated.legacy_editorial_world.is_none());
         assert!(validate_project(&migrated).is_ok());
     }
 
@@ -357,13 +388,6 @@ mod tests {
     fn rejects_duplicate_page_ids() {
         let mut project = sample_project(CURRENT_FORMAT_VERSION);
         project.page_manifest.push(project.page_manifest[0].clone());
-        assert!(validate_project(&project).is_err());
-    }
-
-    #[test]
-    fn rejects_unknown_reference_world() {
-        let mut project = sample_project(CURRENT_FORMAT_VERSION);
-        project.editorial_world.as_mut().unwrap().id = "arctic".into();
         assert!(validate_project(&project).is_err());
     }
 

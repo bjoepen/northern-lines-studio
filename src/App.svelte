@@ -1,14 +1,19 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
   import type { StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
+  import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
+  import { requireEditorialWorld } from './lib/worlds';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
   let errorMessage = '';
   let isLoading = false;
+  let previewStage: HTMLDivElement | null = null;
+  let previewScale = 1;
 
   async function openProject() {
     errorMessage = '';
@@ -23,6 +28,7 @@
     isLoading = true;
     try {
       project = await invoke<StudioProject>('load_nls_project', { path: selected });
+      requireEditorialWorld(project.editorialWorldId ?? '');
       selectedPage = project.pageManifest[0] ?? null;
     } catch (error) {
       project = null;
@@ -37,11 +43,26 @@
     selectedPage = page;
   }
 
+  function updatePreviewScale() {
+    if (!previewStage) return;
+    previewScale = computePreviewScale(previewStage.clientWidth, previewStage.clientHeight);
+  }
+
+  onMount(() => {
+    if (!previewStage) return;
+    const observer = new ResizeObserver(updatePreviewScale);
+    observer.observe(previewStage);
+    updatePreviewScale();
+    return () => observer.disconnect();
+  });
+
   $: preview = previewFor(selectedPage);
   $: sections = groupPages(project?.pageManifest ?? []);
   $: editorialWorld = editorialWorldFor(project);
   $: statusText = projectStatus(project);
   $: journeyStage = journeyStageFor(project, selectedPage);
+  $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
+  $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
 </script>
 
 <svelte:head>
@@ -62,7 +83,7 @@
       <div class="toolbar-context" aria-label="Aktive Editorial World">
         <span class="world-wave" aria-hidden="true">≈</span>
         <div>
-          <small>Editorial World</small>
+          <small>{editorialWorld.isReference ? `Reference World ${String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}` : 'Editorial World'}</small>
           <strong>{editorialWorld.name}</strong>
         </div>
       </div>
@@ -90,7 +111,7 @@
         <section class="world-card" aria-label="Reference Editorial World">
           <div class="world-icon" aria-hidden="true">≈</div>
           <div>
-            <small>{editorialWorld.isReference ? 'Reference World' : 'Editorial World'}</small>
+            <small>{editorialWorld.isReference ? `Reference World ${String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}` : 'Editorial World'}</small>
             <strong>{editorialWorld.name}</strong>
             <span>Companion · {editorialWorld.companionName}</span>
           </div>
@@ -131,22 +152,30 @@
     <section class="canvas-area" aria-label="A5-Vorschau">
       <div class="canvas-header">
         <div>
-          <span>Editorial Preview</span>
+          <span>Editorial Workspace</span>
           <strong>{selectedPage?.title ?? 'Keine Seite ausgewählt'}</strong>
         </div>
-        <small>{selectedPage?.layout ?? 'ohne Layout'}</small>
+        <small>{editorialWorld ? `${editorialWorld.name} · ${selectedPage?.layout ?? 'ohne Layout'}` : selectedPage?.layout ?? 'ohne Layout'}</small>
       </div>
 
-      <article class="a5-page" class:cover-page={selectedPage?.type === 'cover'}>
-        <div class="page-rule"></div>
-        <p class="eyebrow">{preview.eyebrow}</p>
-        <h1>{preview.heading}</h1>
-        <p class="preview-body">{preview.body}</p>
-        <footer>
-          <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-          <span>{selectedPage?.order ?? '–'}</span>
-        </footer>
-      </article>
+      <div class="preview-stage" bind:this={previewStage}>
+        <div class="page-scale-frame" style={`width:${previewWidth}px;height:${previewHeight}px`}>
+          <article
+            class="a5-page"
+            class:cover-page={selectedPage?.type === 'cover'}
+            style={`transform:scale(${previewScale})`}
+          >
+            <div class="page-rule"></div>
+            <p class="eyebrow">{preview.eyebrow}</p>
+            <h1>{preview.heading}</h1>
+            <p class="preview-body">{preview.body}</p>
+            <footer>
+              <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
+              <span>{selectedPage?.order ?? '–'}</span>
+            </footer>
+          </article>
+        </div>
+      </div>
     </section>
 
     <aside class="inspector" aria-label="Inspector">
@@ -156,10 +185,18 @@
       </div>
 
       {#if editorialWorld}
-        <section class="inspector-card">
-          <span class="inspector-label">Editorial World</span>
+        <section class="inspector-card world-inspector-card">
+          <span class="inspector-label">Reference World</span>
           <strong>{editorialWorld.name}</strong>
-          <small>{editorialWorld.isReference ? 'Reference World 001' : 'Aktive World'} · {editorialWorld.companionName}</small>
+          <small>Reference World {String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}</small>
+          <div class="world-facts">
+            <span>Editorial Companion</span>
+            <strong>{editorialWorld.companionName}</strong>
+            <span>Design Language</span>
+            <strong>{editorialWorld.designLanguage.join(' · ')}</strong>
+            <span>Grammars</span>
+            <strong>{editorialWorld.pageGrammars.length} verfügbar</strong>
+          </div>
         </section>
       {/if}
 

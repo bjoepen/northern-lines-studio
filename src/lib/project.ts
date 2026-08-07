@@ -30,16 +30,6 @@ export interface StudioPage {
   knowledgeType?: string;
 }
 
-export interface EditorialWorld {
-  id: 'fjord' | string;
-  name: string;
-  reference?: boolean;
-  companion: {
-    id: string;
-    name: string;
-  };
-}
-
 export interface JourneyStage {
   id: string;
   kind: JourneyStageKind;
@@ -63,7 +53,7 @@ export interface StudioProject {
   title: string;
   edition?: string;
   language: string;
-  editorialWorld?: EditorialWorld;
+  editorialWorldId?: string;
   journey: Journey;
   document: {
     pageFormat: 'A5';

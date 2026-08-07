@@ -1,32 +1,53 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 002**
+**Travel Publishing für macOS – Build 004**
 
-Northern Lines Studio ist eine spezialisierte visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
+Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
-## Build 002
+> Die Seite ist der Mittelpunkt der Arbeitsumgebung. Alles andere dient der Geschichte.
 
-Build 002 entwickelt den Build-001-Projektleser zum ersten redaktionellen Workspace weiter. Reference Editorial World 001 – **Fjord** – wird sichtbar, ohne bereits eine allgemeine Theme- oder World-Engine einzuführen.
+Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
+
+## Build 004 – Reference World Foundation
+
+Build 004 etabliert **Fjord** als erste echte Northern-Lines-Editorial-World und macht die A5-Seite im Workspace responsiv.
 
 Der aktuelle Workflow:
 
 1. ein `.nls`-Travelbook öffnen,
-2. die Reference World **Fjord** und ihren Companion **Papageientaucher** erkennen,
-3. das Travelbook über semantische Bereiche wie **Buch** und **Reiseziele** navigieren,
-4. eine Seite auswählen,
-5. Editorial Preview, Inspector und Projektstatus gemeinsam erleben.
+2. die projektseitige Referenz `fjord` gegen die Studio World Library auflösen,
+3. Reference World 001 mit dem Editorial Companion **Papageientaucher** verstehen,
+4. das Travelbook semantisch über Buch, Reiseziele, Reisebegleitung, Fotografie und Erinnerungen navigieren,
+5. eine Seite auswählen,
+6. die A5-Vorschau proportional mit dem verfügbaren Workspace skalieren,
+7. World-, Reise- und Seitenkontext im ruhigen Inspector prüfen.
 
-Nicht enthalten sind Bearbeitung, Drag-and-drop, freie Layoutobjekte, Publisher-Aufruf, PDF-Export, Knowledge Library und Preflight.
+Nicht enthalten sind Bearbeitung, Drag-and-drop, Publisher-Aufruf, finaler Renderer, PDF-Export, Knowledge-Editing oder eine zweite Editorial World.
 
 ## Architektur
 
-- **Tauri 2** – Desktop-Shell, Dateidialog und sichere Rust-Bridge
+- **Tauri 2** – Desktop-Shell, Dateidialog und Rust-Bridge
 - **Svelte 5 + TypeScript** – Benutzeroberfläche
-- **HTML/CSS** – statische A5-Vorschau
-- **Rust** – Laden und Validieren des `.nls`-Projektmanifests
-- **Northern Lines Publisher** – bleibt eine eigenständige Engine; die CLI-Anbindung ist für einen späteren Build vorgesehen
+- **World Library** – Studio-eigene Editorial-World-Definitionen
+- **HTML/CSS** – statische, responsive A5-Vorschau
+- **Rust** – Laden, Migration und Validierung des `.nls`-Projektmanifests
+- **Northern Lines Publisher** – eigenständige Engine; CLI-Anbindung folgt später
 
-Die frühere SwiftUI-/AppKit-Hypothese wurde durch [ADR-002](docs/adr/ADR-002-TAURI-SVELTE-PUBLISHER-CLI.md) ersetzt.
+## Projekt- und World-Grenze
+
+Das Projekt speichert nur:
+
+```json
+"editorialWorldId": "fjord"
+```
+
+Die eigentliche World-Definition lebt in Studio unter:
+
+```text
+src/lib/worlds/fjord/
+```
+
+Dadurch bleibt ein `.nls` eine Reise und keine Kopie des Northern-Lines-Designsystems.
 
 ## Voraussetzungen
 
@@ -49,7 +70,7 @@ pnpm install
 pnpm tauri dev
 ```
 
-Nach dem Start über **Projekt öffnen** das Verzeichnis auswählen:
+Nach dem Start über **Projekt öffnen** auswählen:
 
 ```text
 examples/Norway-Sample.nls
@@ -60,30 +81,20 @@ examples/Norway-Sample.nls
 ```bash
 pnpm check
 pnpm test
-cd src-tauri && cargo test && cd ..
-pnpm tauri build
-```
-
-## Repository-Struktur
-
-```text
-northern-lines-studio/
-├── src/                         # Svelte-Oberfläche
-├── src-tauri/                   # Tauri/Rust-Desktop-Layer
-├── examples/Norway-Sample.nls/ # Beispielprojekt
-├── docs/                        # Architektur und Build-Dokumentation
-├── package.json
-└── README.md
+pnpm build
+cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 ## Build-Dokumentation
 
-- `docs/builds/BUILD-002.md`
-- `docs/validation/BUILD-002-VALIDATION.md`
-- `docs/git/BUILD-002-GIT-WORKFLOW.md`
+- `docs/builds/BUILD-004.md`
+- `docs/adr/ADR-004-REFERENCE-WORLD-LIBRARY.md`
+- `docs/ecr/ECR-003-REFERENCE-WORLD-AND-RESPONSIVE-PREVIEW.md`
+- `docs/validation/BUILD-004-VALIDATION.md`
+- `docs/git/BUILD-004-GIT-WORKFLOW.md`
 
 ## Commit-Vorschlag
 
 ```text
-feat(studio): introduce the Fjord editorial workspace
+feat(studio): introduce the Fjord reference world
 ```

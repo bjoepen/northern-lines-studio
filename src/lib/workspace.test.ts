@@ -14,16 +14,11 @@ const pages: StudioPage[] = [
 function project(): StudioProject {
   return {
     format: 'northern-lines-studio-project',
-    formatVersion: '0.2.0',
+    formatVersion: '0.3.0',
     projectId: 'sample',
     title: 'Norwegen Fieldbook',
     language: 'de',
-    editorialWorld: {
-      id: 'fjord',
-      name: 'Fjord',
-      reference: true,
-      companion: { id: 'puffin', name: 'Papageientaucher' }
-    },
+    editorialWorldId: 'fjord',
     journey: {
       id: 'norway-2026',
       title: 'Norwegen 2026',
@@ -53,7 +48,11 @@ describe('workspace model', () => {
       name: 'Fjord',
       companionName: 'Papageientaucher',
       companionId: 'puffin',
-      isReference: true
+      isReference: true,
+      referenceNumber: 1,
+      character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],
+      designLanguage: ['Northern', 'Calm', 'Image-led'],
+      pageGrammars: ['cover', 'welcome', 'contents', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']
     });
   });
 
