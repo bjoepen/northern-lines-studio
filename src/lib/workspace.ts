@@ -1,5 +1,6 @@
 import type { PageRole, StudioPage, StudioProject } from './project';
 import { loadEditorialWorld } from './worlds';
+import { requireCompanion } from './companions';
 import type { EditorialWorldDefinition } from './worlds/types';
 
 export type WorkspaceSectionId = 'book' | 'destinations' | 'journey' | 'workflow' | 'memories';
@@ -79,11 +80,13 @@ export function editorialWorldFor(project: StudioProject | null): EditorialWorld
   const world = loadEditorialWorld(project?.editorialWorldId);
   if (!world) return null;
 
+  const companion = requireCompanion(world.companionId);
+
   return {
     id: world.id,
     name: world.name,
-    companionName: world.companion.name,
-    companionId: world.companion.id,
+    companionName: companion.name,
+    companionId: companion.id,
     isReference: world.status === 'reference',
     referenceNumber: world.referenceNumber,
     character: world.character,

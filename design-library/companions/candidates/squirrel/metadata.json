@@ -1,0 +1,17 @@
+{
+  "id": "candidate-squirrel",
+  "world": null,
+  "name": "Eichhörnchen",
+  "status": "candidate",
+  "role": "editorial_companion",
+  "character": "lebendig, neugierig",
+  "editorialMood": [
+    "Wald",
+    "Jahreszeiten",
+    "Nähe"
+  ],
+  "asset": "companion.png",
+  "assetPath": "design-library/companions/candidates/squirrel/companion.png",
+  "alphaTransparencyReady": true,
+  "note": "Bewusst keiner Editorial World zugeordnet; für eine spätere World-Entscheidung erhalten."
+}

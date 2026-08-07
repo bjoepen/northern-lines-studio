@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireCompanion } from '../companions';
 import { availableEditorialWorlds, loadEditorialWorld, requireEditorialWorld } from './index';
 
 describe('editorial world library', () => {
@@ -9,12 +10,10 @@ describe('editorial world library', () => {
     expect(world.referenceNumber).toBe(1);
   });
 
-  it('defines the puffin as editorial companion', () => {
-    expect(requireEditorialWorld('fjord').companion).toEqual({
-      id: 'puffin',
-      name: 'Papageientaucher',
-      role: 'editorial_companion'
-    });
+  it('references the puffin through the Companion Collection', () => {
+    const world = requireEditorialWorld('fjord');
+    expect(world.companionId).toBe('fjord-puffin');
+    expect(requireCompanion(world.companionId).name).toBe('Papageientaucher');
   });
 
   it('contains the Fjord reference grammars', () => {

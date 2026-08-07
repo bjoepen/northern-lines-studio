@@ -1,11 +1,5 @@
 import type { PageGrammarId } from '../grammar/types';
 
-export interface EditorialCompanionDefinition {
-  id: string;
-  name: string;
-  role: 'editorial_companion';
-}
-
 export interface EditorialWorldDefinition {
   id: string;
   name: string;
@@ -13,6 +7,6 @@ export interface EditorialWorldDefinition {
   status: 'reference' | 'editorial';
   character: readonly string[];
   designLanguage: readonly string[];
-  companion: EditorialCompanionDefinition;
+  companionId: string;
   pageGrammars: readonly PageGrammarId[];
 }

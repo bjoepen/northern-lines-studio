@@ -1,0 +1,23 @@
+{
+  "id": "arctic-walrus",
+  "world": "arctic",
+  "name": "Walross",
+  "scientificName": "Odobenus rosmarus",
+  "status": "planned",
+  "character": "ruhig, kraftvoll, gelassen",
+  "role": "editorial_companion",
+  "asset": "companion.png",
+  "assetPath": "design-library/companions/arctic/companion.png",
+  "placements": [
+    "story_intro",
+    "footer_accent",
+    "divider",
+    "chapter_end"
+  ],
+  "alphaTransparencyReady": true,
+  "editorialMood": [
+    "Stille",
+    "Eis",
+    "Weite"
+  ]
+}

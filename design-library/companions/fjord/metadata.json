@@ -1,0 +1,23 @@
+{
+  "id": "fjord-puffin",
+  "world": "fjord",
+  "name": "Papageientaucher",
+  "scientificName": "Fratercula arctica",
+  "status": "active",
+  "character": "ruhig, neugierig, küstennah",
+  "role": "editorial_companion",
+  "asset": "companion.png",
+  "assetPath": "design-library/companions/fjord/companion.png",
+  "placements": [
+    "story_intro",
+    "footer_accent",
+    "divider",
+    "chapter_end"
+  ],
+  "alphaTransparencyReady": true,
+  "editorialMood": [
+    "Ruhe",
+    "Küste",
+    "Ankommen"
+  ]
+}
