@@ -14,3 +14,7 @@ Für jeden Northern-Lines-Studio-Build gelten:
 ## Definition of Done
 
 Ein Build ist erst abgeschlossen, wenn Quellcode, Dokumentation, Tests und Validierungsnachweis denselben freigegebenen Scope abbilden.
+
+## Repository Drop-ins
+
+Repository Drop-ins follow [`DROP-IN-STANDARD.md`](DROP-IN-STANDARD.md). Beginning with Studio Build 006, `rsync` dry-run + merge is the required application method; Finder folder replacement is not part of the engineering workflow.

@@ -252,7 +252,7 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         ));
     }
     if project.document.page_format != "A5" || project.document.orientation != "portrait" {
-        return Err("Build 005 unterstützt ausschließlich A5 im Hochformat.".into());
+        return Err("Northern Lines Studio unterstützt aktuell ausschließlich A5 im Hochformat.".into());
     }
     if project.page_manifest.is_empty() {
         return Err("Das Projekt enthält keine Seiten.".into());

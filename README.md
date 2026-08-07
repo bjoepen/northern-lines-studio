@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 005**
+**Travel Publishing für macOS – Build 006**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -8,22 +8,23 @@ Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung 
 
 Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
 
-## Build 005 – Editorial Grammar Foundation
+## Build 006 – Editorial Workspace Refinement
 
-Build 005 gibt Studio erstmals ein redaktionelles Verständnis für den Zweck einer Seite.
+Build 006 verfeinert den realen macOS-Arbeitsplatz, ohne neue DTP-Werkzeuge einzuführen. Der Fokus bleibt auf der Seite.
 
 Der aktuelle Workflow:
 
 1. ein `.nls`-Travelbook öffnen,
 2. Reference World **Fjord** auflösen,
 3. Reise und Seitenrollen semantisch navigieren,
-4. eine Seite auswählen,
-5. die passende Editorial Grammar laden,
-6. Required/Optional Story Components deterministisch prüfen,
-7. Editorial Completeness im ruhigen Inspector anzeigen,
-8. Editorial Frame und Story als getrennte Verantwortlichkeiten verstehen.
+4. Editorial Grammar und Story Completeness verstehen,
+5. die A5-Seite proportional im **Editorial Desk** betrachten,
+6. den verfügbaren Fensterraum ruhig und automatisch nutzen,
+7. zwischen Seiten mit einer dezenten Transition wechseln.
 
-Nicht enthalten sind Textbearbeitung, Bildimport, freie Layoutbearbeitung, Publisher-Aufruf, finaler Renderer, PDF-Export, KI-Bewertung oder eine zweite Editorial World.
+Build 006 ersetzt außerdem den zu großen unteren Statusbereich durch eine schlanke Statuszeile. Das `.nls`-Projektformat bleibt bewusst bei `0.4.0`.
+
+Nicht enthalten sind Textbearbeitung, Bildimport, freie Layoutbearbeitung, Publisher-Aufruf, finaler Renderer, PDF-Export, beliebige Zoomsteuerung oder eine zweite Editorial World.
 
 ## Architektur
 
@@ -88,14 +89,14 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ## Build-Dokumentation
 
-- `docs/builds/BUILD-005.md`
-- `docs/adr/ADR-005-EDITORIAL-GRAMMAR-LIBRARY.md`
-- `docs/ecr/ECR-004-EDITORIAL-GRAMMAR-FOUNDATION.md`
-- `docs/validation/BUILD-005-VALIDATION.md`
-- `docs/git/BUILD-005-GIT-WORKFLOW.md`
+- `docs/builds/BUILD-006.md`
+- `docs/ecr/ECR-005-EDITORIAL-WORKSPACE-REFINEMENT.md`
+- `docs/validation/BUILD-006-VALIDATION.md`
+- `docs/git/BUILD-006-GIT-WORKFLOW.md`
+- `docs/engineering/DROP-IN-STANDARD.md`
 
 ## Commit-Vorschlag
 
 ```text
-feat(studio): introduce editorial grammar foundation
+feat(studio): refine the editorial workspace experience
 ```

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
   import type { StudioPage, StudioProject } from './lib/project';
@@ -152,7 +153,7 @@
       {/if}
     </aside>
 
-    <section class="canvas-area" aria-label="A5-Vorschau">
+    <section class="editorial-desk" aria-label="Editorial Desk">
       <div class="canvas-header">
         <div>
           <span>Editorial Workspace</span>
@@ -163,20 +164,23 @@
 
       <div class="preview-stage" bind:this={previewStage}>
         <div class="page-scale-frame" style={`width:${previewWidth}px;height:${previewHeight}px`}>
-          <article
-            class="a5-page"
-            class:cover-page={selectedPage?.type === 'cover'}
-            style={`transform:scale(${previewScale})`}
-          >
-            <div class="page-rule"></div>
-            <p class="eyebrow">{preview.eyebrow}</p>
-            <h1>{preview.heading}</h1>
-            <p class="preview-body">{preview.body}</p>
-            <footer>
-              <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-              <span>{selectedPage?.order ?? '–'}</span>
-            </footer>
-          </article>
+          {#key selectedPage?.id ?? 'empty-editorial-desk'}
+            <article
+              class="a5-page"
+              class:cover-page={selectedPage?.type === 'cover'}
+              style={`transform:scale(${previewScale})`}
+              in:fade={{ duration: 190 }}
+            >
+              <div class="page-rule"></div>
+              <p class="eyebrow">{preview.eyebrow}</p>
+              <h1>{preview.heading}</h1>
+              <p class="preview-body">{preview.body}</p>
+              <footer>
+                <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
+                <span>{selectedPage?.order ?? '–'}</span>
+              </footer>
+            </article>
+          {/key}
         </div>
       </div>
     </section>
