@@ -7,6 +7,7 @@
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
   import { requireEditorialWorld } from './lib/worlds';
+  import { evaluateGrammar, grammarForPage } from './lib/grammar';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -61,6 +62,8 @@
   $: editorialWorld = editorialWorldFor(project);
   $: statusText = projectStatus(project);
   $: journeyStage = journeyStageFor(project, selectedPage);
+  $: editorialGrammar = grammarForPage(selectedPage);
+  $: grammarEvaluation = evaluateGrammar(selectedPage, editorialGrammar);
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
 </script>
@@ -196,6 +199,45 @@
             <strong>{editorialWorld.designLanguage.join(' · ')}</strong>
             <span>Grammars</span>
             <strong>{editorialWorld.pageGrammars.length} verfügbar</strong>
+          </div>
+        </section>
+      {/if}
+
+      {#if editorialGrammar && grammarEvaluation}
+        <section class="inspector-card grammar-card" aria-label="Editorial Grammar">
+          <span class="inspector-label">Editorial Grammar</span>
+          <strong>{editorialGrammar.name}</strong>
+          <small>{editorialGrammar.purpose}</small>
+          <div class="grammar-status">
+            <div class="grammar-status-line">
+              <span>Story Completeness</span>
+              <strong>{grammarEvaluation.completeness}%</strong>
+            </div>
+            <div class="grammar-meter" aria-label={`Editorial Completeness ${grammarEvaluation.completeness}%`}>
+              <span style={`width:${grammarEvaluation.completeness}%`}></span>
+            </div>
+            <div class="grammar-facts">
+              <span>Required Story</span>
+              <strong>{grammarEvaluation.presentRequiredCount}/{grammarEvaluation.requiredCount} vorhanden</strong>
+              <span>Editorial Frame</span>
+              <strong>{editorialGrammar.editorialFrame.length ? 'Header · Footer · Seitenzahl · Companion' : 'Cover-spezifisch'}</strong>
+            </div>
+            {#if grammarEvaluation.missingRequired.length > 0}
+              <div class="grammar-note grammar-warning">
+                <span>Fehlt</span>
+                <strong>{grammarEvaluation.missingRequired.map((rule) => rule.label).join(' · ')}</strong>
+              </div>
+            {:else if grammarEvaluation.optionalAvailable.length > 0}
+              <div class="grammar-note">
+                <span>Optional möglich</span>
+                <strong>{grammarEvaluation.optionalAvailable.map((rule) => rule.label).join(' · ')}</strong>
+              </div>
+            {:else}
+              <div class="grammar-note grammar-ok">
+                <span>Status</span>
+                <strong>Editorial vollständig</strong>
+              </div>
+            {/if}
           </div>
         </section>
       {/if}

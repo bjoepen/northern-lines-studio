@@ -99,3 +99,22 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .world-facts { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e1e8ea; display: grid; gap: 3px; }
 .world-facts span { margin-top: 7px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
 .world-facts strong { margin-top: 0; font-family: inherit; font-size: 11px; font-weight: 500; color: #425962; line-height: 1.35; }
+
+.grammar-card { background: linear-gradient(150deg, #ffffff, #f7faf9); }
+.grammar-card > small { line-height: 1.45; }
+.grammar-status { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e1e8ea; }
+.grammar-status-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.grammar-status-line span { color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.grammar-status-line strong { margin: 0; font-family: inherit; font-size: 13px; font-weight: 600; color: #355f72; }
+.grammar-meter { height: 4px; margin-top: 7px; overflow: hidden; border-radius: 999px; background: #e5ecee; }
+.grammar-meter span { display: block; height: 100%; border-radius: inherit; background: #6f98aa; transition: width 160ms ease-out; }
+.grammar-facts { margin-top: 10px; display: grid; gap: 3px; }
+.grammar-facts span, .grammar-note span { margin-top: 7px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.grammar-facts strong, .grammar-note strong { margin: 0; font-family: inherit; font-size: 10px; font-weight: 500; color: #425962; line-height: 1.35; }
+.grammar-note { margin-top: 9px; padding: 8px 9px; border-radius: 7px; background: #eef4f5; }
+.grammar-note span, .grammar-note strong { display: block; }
+.grammar-note span { margin-top: 0; }
+.grammar-warning { background: #f7efe7; }
+.grammar-warning strong { color: #76533d; }
+.grammar-ok { background: #edf5f0; }
+.grammar-ok strong { color: #3f735c; }

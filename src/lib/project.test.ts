@@ -9,12 +9,13 @@ const destinationPage: StudioPage = {
   title: 'Bergen',
   content: 'content/pages/010-bergen.md',
   layout: 'destination-standard',
-  journeyStage: 'bergen'
+  journeyStage: 'bergen',
+  components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'qr']
 };
 
 const project: StudioProject = {
   format: 'northern-lines-studio-project',
-  formatVersion: '0.3.0',
+  formatVersion: '0.4.0',
   projectId: 'sample',
   title: 'Norwegen Fieldbook',
   language: 'de',

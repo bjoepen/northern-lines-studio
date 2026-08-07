@@ -27,7 +27,7 @@ describe('editorial world library', () => {
     expect(() => requireEditorialWorld('unknown')).toThrow('Unbekannte Editorial World');
   });
 
-  it('ships only one editorial world in Build 004', () => {
+  it('ships only one editorial world in Build 005', () => {
     expect(availableEditorialWorlds().map((world) => world.id)).toEqual(['fjord']);
   });
 });

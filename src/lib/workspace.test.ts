@@ -14,7 +14,7 @@ const pages: StudioPage[] = [
 function project(): StudioProject {
   return {
     format: 'northern-lines-studio-project',
-    formatVersion: '0.3.0',
+    formatVersion: '0.4.0',
     projectId: 'sample',
     title: 'Norwegen Fieldbook',
     language: 'de',

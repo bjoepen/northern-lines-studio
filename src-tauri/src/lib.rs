@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashSet, fs, path::Path};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.3.0";
+const CURRENT_FORMAT_VERSION: &str = "0.4.0";
+const BUILD_004_FORMAT_VERSION: &str = "0.3.0";
 const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
 const REFERENCE_WORLD_ID: &str = "fjord";
@@ -72,6 +73,8 @@ struct StudioPage {
     journey_stage: Option<String>,
     #[serde(default)]
     knowledge_type: Option<String>,
+    #[serde(default)]
+    components: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -109,6 +112,31 @@ fn infer_role(page_type: &str) -> &'static str {
     }
 }
 
+fn infer_components(page: &StudioPage) -> Vec<String> {
+    let ids: &[&str] = match page.page_type.as_str() {
+        "cover" => &["hero", "title", "subtitle"],
+        "welcome" => &["hero", "title", "introduction", "quote"],
+        "contents" => &["title", "contents"],
+        "destination" => &["hero", "title", "introduction", "history", "photography", "knowledge", "qr"],
+        "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
+        "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
+        "workflow" => &["title", "workflow_steps", "workflow_tip"],
+        "notes" => &["title", "notes_area"],
+        "closing" => &["hero", "title", "quote", "closing_text"],
+        _ => &["title"],
+    };
+    ids.iter().map(|id| (*id).to_string()).collect()
+}
+
+fn ensure_components(project: &mut StudioProject) {
+    for page in &mut project.page_manifest {
+        if page.components.is_empty() {
+            let inferred = infer_components(page);
+            page.components = inferred;
+        }
+    }
+}
+
 fn infer_legacy_journey(project: &StudioProject) -> Journey {
     let mut stages = Vec::new();
     for page in &project.page_manifest {
@@ -135,6 +163,11 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_004_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_004_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+        }
         BUILD_003_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_003_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -144,6 +177,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
                     .as_ref()
                     .map(|world| world.id.clone());
             }
+            ensure_components(&mut project);
         }
         LEGACY_FORMAT_VERSION => {
             project.migrated_from_version = Some(LEGACY_FORMAT_VERSION.into());
@@ -178,6 +212,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
                     }
                 }
             }
+            ensure_components(&mut project);
         }
         version => {
             return Err(format!("Nicht unterstützte Projektformat-Version: {version}"));
@@ -217,7 +252,7 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         ));
     }
     if project.document.page_format != "A5" || project.document.orientation != "portrait" {
-        return Err("Build 004 unterstützt ausschließlich A5 im Hochformat.".into());
+        return Err("Build 005 unterstützt ausschließlich A5 im Hochformat.".into());
     }
     if project.page_manifest.is_empty() {
         return Err("Das Projekt enthält keine Seiten.".into());
@@ -264,6 +299,9 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         if role.trim().is_empty() {
             return Err(format!("Seite '{}' besitzt eine leere redaktionelle Rolle.", page.title));
         }
+        if page.components.is_empty() {
+            return Err(format!("Seite '{}' besitzt keine Editorial Components.", page.title));
+        }
         if let Some(stage) = &page.journey_stage {
             if !stage_ids.contains(stage) {
                 return Err(format!(
@@ -302,8 +340,8 @@ mod tests {
             title: "Sample".into(),
             edition: Some("1.0".into()),
             language: "de".into(),
-            editorial_world_id: if version == CURRENT_FORMAT_VERSION { Some(REFERENCE_WORLD_ID.into()) } else { None },
-            legacy_editorial_world: if version == CURRENT_FORMAT_VERSION {
+            editorial_world_id: if version == CURRENT_FORMAT_VERSION || version == BUILD_004_FORMAT_VERSION { Some(REFERENCE_WORLD_ID.into()) } else { None },
+            legacy_editorial_world: if version == CURRENT_FORMAT_VERSION || version == BUILD_004_FORMAT_VERSION {
                 None
             } else {
                 Some(EditorialWorld {
@@ -347,6 +385,7 @@ mod tests {
                 layout: "destination-standard".into(),
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
+                components: if version == CURRENT_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "qr".into()] } else { vec![] },
             }],
             project_path: String::new(),
             migrated_from_version: None,
@@ -354,12 +393,12 @@ mod tests {
     }
 
     #[test]
-    fn accepts_valid_build_004_project() {
+    fn accepts_valid_build_005_project() {
         assert!(validate_project(&sample_project(CURRENT_FORMAT_VERSION)).is_ok());
     }
 
     #[test]
-    fn migrates_build_002_project_to_0_3_0() {
+    fn migrates_build_002_project_to_current_format() {
         let migrated = migrate_project(sample_project(LEGACY_FORMAT_VERSION)).unwrap();
         assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(LEGACY_FORMAT_VERSION));
@@ -370,12 +409,22 @@ mod tests {
     }
 
     #[test]
-    fn migrates_build_003_project_to_0_3_0() {
+    fn migrates_build_003_project_to_current_format() {
         let migrated = migrate_project(sample_project(BUILD_003_FORMAT_VERSION)).unwrap();
         assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_003_FORMAT_VERSION));
         assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
         assert!(migrated.legacy_editorial_world.is_none());
+        assert!(validate_project(&migrated).is_ok());
+    }
+
+    #[test]
+    fn migrates_build_004_project_and_infers_editorial_components() {
+        let migrated = migrate_project(sample_project(BUILD_004_FORMAT_VERSION)).unwrap();
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_004_FORMAT_VERSION));
+        assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
+        assert!(migrated.page_manifest[0].components.contains(&"knowledge".to_string()));
         assert!(validate_project(&migrated).is_ok());
     }
 

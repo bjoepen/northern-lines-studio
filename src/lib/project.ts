@@ -1,3 +1,5 @@
+import type { EditorialComponentId } from './grammar/types';
+
 export type PageType =
   | 'cover'
   | 'welcome'
@@ -28,6 +30,7 @@ export interface StudioPage {
   layout: string;
   journeyStage?: string;
   knowledgeType?: string;
+  components?: EditorialComponentId[];
 }
 
 export interface JourneyStage {

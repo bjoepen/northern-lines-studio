@@ -1,13 +1,4 @@
-export type PageGrammarId =
-  | 'cover'
-  | 'welcome'
-  | 'contents'
-  | 'destination'
-  | 'light'
-  | 'weather'
-  | 'workflow'
-  | 'notes'
-  | 'closing';
+import type { PageGrammarId } from '../grammar/types';
 
 export interface EditorialCompanionDefinition {
   id: string;

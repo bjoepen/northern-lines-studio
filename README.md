@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 004**
+**Travel Publishing für macOS – Build 005**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -8,46 +8,47 @@ Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung 
 
 Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
 
-## Build 004 – Reference World Foundation
+## Build 005 – Editorial Grammar Foundation
 
-Build 004 etabliert **Fjord** als erste echte Northern-Lines-Editorial-World und macht die A5-Seite im Workspace responsiv.
+Build 005 gibt Studio erstmals ein redaktionelles Verständnis für den Zweck einer Seite.
 
 Der aktuelle Workflow:
 
 1. ein `.nls`-Travelbook öffnen,
-2. die projektseitige Referenz `fjord` gegen die Studio World Library auflösen,
-3. Reference World 001 mit dem Editorial Companion **Papageientaucher** verstehen,
-4. das Travelbook semantisch über Buch, Reiseziele, Reisebegleitung, Fotografie und Erinnerungen navigieren,
-5. eine Seite auswählen,
-6. die A5-Vorschau proportional mit dem verfügbaren Workspace skalieren,
-7. World-, Reise- und Seitenkontext im ruhigen Inspector prüfen.
+2. Reference World **Fjord** auflösen,
+3. Reise und Seitenrollen semantisch navigieren,
+4. eine Seite auswählen,
+5. die passende Editorial Grammar laden,
+6. Required/Optional Story Components deterministisch prüfen,
+7. Editorial Completeness im ruhigen Inspector anzeigen,
+8. Editorial Frame und Story als getrennte Verantwortlichkeiten verstehen.
 
-Nicht enthalten sind Bearbeitung, Drag-and-drop, Publisher-Aufruf, finaler Renderer, PDF-Export, Knowledge-Editing oder eine zweite Editorial World.
+Nicht enthalten sind Textbearbeitung, Bildimport, freie Layoutbearbeitung, Publisher-Aufruf, finaler Renderer, PDF-Export, KI-Bewertung oder eine zweite Editorial World.
 
 ## Architektur
 
 - **Tauri 2** – Desktop-Shell, Dateidialog und Rust-Bridge
 - **Svelte 5 + TypeScript** – Benutzeroberfläche
 - **World Library** – Studio-eigene Editorial-World-Definitionen
-- **HTML/CSS** – statische, responsive A5-Vorschau
+- **Editorial Grammar Library** – Seitensprache, Komponentenrollen und Completeness
+- **HTML/CSS** – ruhige, responsive A5-Vorschau
 - **Rust** – Laden, Migration und Validierung des `.nls`-Projektmanifests
 - **Northern Lines Publisher** – eigenständige Engine; CLI-Anbindung folgt später
 
-## Projekt- und World-Grenze
+## Editorial Layers
 
-Das Projekt speichert nur:
-
-```json
-"editorialWorldId": "fjord"
-```
-
-Die eigentliche World-Definition lebt in Studio unter:
+Studio verwendet keine beliebigen DTP-Ebenen. Es unterscheidet Verantwortlichkeiten:
 
 ```text
-src/lib/worlds/fjord/
-```
+Editorial Frame
+  Header · Footer · Seitenzahl · Companion
 
-Dadurch bleibt ein `.nls` eine Reise und keine Kopie des Northern-Lines-Designsystems.
+Story
+  Hero · Titel · Texte · Knowledge · Fotografie · QR · ...
+
+Annotations
+  zukünftige Bearbeitungshilfen; nicht Teil des publizierten Inhalts
+```
 
 ## Voraussetzungen
 
@@ -87,14 +88,14 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ## Build-Dokumentation
 
-- `docs/builds/BUILD-004.md`
-- `docs/adr/ADR-004-REFERENCE-WORLD-LIBRARY.md`
-- `docs/ecr/ECR-003-REFERENCE-WORLD-AND-RESPONSIVE-PREVIEW.md`
-- `docs/validation/BUILD-004-VALIDATION.md`
-- `docs/git/BUILD-004-GIT-WORKFLOW.md`
+- `docs/builds/BUILD-005.md`
+- `docs/adr/ADR-005-EDITORIAL-GRAMMAR-LIBRARY.md`
+- `docs/ecr/ECR-004-EDITORIAL-GRAMMAR-FOUNDATION.md`
+- `docs/validation/BUILD-005-VALIDATION.md`
+- `docs/git/BUILD-005-GIT-WORKFLOW.md`
 
 ## Commit-Vorschlag
 
 ```text
-feat(studio): introduce the Fjord reference world
+feat(studio): introduce editorial grammar foundation
 ```
