@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioPage, StudioProject } from './project';
-import { editorialWorldFor, groupPages, projectStatus } from './workspace';
+import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './workspace';
 
 const pages: StudioPage[] = [
-  { id: 'cover', order: 1, type: 'cover', title: 'Cover', content: 'cover.md', layout: 'cover-standard' },
-  { id: 'bergen', order: 10, type: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-standard' },
-  { id: 'notes', order: 90, type: 'notes', title: 'Notizen', content: 'notes.md', layout: 'notes-standard' }
+  { id: 'cover', order: 1, type: 'cover', role: 'front_matter', title: 'Cover', content: 'cover.md', layout: 'cover-standard' },
+  { id: 'bergen', order: 10, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-standard', journeyStage: 'bergen' },
+  { id: 'light', order: 30, type: 'knowledge', role: 'journey_knowledge', title: 'Licht', content: 'light.md', layout: 'knowledge-light' },
+  { id: 'on1', order: 50, type: 'workflow', role: 'workflow', title: 'ON1 Photo RAW', content: 'on1.md', layout: 'workflow-on1' },
+  { id: 'notes', order: 90, type: 'notes', role: 'notes', title: 'Notizen', content: 'notes.md', layout: 'notes-standard' },
+  { id: 'closing', order: 99, type: 'closing', role: 'closing_memory', title: 'Abschluss', content: 'closing.md', layout: 'closing-memory' }
 ];
 
 function project(): StudioProject {
   return {
     format: 'northern-lines-studio-project',
-    formatVersion: '0.1.0',
+    formatVersion: '0.2.0',
     projectId: 'sample',
     title: 'Norwegen Fieldbook',
     language: 'de',
@@ -21,6 +24,12 @@ function project(): StudioProject {
       reference: true,
       companion: { id: 'puffin', name: 'Papageientaucher' }
     },
+    journey: {
+      id: 'norway-2026',
+      title: 'Norwegen 2026',
+      type: 'cruise',
+      stages: [{ id: 'bergen', kind: 'destination', title: 'Bergen', country: 'Norway' }]
+    },
     document: { pageFormat: 'A5', orientation: 'portrait' },
     pageManifest: pages,
     projectPath: '/tmp/sample.nls'
@@ -28,11 +37,13 @@ function project(): StudioProject {
 }
 
 describe('workspace model', () => {
-  it('groups pages into author-facing sections', () => {
+  it('groups pages by editorial role, not by technical page type', () => {
     expect(groupPages(pages).map((section) => section.label)).toEqual([
       'Buch',
       'Reiseziele',
-      'Reisebegleitung'
+      'Reisebegleitung',
+      'Fotografie',
+      'Erinnerungen'
     ]);
   });
 
@@ -47,6 +58,11 @@ describe('workspace model', () => {
   });
 
   it('returns a calm project status instead of a technical build state', () => {
-    expect(projectStatus(project())).toBe('3 Seiten · Projekt gültig');
+    expect(projectStatus(project())).toBe('6 Seiten · Projekt gültig');
+  });
+
+  it('uses author-facing labels for page roles', () => {
+    expect(pageRoleLabel('closing_memory')).toBe('Abschluss');
+    expect(pageRoleLabel('journey_knowledge')).toBe('Reisebegleitung');
   });
 });

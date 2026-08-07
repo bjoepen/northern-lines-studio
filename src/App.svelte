@@ -2,8 +2,8 @@
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
   import type { StudioPage, StudioProject } from './lib/project';
-  import { previewFor } from './lib/project';
-  import { editorialWorldFor, groupPages, projectStatus } from './lib/workspace';
+  import { journeyStageFor, previewFor } from './lib/project';
+  import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -41,6 +41,7 @@
   $: sections = groupPages(project?.pageManifest ?? []);
   $: editorialWorld = editorialWorldFor(project);
   $: statusText = projectStatus(project);
+  $: journeyStage = journeyStageFor(project, selectedPage);
 </script>
 
 <svelte:head>
@@ -82,6 +83,7 @@
         <span>Travelbook</span>
         <strong>{project?.title ?? 'Kein Projekt geöffnet'}</strong>
         {#if project?.edition}<small>Edition {project.edition}</small>{/if}
+        {#if project?.journey?.title}<small>{project.journey.title}</small>{/if}
       </div>
 
       {#if editorialWorld}
@@ -111,7 +113,7 @@
                   <span class="page-order">{String(page.order).padStart(2, '0')}</span>
                   <span>
                     <strong>{page.title}</strong>
-                    <small>{page.type === 'destination' ? 'Ort' : page.type}</small>
+                    <small>{pageRoleLabel(page.role)}</small>
                   </span>
                 </button>
               {/each}
@@ -163,9 +165,16 @@
 
       <dl>
         <dt>Seitentitel</dt><dd>{selectedPage?.title ?? '–'}</dd>
+        <dt>Rolle</dt><dd>{pageRoleLabel(selectedPage?.role)}</dd>
         <dt>Seitentyp</dt><dd>{selectedPage?.type ?? '–'}</dd>
+        {#if journeyStage}
+          <dt>Etappe</dt><dd>{journeyStage.title}</dd>
+          <dt>Etappentyp</dt><dd>{journeyStage.kind}</dd>
+        {/if}
+        {#if selectedPage?.knowledgeType}
+          <dt>Knowledge</dt><dd>{selectedPage.knowledgeType}</dd>
+        {/if}
         <dt>Layout</dt><dd>{selectedPage?.layout ?? '–'}</dd>
-        <dt>Inhalt</dt><dd>{selectedPage?.content ?? '–'}</dd>
         <dt>Format</dt><dd>{project?.document.pageFormat ?? 'A5'} {project?.document.orientation ?? 'portrait'}</dd>
         <dt>Projektformat</dt><dd>{project?.formatVersion ?? '–'}</dd>
       </dl>

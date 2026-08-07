@@ -1,17 +1,44 @@
 import { describe, expect, it } from 'vitest';
-import { previewFor, type StudioPage } from './project';
+import { journeyStageFor, previewFor, type StudioPage, type StudioProject } from './project';
 
-describe('previewFor', () => {
+const destinationPage: StudioPage = {
+  id: 'bergen',
+  order: 10,
+  type: 'destination',
+  role: 'destination',
+  title: 'Bergen',
+  content: 'content/pages/010-bergen.md',
+  layout: 'destination-standard',
+  journeyStage: 'bergen'
+};
+
+const project: StudioProject = {
+  format: 'northern-lines-studio-project',
+  formatVersion: '0.2.0',
+  projectId: 'sample',
+  title: 'Norwegen Fieldbook',
+  language: 'de',
+  journey: {
+    id: 'norway-2026',
+    title: 'Norwegen 2026',
+    type: 'cruise',
+    stages: [{ id: 'bergen', kind: 'destination', title: 'Bergen', country: 'Norway' }]
+  },
+  document: { pageFormat: 'A5', orientation: 'portrait' },
+  pageManifest: [destinationPage],
+  projectPath: '/tmp/sample.nls'
+};
+
+describe('project domain model', () => {
   it('uses the selected page title in the static preview', () => {
-    const page: StudioPage = {
-      id: 'bergen',
-      order: 10,
-      type: 'destination',
-      title: 'Bergen',
-      content: 'content/pages/010-bergen.md',
-      layout: 'destination-standard'
-    };
+    expect(previewFor(destinationPage).heading).toBe('Bergen');
+  });
 
-    expect(previewFor(page).heading).toBe('Bergen');
+  it('resolves the journey stage for a destination page', () => {
+    expect(journeyStageFor(project, destinationPage)?.title).toBe('Bergen');
+  });
+
+  it('returns no journey stage for a non-stage page', () => {
+    expect(journeyStageFor(project, { ...destinationPage, journeyStage: undefined })).toBeNull();
   });
 });

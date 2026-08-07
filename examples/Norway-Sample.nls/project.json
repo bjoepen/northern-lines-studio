@@ -1,10 +1,30 @@
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.1.0",
+  "formatVersion": "0.2.0",
   "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
   "edition": "2.0",
   "language": "de",
+  "editorialWorld": {
+    "id": "fjord",
+    "name": "Fjord",
+    "reference": true,
+    "companion": {
+      "id": "puffin",
+      "name": "Papageientaucher"
+    }
+  },
+  "journey": {
+    "id": "norway-2026",
+    "title": "Norwegen 2026",
+    "type": "cruise",
+    "startDate": "2026-07-26",
+    "endDate": "2026-08-02",
+    "stages": [
+      { "id": "bergen", "kind": "destination", "title": "Bergen", "country": "Norway" },
+      { "id": "geiranger", "kind": "destination", "title": "Geiranger", "country": "Norway" }
+    ]
+  },
   "document": {
     "pageFormat": "A5",
     "orientation": "portrait"
@@ -14,6 +34,7 @@
       "id": "page-cover",
       "order": 1,
       "type": "cover",
+      "role": "front_matter",
       "title": "Cover",
       "content": "content/pages/001-cover.md",
       "layout": "cover-standard"
@@ -22,6 +43,7 @@
       "id": "page-welcome",
       "order": 2,
       "type": "welcome",
+      "role": "front_matter",
       "title": "Willkommen",
       "content": "content/pages/002-welcome.md",
       "layout": "welcome-standard"
@@ -30,6 +52,7 @@
       "id": "page-contents",
       "order": 3,
       "type": "contents",
+      "role": "front_matter",
       "title": "Inhaltsverzeichnis",
       "content": "content/pages/003-contents.md",
       "layout": "contents-standard"
@@ -38,17 +61,79 @@
       "id": "page-bergen",
       "order": 10,
       "type": "destination",
+      "role": "destination",
       "title": "Bergen",
       "content": "content/pages/010-bergen.md",
-      "layout": "destination-standard"
+      "layout": "destination-standard",
+      "journeyStage": "bergen"
     },
     {
       "id": "page-geiranger",
       "order": 20,
       "type": "destination",
+      "role": "destination",
       "title": "Geiranger",
       "content": "content/pages/020-geiranger.md",
-      "layout": "destination-standard"
+      "layout": "destination-standard",
+      "journeyStage": "geiranger"
+    },
+    {
+      "id": "page-light",
+      "order": 30,
+      "type": "knowledge",
+      "role": "journey_knowledge",
+      "title": "Licht",
+      "content": "content/pages/030-light.md",
+      "layout": "knowledge-light",
+      "knowledgeType": "photography_light"
+    },
+    {
+      "id": "page-weather",
+      "order": 40,
+      "type": "knowledge",
+      "role": "journey_knowledge",
+      "title": "Wetter",
+      "content": "content/pages/040-weather.md",
+      "layout": "knowledge-weather",
+      "knowledgeType": "travel_weather"
+    },
+    {
+      "id": "page-on1",
+      "order": 50,
+      "type": "workflow",
+      "role": "workflow",
+      "title": "ON1 Photo RAW",
+      "content": "content/pages/050-on1.md",
+      "layout": "workflow-on1",
+      "knowledgeType": "workflow_on1_photo_raw"
+    },
+    {
+      "id": "page-luminar",
+      "order": 60,
+      "type": "workflow",
+      "role": "workflow",
+      "title": "Luminar Neo",
+      "content": "content/pages/060-luminar.md",
+      "layout": "workflow-luminar",
+      "knowledgeType": "workflow_luminar_neo"
+    },
+    {
+      "id": "page-notes",
+      "order": 90,
+      "type": "notes",
+      "role": "notes",
+      "title": "Notizen",
+      "content": "content/pages/090-notes.md",
+      "layout": "notes-standard"
+    },
+    {
+      "id": "page-closing",
+      "order": 99,
+      "type": "closing",
+      "role": "closing_memory",
+      "title": "Abschluss",
+      "content": "content/pages/099-closing.md",
+      "layout": "closing-memory"
     }
   ]
 }
