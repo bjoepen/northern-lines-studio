@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, fs, path::Path};
+use std::{collections::{BTreeMap, HashSet}, fs, path::Path};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.4.0";
+const CURRENT_FORMAT_VERSION: &str = "0.5.0";
+const BUILD_009_FORMAT_VERSION: &str = "0.4.0";
 const BUILD_004_FORMAT_VERSION: &str = "0.3.0";
 const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
@@ -57,6 +58,17 @@ struct Journey {
     stages: Vec<JourneyStage>,
 }
 
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AuthoringEntry {
+    component_id: String,
+    content: String,
+    status: String,
+    #[serde(default)]
+    updated_at: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct StudioPage {
@@ -75,6 +87,8 @@ struct StudioPage {
     knowledge_type: Option<String>,
     #[serde(default)]
     components: Vec<String>,
+    #[serde(default)]
+    authoring: BTreeMap<String, AuthoringEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -94,9 +108,9 @@ struct StudioProject {
     journey: Option<Journey>,
     document: DocumentSettings,
     page_manifest: Vec<StudioPage>,
-    #[serde(default)]
+    #[serde(default, skip_serializing)]
     project_path: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing)]
     migrated_from_version: Option<String>,
 }
 
@@ -163,6 +177,11 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_009_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_009_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+        }
         BUILD_004_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_004_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -302,6 +321,17 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         if page.components.is_empty() {
             return Err(format!("Seite '{}' besitzt keine Editorial Components.", page.title));
         }
+        for (component_id, entry) in &page.authoring {
+            if component_id != &entry.component_id {
+                return Err(format!("Authoring-Eintrag '{}' auf Seite '{}' besitzt eine abweichende componentId.", component_id, page.title));
+            }
+            if !page.components.contains(component_id) {
+                return Err(format!("Authoring-Eintrag '{}' auf Seite '{}' gehört nicht zu den Story Components.", component_id, page.title));
+            }
+            if !matches!(entry.status.as_str(), "empty" | "draft" | "revised" | "approved" | "final") {
+                return Err(format!("Authoring-Eintrag '{}' auf Seite '{}' besitzt einen ungültigen Status.", component_id, page.title));
+            }
+        }
         if let Some(stage) = &page.journey_stage {
             if !stage_ids.contains(stage) {
                 return Err(format!(
@@ -314,16 +344,54 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
     Ok(())
 }
 
+fn write_project(path: &Path, project: &StudioProject) -> Result<(), String> {
+    let manifest_path = path.join("project.json");
+    let payload = serde_json::to_string_pretty(project)
+        .map_err(|error| format!("project.json konnte nicht serialisiert werden: {error}"))?;
+    fs::write(&manifest_path, format!("{payload}\n"))
+        .map_err(|error| format!("project.json konnte nicht gespeichert werden: {error}"))
+}
+
 #[tauri::command]
 fn load_nls_project(path: String) -> Result<StudioProject, String> {
     read_project(Path::new(&path))
+}
+
+#[tauri::command]
+fn save_authoring_component(
+    path: String,
+    page_id: String,
+    component_id: String,
+    content: String,
+    status: String,
+) -> Result<StudioProject, String> {
+    if !matches!(status.as_str(), "empty" | "draft" | "revised" | "approved" | "final") {
+        return Err("Ungültiger Authoring-Status.".into());
+    }
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let page = project.page_manifest.iter_mut().find(|page| page.id == page_id)
+        .ok_or_else(|| format!("Unbekannte Seite: {page_id}"))?;
+    if !page.components.contains(&component_id) {
+        return Err(format!("Die Komponente '{component_id}' gehört nicht zur Seite '{}'.", page.title));
+    }
+    if component_id == "title" && !content.trim().is_empty() {
+        page.title = content.trim().to_string();
+    }
+    page.authoring.insert(component_id.clone(), AuthoringEntry {
+        component_id, content, status, updated_at: None
+    });
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    read_project(project_path)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![load_nls_project])
+        .invoke_handler(tauri::generate_handler![load_nls_project, save_authoring_component])
         .run(tauri::generate_context!())
         .expect("error while running Northern Lines Studio");
 }
@@ -340,8 +408,18 @@ mod tests {
             title: "Sample".into(),
             edition: Some("1.0".into()),
             language: "de".into(),
-            editorial_world_id: if version == CURRENT_FORMAT_VERSION || version == BUILD_004_FORMAT_VERSION { Some(REFERENCE_WORLD_ID.into()) } else { None },
-            legacy_editorial_world: if version == CURRENT_FORMAT_VERSION || version == BUILD_004_FORMAT_VERSION {
+            editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_009_FORMAT_VERSION
+                || version == BUILD_004_FORMAT_VERSION
+            {
+                Some(REFERENCE_WORLD_ID.into())
+            } else {
+                None
+            },
+            legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_009_FORMAT_VERSION
+                || version == BUILD_004_FORMAT_VERSION
+            {
                 None
             } else {
                 Some(EditorialWorld {
@@ -386,6 +464,7 @@ mod tests {
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
                 components: if version == CURRENT_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "qr".into()] } else { vec![] },
+                authoring: BTreeMap::new(),
             }],
             project_path: String::new(),
             migrated_from_version: None,
@@ -425,6 +504,14 @@ mod tests {
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_004_FORMAT_VERSION));
         assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
         assert!(migrated.page_manifest[0].components.contains(&"knowledge".to_string()));
+        assert!(validate_project(&migrated).is_ok());
+    }
+
+    #[test]
+    fn migrates_build_009_project_to_current_format() {
+        let migrated = migrate_project(sample_project(BUILD_009_FORMAT_VERSION)).unwrap();
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_009_FORMAT_VERSION));
         assert!(validate_project(&migrated).is_ok());
     }
 
