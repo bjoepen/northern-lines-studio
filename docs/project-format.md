@@ -1,48 +1,51 @@
-# `.nls` project format 0.1
+# Northern Lines Studio Project Format
 
-## Purpose
+## Current version
 
-Version 0.1 contains only the information required by Build 001. It is not a complete publishing schema.
+`.nls` format: **0.3.0**
 
-## Package structure
+A `.nls` project is a transparent project directory with the `.nls` extension. Build 004 continues to use `project.json` as the project manifest while the domain model evolves.
 
-```text
-Project.nls/
-├── project.json
-└── content/
-    └── *.md
+## Principle
+
+The project stores the journey and the author's editorial decisions. It must not duplicate Northern Lines Studio's internal World Library and must not contain Publisher render jobs as primary project data.
+
+## Editorial World reference
+
+Build 004 replaces the embedded world object used by Build 003 with a stable reference:
+
+```json
+{
+  "editorialWorldId": "fjord"
+}
 ```
 
-## Manifest
+`fjord` is resolved by Studio's World Library. The current project therefore does not own colors, Companion definitions, grammar lists or other World identity data.
+
+## Core manifest shape
 
 ```json
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.1",
+  "formatVersion": "0.3.0",
+  "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
-  "pageSize": {
-    "widthMillimetres": 148,
-    "heightMillimetres": 210
+  "edition": "2.0",
+  "language": "de",
+  "editorialWorldId": "fjord",
+  "journey": {},
+  "document": {
+    "pageFormat": "A5",
+    "orientation": "portrait"
   },
-  "pages": [
-    {
-      "id": "bergen",
-      "title": "Bergen",
-      "type": "destination",
-      "content": "content/bergen.md"
-    }
-  ]
+  "pageManifest": []
 }
 ```
 
-## Rules in 0.1
+## Compatibility
 
-- `project.json` is mandatory.
-- `format` must equal `northern-lines-studio-project`.
-- `formatVersion` must equal `0.1`.
-- at least one page is required.
-- page IDs must be unique.
-- page order is the array order.
-- paths are relative to the package root.
+- 0.3.0 – current Build-004 format; project references an Editorial World by ID.
+- 0.2.0 – Build-003 format; embedded `editorialWorld` is normalized in memory to `editorialWorldId`.
+- 0.1.0 – legacy format; page roles and Journey data are inferred in memory and Fjord is retained as the historical reference world.
 
-Content files are referenced but not rendered in Build 001.
+Studio never rewrites the source project merely because it was opened through a migration path.

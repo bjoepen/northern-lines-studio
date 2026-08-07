@@ -1,19 +1,10 @@
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.2.0",
+  "formatVersion": "0.3.0",
   "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
   "edition": "2.0",
   "language": "de",
-  "editorialWorld": {
-    "id": "fjord",
-    "name": "Fjord",
-    "reference": true,
-    "companion": {
-      "id": "puffin",
-      "name": "Papageientaucher"
-    }
-  },
   "journey": {
     "id": "norway-2026",
     "title": "Norwegen 2026",
@@ -21,8 +12,18 @@
     "startDate": "2026-07-26",
     "endDate": "2026-08-02",
     "stages": [
-      { "id": "bergen", "kind": "destination", "title": "Bergen", "country": "Norway" },
-      { "id": "geiranger", "kind": "destination", "title": "Geiranger", "country": "Norway" }
+      {
+        "id": "bergen",
+        "kind": "destination",
+        "title": "Bergen",
+        "country": "Norway"
+      },
+      {
+        "id": "geiranger",
+        "kind": "destination",
+        "title": "Geiranger",
+        "country": "Norway"
+      }
     ]
   },
   "document": {
@@ -135,5 +136,6 @@
       "content": "content/pages/099-closing.md",
       "layout": "closing-memory"
     }
-  ]
+  ],
+  "editorialWorldId": "fjord"
 }

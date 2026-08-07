@@ -66,13 +66,15 @@ button { font: inherit; }
 .empty-state strong, .empty-state span { display: block; }
 .empty-state strong { color: #344b56; font-family: Georgia, "Times New Roman", serif; font-size: 17px; font-weight: 500; margin-bottom: 6px; }
 
-.canvas-area { min-width: 0; overflow: auto; display: flex; flex-direction: column; align-items: center; padding: 16px 32px 48px; background: #dfe6e8; }
+.canvas-area { min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; padding: 16px 32px 32px; background: #dfe6e8; }
 .canvas-header { align-self: stretch; min-height: 44px; display: flex; align-items: flex-start; justify-content: space-between; color: #657780; }
 .canvas-header span, .canvas-header strong { display: block; }
 .canvas-header span { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
 .canvas-header strong { margin-top: 3px; font-family: Georgia, "Times New Roman", serif; font-size: 15px; font-weight: 500; color: #344b56; }
 .canvas-header small { font-size: 10px; color: #7d8e96; }
-.a5-page { position: relative; flex: 0 0 auto; width: 420px; height: 594px; padding: 58px 52px 42px; background: var(--paper); box-shadow: 0 8px 30px rgba(31, 53, 64, .18); display: flex; flex-direction: column; }
+.preview-stage { flex: 1 1 auto; min-height: 0; min-width: 0; display: grid; place-items: center; overflow: hidden; padding: 8px 0 0; }
+.page-scale-frame { position: relative; flex: 0 0 auto; transition: width 140ms ease-out, height 140ms ease-out; }
+.a5-page { position: absolute; inset: 0 auto auto 0; transform-origin: top left; width: 420px; height: 594px; padding: 58px 52px 42px; background: var(--paper); box-shadow: 0 8px 30px rgba(31, 53, 64, .18); display: flex; flex-direction: column; }
 .a5-page.cover-page { justify-content: center; background: linear-gradient(150deg, #f7faf9 0%, #e9f0ef 100%); }
 .page-rule { width: 54px; height: 3px; background: var(--fjord-blue); margin-bottom: 30px; }
 .eyebrow { margin: 0 0 15px; text-transform: uppercase; letter-spacing: .16em; font-size: 11px; color: #547181; }
@@ -92,3 +94,8 @@ button { font: inherit; }
 .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 14px; border-top: 1px solid #c8d2d6; background: #edf1f2; color: #6c7c84; font-size: 10px; letter-spacing: .02em; }
 .status-ok::before { content: '✓'; display: inline-block; margin-right: 5px; color: #3f735c; font-weight: 700; }
 code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
+
+.world-inspector-card { background: linear-gradient(150deg, #ffffff, #f4f8f8); }
+.world-facts { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e1e8ea; display: grid; gap: 3px; }
+.world-facts span { margin-top: 7px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.world-facts strong { margin-top: 0; font-family: inherit; font-size: 11px; font-weight: 500; color: #425962; line-height: 1.35; }
