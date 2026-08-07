@@ -26,3 +26,11 @@ Beginning with Build 008, user-facing page structure is modeled by editorial mea
 ## Companion identity discipline
 
 Beginning with Build 009, Editorial Companions are resolved by stable IDs from the shared Companion Collection. Active Editorial Worlds must have exactly one registered active Companion. Planned assets do not implicitly create or publish an Editorial World, and source-asset existence must not be confused with production readiness.
+
+## Human Language First
+
+Beginning with Build 011, user-facing terminology must describe the author's task rather than the implementation. Technical project, file and object vocabulary stays internal unless a user genuinely needs it to make an informed decision. See `ADR-009-HUMAN-LANGUAGE-FIRST.md`.
+
+## Real-world persistence validation
+
+Any build that changes authoring or persistence must validate the complete user path: open journey → edit → save → navigate → close Studio → reopen → verify persistence. If navigation can discard unsaved work, save/discard/cancel protection must be tested explicitly.

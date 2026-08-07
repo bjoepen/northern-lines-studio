@@ -96,9 +96,8 @@ export function editorialWorldFor(project: StudioProject | null): EditorialWorld
 }
 
 export function projectStatus(project: StudioProject | null): string {
-  if (!project) return 'Kein Projekt geöffnet';
-  const migrated = project.migratedFromVersion ? ` · migriert von ${project.migratedFromVersion}` : '';
-  return `${project.pageManifest.length} Seiten · Projekt gültig${migrated}`;
+  if (!project) return 'Keine Reise geöffnet';
+  return `${project.pageManifest.length} Seiten · Reise bereit`;
 }
 
 export function pageRoleLabel(role: PageRole | undefined): string {
