@@ -9,6 +9,16 @@ export interface StudioPage {
   layout: string;
 }
 
+export interface EditorialWorld {
+  id: 'fjord' | string;
+  name: string;
+  reference?: boolean;
+  companion: {
+    id: string;
+    name: string;
+  };
+}
+
 export interface StudioProject {
   format: 'northern-lines-studio-project';
   formatVersion: string;
@@ -16,6 +26,7 @@ export interface StudioProject {
   title: string;
   edition?: string;
   language: string;
+  editorialWorld?: EditorialWorld;
   document: {
     pageFormat: 'A5';
     orientation: 'portrait';
