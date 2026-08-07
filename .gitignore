@@ -8,3 +8,9 @@ src-tauri/gen/
 .env
 .env.*
 !.env.example
+
+# SwiftPM
+.build/
+
+# VS Code
+.vscode/settings.json
