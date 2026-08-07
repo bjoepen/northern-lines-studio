@@ -47,7 +47,7 @@ describe('workspace model', () => {
       id: 'fjord',
       name: 'Fjord',
       companionName: 'Papageientaucher',
-      companionId: 'puffin',
+      companionId: 'fjord-puffin',
       isReference: true,
       referenceNumber: 1,
       character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],

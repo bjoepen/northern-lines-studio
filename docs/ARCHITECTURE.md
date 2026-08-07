@@ -92,3 +92,17 @@ future authored Content
 A Story Component is an author-facing semantic expression such as `Hero`, `Fotografie`, `Northern Lines Wissen`, `Zitat` or `Mitbringsel & Souvenirs`. It is not a rectangle, text frame or generic layer. Components are derived from the page manifest and grammar; no geometry is introduced.
 
 The persistent page identity remains a separate **Editorial Frame** (`Header`, `Footer`, dynamic page number, `Companion`). **Annotations** are reserved for future selection/guides and never belong to published content.
+
+## Companion Collection (Build 009)
+
+Editorial Worlds reference a stable Companion ID. Studio resolves that ID through `src/lib/companions/`; the visual asset and metadata are retained in `design-library/companions/`.
+
+```text
+Editorial World
+    ↓ companionId
+Companion Registry
+    ↓ assetPath
+Northern Lines Design Library
+```
+
+Only Fjord is an active Editorial World in Build 009. Planned Companion concepts may exist without making additional Worlds available in Studio.

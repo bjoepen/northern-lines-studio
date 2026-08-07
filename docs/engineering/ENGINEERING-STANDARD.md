@@ -22,3 +22,7 @@ Repository Drop-ins follow [`DROP-IN-STANDARD.md`](DROP-IN-STANDARD.md). Beginni
 ## Editorial layer discipline
 
 Beginning with Build 008, user-facing page structure is modeled by editorial meaning: **Editorial Frame**, **Story**, and future **Annotations**. Generic DTP object/layer vocabulary must not be introduced without an approved ADR demonstrating why a semantic Northern Lines expression is insufficient.
+
+## Companion identity discipline
+
+Beginning with Build 009, Editorial Companions are resolved by stable IDs from the shared Companion Collection. Active Editorial Worlds must have exactly one registered active Companion. Planned assets do not implicitly create or publish an Editorial World, and source-asset existence must not be confused with production readiness.

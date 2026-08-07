@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 008**
+**Travel Publishing für macOS – Build 009**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -9,6 +9,15 @@ Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung 
 Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](docs/000-NORTHERN-LINES.md) gelesen werden.
 
 
+
+
+## Build 009 – Companion Collection Foundation
+
+Build 009 introduces the shared **Companion Collection** as part of the Northern Lines Design Library. Fjord no longer embeds its companion definition; it references the stable ID `fjord-puffin`, which Studio resolves through a central Companion Registry.
+
+Approved concepts for Baltic, Britain, Woodland, Iberian, Canary and Arctic are retained as **planned** assets without exposing those Editorial Worlds in Studio. The squirrel remains an intentionally unassigned candidate. The Canary source is preserved but explicitly marked as requiring real transparency cleanup before production use.
+
+The visible Studio workspace is intentionally unchanged. The `.nls` project format remains `0.4.0`.
 
 ## Build 008 – Story Components Foundation
 
@@ -58,6 +67,7 @@ Nicht enthalten sind Textbearbeitung, Bildimport, freie Layoutbearbeitung, Publi
 - **Tauri 2** – Desktop-Shell, Dateidialog und Rust-Bridge
 - **Svelte 5 + TypeScript** – Benutzeroberfläche
 - **World Library** – Studio-eigene Editorial-World-Definitionen
+- **Companion Collection** – stabile Companion-IDs, Registry und Design-Library-Assets
 - **Editorial Grammar Library** – Seitensprache, Komponentenrollen und Completeness
 - **HTML/CSS** – ruhige, responsive A5-Vorschau
 - **Rust** – Laden, Migration und Validierung des `.nls`-Projektmanifests
@@ -116,6 +126,13 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ## Build-Dokumentation
 
+- `docs/builds/BUILD-009.md`
+- `docs/adr/ADR-007-EDITORIAL-COMPANION-SYSTEM.md`
+- `docs/ecr/ECR-008-COMPANION-COLLECTION-FOUNDATION.md`
+- `docs/validation/BUILD-009-VALIDATION.md`
+- `docs/git/BUILD-009-GIT-WORKFLOW.md`
+- `docs/design/COMPANION-GUIDE.md`
+
 - `docs/builds/BUILD-008.md`
 - `docs/adr/ADR-006-EDITORIAL-LAYER-MODEL.md`
 - `docs/ecr/ECR-007-STORY-COMPONENTS-FOUNDATION.md`
@@ -133,5 +150,5 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ## Commit-Vorschlag
 
 ```text
-feat(studio): introduce story components foundation
+feat(studio): establish companion collection foundation
 ```

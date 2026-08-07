@@ -1,0 +1,22 @@
+{
+  "id": "canary-gecko",
+  "world": "canary",
+  "name": "Gecko",
+  "status": "planned",
+  "character": "aufmerksam, neugierig, sonnennah",
+  "role": "editorial_companion",
+  "asset": "companion.png",
+  "assetPath": "design-library/companions/canary/companion.png",
+  "placements": [
+    "story_intro",
+    "footer_accent",
+    "divider",
+    "chapter_end"
+  ],
+  "alphaTransparencyReady": false,
+  "editorialMood": [
+    "Vulkan",
+    "Sonne",
+    "Insel"
+  ]
+}

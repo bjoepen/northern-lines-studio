@@ -7,11 +7,7 @@ export const fjordWorld: EditorialWorldDefinition = {
   status: 'reference',
   character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],
   designLanguage: ['Northern', 'Calm', 'Image-led'],
-  companion: {
-    id: 'puffin',
-    name: 'Papageientaucher',
-    role: 'editorial_companion'
-  },
+  companionId: 'fjord-puffin',
   pageGrammars: [
     'cover',
     'welcome',

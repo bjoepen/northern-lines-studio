@@ -1,0 +1,23 @@
+{
+  "id": "woodland-badger",
+  "world": "woodland",
+  "name": "Dachs",
+  "scientificName": "Meles meles",
+  "status": "planned",
+  "character": "gelassen, bodenständig, beobachtend",
+  "role": "editorial_companion",
+  "asset": "companion.png",
+  "assetPath": "design-library/companions/woodland/companion.png",
+  "placements": [
+    "story_intro",
+    "footer_accent",
+    "divider",
+    "chapter_end"
+  ],
+  "alphaTransparencyReady": true,
+  "editorialMood": [
+    "Wald",
+    "Ruhe",
+    "Bodenständigkeit"
+  ]
+}
