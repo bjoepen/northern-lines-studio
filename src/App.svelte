@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
   import type { StudioPage, StudioProject } from './lib/project';
@@ -74,7 +75,7 @@
 
 <div class="app-shell">
   <header class="toolbar">
-    <div class="brand">
+    <div class="brand toolbar-zone toolbar-zone-start">
       <span class="brand-mark">NL</span>
       <div>
         <strong>Northern Lines Studio</strong>
@@ -83,18 +84,23 @@
     </div>
 
     {#if editorialWorld}
-      <div class="toolbar-context" aria-label="Aktive Editorial World">
+      <div class="toolbar-context toolbar-zone toolbar-zone-center" aria-label="Aktiver Travelbook-Kontext">
         <span class="world-wave" aria-hidden="true">≈</span>
         <div>
-          <small>{editorialWorld.isReference ? `Reference World ${String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}` : 'Editorial World'}</small>
-          <strong>{editorialWorld.name}</strong>
+          <strong>{project?.title ?? editorialWorld.name}</strong>
+          <small>Editorial World · {editorialWorld.name}</small>
         </div>
       </div>
     {/if}
 
-    <button class="primary-action" on:click={openProject} disabled={isLoading}>
-      {isLoading ? 'Projekt wird geöffnet …' : 'Projekt öffnen'}
-    </button>
+    <div class="toolbar-zone toolbar-zone-end">
+      <button class="primary-action" on:click={openProject} disabled={isLoading}>
+        <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+        </svg>
+        <span>{isLoading ? 'Öffnen …' : 'Projekt'}</span>
+      </button>
+    </div>
   </header>
 
   {#if errorMessage}
@@ -152,7 +158,7 @@
       {/if}
     </aside>
 
-    <section class="canvas-area" aria-label="A5-Vorschau">
+    <section class="editorial-desk" aria-label="Editorial Desk">
       <div class="canvas-header">
         <div>
           <span>Editorial Workspace</span>
@@ -163,20 +169,23 @@
 
       <div class="preview-stage" bind:this={previewStage}>
         <div class="page-scale-frame" style={`width:${previewWidth}px;height:${previewHeight}px`}>
-          <article
-            class="a5-page"
-            class:cover-page={selectedPage?.type === 'cover'}
-            style={`transform:scale(${previewScale})`}
-          >
-            <div class="page-rule"></div>
-            <p class="eyebrow">{preview.eyebrow}</p>
-            <h1>{preview.heading}</h1>
-            <p class="preview-body">{preview.body}</p>
-            <footer>
-              <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-              <span>{selectedPage?.order ?? '–'}</span>
-            </footer>
-          </article>
+          {#key selectedPage?.id ?? 'empty-editorial-desk'}
+            <article
+              class="a5-page"
+              class:cover-page={selectedPage?.type === 'cover'}
+              style={`transform:scale(${previewScale})`}
+              in:fade={{ duration: 190 }}
+            >
+              <div class="page-rule"></div>
+              <p class="eyebrow">{preview.eyebrow}</p>
+              <h1>{preview.heading}</h1>
+              <p class="preview-body">{preview.body}</p>
+              <footer>
+                <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
+                <span>{selectedPage?.order ?? '–'}</span>
+              </footer>
+            </article>
+          {/key}
         </div>
       </div>
     </section>
