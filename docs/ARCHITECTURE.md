@@ -49,3 +49,25 @@ Studio darf diese Publishing-Regeln nicht duplizieren.
 - Publisher später als externe CLI bzw. Sidecar
 
 Die Entscheidung ist in ADR-002 dokumentiert.
+
+## Editorial Grammar Layer (Build 005)
+
+Studio now contains an author-facing Editorial Grammar Layer between the Journey/World model and future rendering integration.
+
+```text
+.nls Journey Project
+        │
+        ▼
+Reference World (Fjord)
+        │
+        ▼
+Editorial Grammar
+        │
+        ├── Story contract
+        │     Hero · text · Knowledge · photography · QR · ...
+        │
+        └── Editorial Frame contract
+              Header · Footer · page number · Companion
+```
+
+The grammar layer does not render geometry and does not call Northern Lines Publisher. Its responsibility is to explain page intent and editorial completeness in the language of the author. Publisher integration remains a later boundary.
