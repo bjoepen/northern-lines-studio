@@ -35,6 +35,10 @@ describe('project domain model', () => {
     expect(previewFor(destinationPage).heading).toBe('Bergen');
   });
 
+  it('uses a neutral Northern Lines invitation when no project page is selected', () => {
+    expect(previewFor(null).heading).toBe('Deine Reise beginnt hier.');
+  });
+
   it('resolves the journey stage for a destination page', () => {
     expect(journeyStageFor(project, destinationPage)?.title).toBe('Bergen');
   });
