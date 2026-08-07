@@ -37,17 +37,13 @@
 
     isLoading = true;
     try {
-      const loadedProject = await invoke<StudioProject>('load_nls_project', {
-  path: selected
-});
-
-project = {
-  ...loadedProject,
-  projectPath: selected
-};
-
-requireEditorialWorld(project.editorialWorldId ?? '');
-selectedPage = project.pageManifest[0] ?? null;
+      const loadedProject = await invoke<StudioProject>('load_nls_project', { path: selected });
+      project = {
+        ...loadedProject,
+        projectPath: selected
+      };
+      requireEditorialWorld(project.editorialWorldId ?? '');
+      selectedPage = project.pageManifest[0] ?? null;
     } catch (error) {
       project = null;
       selectedPage = null;
@@ -77,13 +73,18 @@ selectedPage = project.pageManifest[0] ?? null;
     authoringSaveState = 'saving';
     try {
       const selectedPageId = selectedPage.id;
-      project = await invoke<StudioProject>('save_authoring_component', {
-        path: project.projectPath,
+      const projectPath = project.projectPath;
+      const savedProject = await invoke<StudioProject>('save_authoring_component', {
+        path: projectPath,
         pageId: selectedPageId,
         componentId: activeAuthoringComponent,
         content: authoringDraft,
         status: authoringStatus
       });
+      project = {
+        ...savedProject,
+        projectPath
+      };
       selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
       authoringSaveState = 'saved';
     } catch (error) {

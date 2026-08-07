@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing für macOS – Build 009**
+**Travel Publishing – Build 010.1**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -10,6 +10,12 @@ Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](d
 
 
 
+
+## Build 010.1 – Story Authoring Engineering Stabilization
+
+Build 010.1 stabilizes the first semantic authoring workflow without changing the `.nls` format (`0.5.0`). It incorporates the first real-world findings: strict TypeScript test narrowing, a schema-correct Build-009 migration fixture, and reliable runtime preservation of the local project path across load and repeated save operations.
+
+The validated real-world path is: open project → edit Bergen introduction → save → change page → return → quit Studio → reopen → authored content persists.
 
 ## Build 009 – Companion Collection Foundation
 

@@ -512,7 +512,7 @@ mod tests {
         let migrated = migrate_project(sample_project(BUILD_009_FORMAT_VERSION)).unwrap();
         assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_009_FORMAT_VERSION));
-        assert!(validate_project(&migrated).is_ok());
+        validate_project(&migrated).expect("Build-009 migration must validate after normalization");
     }
 
     #[test]
