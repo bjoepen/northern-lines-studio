@@ -1,29 +1,54 @@
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.1",
+  "formatVersion": "0.1.0",
+  "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
-  "pageSize": {
-    "widthMillimetres": 148,
-    "heightMillimetres": 210
+  "edition": "2.0",
+  "language": "de",
+  "document": {
+    "pageFormat": "A5",
+    "orientation": "portrait"
   },
-  "pages": [
+  "pageManifest": [
     {
-      "id": "cover",
-      "title": "Norwegen Fieldbook",
+      "id": "page-cover",
+      "order": 1,
       "type": "cover",
-      "content": "content/cover.md"
+      "title": "Cover",
+      "content": "content/pages/001-cover.md",
+      "layout": "cover-standard"
     },
     {
-      "id": "welcome",
+      "id": "page-welcome",
+      "order": 2,
+      "type": "welcome",
       "title": "Willkommen",
-      "type": "editorial",
-      "content": "content/welcome.md"
+      "content": "content/pages/002-welcome.md",
+      "layout": "welcome-standard"
     },
     {
-      "id": "bergen",
-      "title": "Bergen",
+      "id": "page-contents",
+      "order": 3,
+      "type": "contents",
+      "title": "Inhaltsverzeichnis",
+      "content": "content/pages/003-contents.md",
+      "layout": "contents-standard"
+    },
+    {
+      "id": "page-bergen",
+      "order": 10,
       "type": "destination",
-      "content": "content/bergen.md"
+      "title": "Bergen",
+      "content": "content/pages/010-bergen.md",
+      "layout": "destination-standard"
+    },
+    {
+      "id": "page-geiranger",
+      "order": 20,
+      "type": "destination",
+      "title": "Geiranger",
+      "content": "content/pages/020-geiranger.md",
+      "layout": "destination-standard"
     }
   ]
 }
