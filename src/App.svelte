@@ -10,6 +10,9 @@
   import { requireEditorialWorld } from './lib/worlds';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
+  import type { EditorialComponentId } from './lib/grammar/types';
+  import { AUTHORING_STATUSES, AUTHORING_STATUS_LABELS, authoringCompletion, authoringViewFor } from './lib/authoring';
+  import type { AuthoringStatus } from './lib/authoring/types';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -17,6 +20,10 @@
   let isLoading = false;
   let previewStage: HTMLDivElement | null = null;
   let previewScale = 1;
+  let activeAuthoringComponent: EditorialComponentId | null = null;
+  let authoringDraft = '';
+  let authoringStatus: AuthoringStatus = 'empty';
+  let authoringSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
 
   async function openProject() {
     errorMessage = '';
@@ -30,9 +37,17 @@
 
     isLoading = true;
     try {
-      project = await invoke<StudioProject>('load_nls_project', { path: selected });
-      requireEditorialWorld(project.editorialWorldId ?? '');
-      selectedPage = project.pageManifest[0] ?? null;
+      const loadedProject = await invoke<StudioProject>('load_nls_project', {
+  path: selected
+});
+
+project = {
+  ...loadedProject,
+  projectPath: selected
+};
+
+requireEditorialWorld(project.editorialWorldId ?? '');
+selectedPage = project.pageManifest[0] ?? null;
     } catch (error) {
       project = null;
       selectedPage = null;
@@ -44,6 +59,37 @@
 
   function selectPage(page: StudioPage) {
     selectedPage = page;
+    activeAuthoringComponent = null;
+    authoringSaveState = 'idle';
+  }
+
+  function editStoryComponent(componentId: EditorialComponentId) {
+    activeAuthoringComponent = componentId;
+    const component = storyStructure?.story.find((entry) => entry.type === componentId);
+    const view = authoringViewFor(selectedPage, componentId, component?.label ?? '');
+    authoringDraft = view?.content ?? '';
+    authoringStatus = view?.status ?? 'empty';
+    authoringSaveState = 'idle';
+  }
+
+  async function saveAuthoring() {
+    if (!project || !selectedPage || !activeAuthoringComponent) return;
+    authoringSaveState = 'saving';
+    try {
+      const selectedPageId = selectedPage.id;
+      project = await invoke<StudioProject>('save_authoring_component', {
+        path: project.projectPath,
+        pageId: selectedPageId,
+        componentId: activeAuthoringComponent,
+        content: authoringDraft,
+        status: authoringStatus
+      });
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
+      authoringSaveState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      authoringSaveState = 'error';
+    }
   }
 
   function updatePreviewScale() {
@@ -70,6 +116,8 @@
   $: storyPresent = presentStoryComponents(storyStructure);
   $: storyAvailable = availableStoryComponents(storyStructure);
   $: storyMissing = missingStoryComponents(storyStructure);
+  $: activeAuthoring = authoringViewFor(selectedPage, activeAuthoringComponent, storyStructure?.story.find((entry) => entry.type === activeAuthoringComponent)?.label ?? '');
+  $: authoringProgress = authoringCompletion(selectedPage);
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
 </script>
@@ -262,13 +310,18 @@
 
           <div class="story-component-list">
             {#each storyPresent as component}
-              <div class="story-component-row story-component-present" title={component.description}>
+              <button
+                class="story-component-row story-component-present story-component-action"
+                class:active={activeAuthoringComponent === component.type}
+                title={component.description}
+                on:click={() => editStoryComponent(component.type)}
+              >
                 <span class="story-component-state" aria-hidden="true">✓</span>
                 <span>
                   <strong>{component.label}</strong>
                   <small>{component.role.replaceAll('_', ' ')}</small>
                 </span>
-              </div>
+              </button>
             {/each}
 
             {#each storyMissing as component}
@@ -280,6 +333,42 @@
                 </span>
               </div>
             {/each}
+          </div>
+
+          {#if activeAuthoring}
+            <div class="authoring-panel" aria-label={`Authoring ${activeAuthoring.label}`}>
+              <div class="authoring-heading">
+                <span>Bearbeiten</span>
+                <strong>{activeAuthoring.label}</strong>
+              </div>
+              <textarea
+                bind:value={authoringDraft}
+                rows="6"
+                placeholder="Was möchtest du hier erzählen?"
+                aria-label={`${activeAuthoring.label} Inhalt`}
+              ></textarea>
+              <div class="authoring-controls">
+                <label>
+                  <span>Status</span>
+                  <select bind:value={authoringStatus}>
+                    {#each AUTHORING_STATUSES as state}
+                      <option value={state}>{AUTHORING_STATUS_LABELS[state]}</option>
+                    {/each}
+                  </select>
+                </label>
+                <button class="authoring-save" on:click={saveAuthoring} disabled={authoringSaveState === 'saving'}>
+                  {authoringSaveState === 'saving' ? 'Sichern …' : 'Sichern'}
+                </button>
+              </div>
+              <small class:saveOk={authoringSaveState === 'saved'}>
+                {authoringSaveState === 'saved' ? 'Gespeichert' : activeAuthoring.isPersisted ? 'Im Projekt gespeichert' : 'Noch nicht im Projekt gespeichert'}
+              </small>
+            </div>
+          {/if}
+
+          <div class="authoring-progress">
+            <span>Authoring</span>
+            <strong>{authoringProgress}% erfasst</strong>
           </div>
 
           {#if storyAvailable.length > 0}

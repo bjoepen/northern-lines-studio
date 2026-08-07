@@ -1,10 +1,11 @@
 {
   "format": "northern-lines-studio-project",
-  "formatVersion": "0.3.0",
+  "formatVersion": "0.5.0",
   "projectId": "nl-norway-sample",
   "title": "Norwegen Fieldbook",
   "edition": "2.0",
   "language": "de",
+  "editorialWorldId": "fjord",
   "journey": {
     "id": "norway-2026",
     "title": "Norwegen 2026",
@@ -38,7 +39,15 @@
       "role": "front_matter",
       "title": "Cover",
       "content": "content/pages/001-cover.md",
-      "layout": "cover-standard"
+      "layout": "cover-standard",
+      "journeyStage": null,
+      "knowledgeType": null,
+      "components": [
+        "hero",
+        "title",
+        "subtitle"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-welcome",
@@ -47,7 +56,16 @@
       "role": "front_matter",
       "title": "Willkommen",
       "content": "content/pages/002-welcome.md",
-      "layout": "welcome-standard"
+      "layout": "welcome-standard",
+      "journeyStage": null,
+      "knowledgeType": null,
+      "components": [
+        "hero",
+        "title",
+        "introduction",
+        "quote"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-contents",
@@ -56,7 +74,14 @@
       "role": "front_matter",
       "title": "Inhaltsverzeichnis",
       "content": "content/pages/003-contents.md",
-      "layout": "contents-standard"
+      "layout": "contents-standard",
+      "journeyStage": null,
+      "knowledgeType": null,
+      "components": [
+        "title",
+        "contents"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-bergen",
@@ -66,7 +91,37 @@
       "title": "Bergen",
       "content": "content/pages/010-bergen.md",
       "layout": "destination-standard",
-      "journeyStage": "bergen"
+      "journeyStage": "bergen",
+      "knowledgeType": null,
+      "components": [
+        "hero",
+        "title",
+        "introduction",
+        "history",
+        "photography",
+        "knowledge",
+        "qr"
+      ],
+      "authoring": {
+        "introduction": {
+          "componentId": "introduction",
+          "content": "Die längste Regenperiode in Bergen dauerte 86 Tage.",
+          "status": "revised",
+          "updatedAt": null
+        },
+        "photography": {
+          "componentId": "photography",
+          "content": "Morgens lohnt sich Bryggen mit weichem Seitenlicht; bei Regen spiegeln die Fassaden besonders schön.",
+          "status": "draft",
+          "updatedAt": null
+        },
+        "title": {
+          "componentId": "title",
+          "content": "Bergen",
+          "status": "final",
+          "updatedAt": null
+        }
+      }
     },
     {
       "id": "page-geiranger",
@@ -76,7 +131,18 @@
       "title": "Geiranger",
       "content": "content/pages/020-geiranger.md",
       "layout": "destination-standard",
-      "journeyStage": "geiranger"
+      "journeyStage": "geiranger",
+      "knowledgeType": null,
+      "components": [
+        "hero",
+        "title",
+        "introduction",
+        "history",
+        "photography",
+        "knowledge",
+        "qr"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-light",
@@ -86,7 +152,16 @@
       "title": "Licht",
       "content": "content/pages/030-light.md",
       "layout": "knowledge-light",
-      "knowledgeType": "photography_light"
+      "journeyStage": null,
+      "knowledgeType": "photography_light",
+      "components": [
+        "hero",
+        "title",
+        "light_phases",
+        "photography",
+        "quote"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-weather",
@@ -96,7 +171,15 @@
       "title": "Wetter",
       "content": "content/pages/040-weather.md",
       "layout": "knowledge-weather",
-      "knowledgeType": "travel_weather"
+      "journeyStage": null,
+      "knowledgeType": "travel_weather",
+      "components": [
+        "hero",
+        "title",
+        "weather_guidance",
+        "photography"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-on1",
@@ -106,7 +189,14 @@
       "title": "ON1 Photo RAW",
       "content": "content/pages/050-on1.md",
       "layout": "workflow-on1",
-      "knowledgeType": "workflow_on1_photo_raw"
+      "journeyStage": null,
+      "knowledgeType": "workflow_on1_photo_raw",
+      "components": [
+        "title",
+        "workflow_steps",
+        "workflow_tip"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-luminar",
@@ -116,7 +206,14 @@
       "title": "Luminar Neo",
       "content": "content/pages/060-luminar.md",
       "layout": "workflow-luminar",
-      "knowledgeType": "workflow_luminar_neo"
+      "journeyStage": null,
+      "knowledgeType": "workflow_luminar_neo",
+      "components": [
+        "title",
+        "workflow_steps",
+        "workflow_tip"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-notes",
@@ -125,7 +222,14 @@
       "role": "notes",
       "title": "Notizen",
       "content": "content/pages/090-notes.md",
-      "layout": "notes-standard"
+      "layout": "notes-standard",
+      "journeyStage": null,
+      "knowledgeType": null,
+      "components": [
+        "title",
+        "notes_area"
+      ],
+      "authoring": {}
     },
     {
       "id": "page-closing",
@@ -134,8 +238,16 @@
       "role": "closing_memory",
       "title": "Abschluss",
       "content": "content/pages/099-closing.md",
-      "layout": "closing-memory"
+      "layout": "closing-memory",
+      "journeyStage": null,
+      "knowledgeType": null,
+      "components": [
+        "hero",
+        "title",
+        "quote",
+        "closing_text"
+      ],
+      "authoring": {}
     }
-  ],
-  "editorialWorldId": "fjord"
+  ]
 }

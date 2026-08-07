@@ -152,3 +152,8 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ```text
 feat(studio): establish companion collection foundation
 ```
+
+
+## Current development milestone
+
+**Build 010 – Story Authoring Foundation** introduces semantic authoring: authors edit meaning-bearing Story Components rather than generic page objects.

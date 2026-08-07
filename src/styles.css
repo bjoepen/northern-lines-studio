@@ -157,3 +157,24 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .story-layer-summary { background: #f4f6f6; }
 .story-optional span, .story-layer-summary span { display: block; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
 .story-optional strong, .story-layer-summary strong { display: block; margin-top: 3px; font-family: inherit; font-size: 9px; font-weight: 500; color: #425962; line-height: 1.4; }
+
+
+/* Build 010 — Semantic Story Authoring */
+.story-component-action { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font: inherit; border-radius: 6px; }
+.story-component-action:hover, .story-component-action.active { background: #eef4f5; }
+.authoring-panel { margin-top: 11px; padding: 10px; border-radius: 8px; background: #f5f8f8; border: 1px solid #dfe8ea; }
+.authoring-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.authoring-heading span { color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.authoring-heading strong { margin: 0; font-family: inherit; font-size: 10px; color: #314a54; }
+.authoring-panel textarea { box-sizing: border-box; width: 100%; margin-top: 8px; resize: vertical; min-height: 92px; border: 1px solid #d8e2e5; border-radius: 7px; padding: 8px 9px; font: 10px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #314a54; background: rgba(255,255,255,.94); outline: none; }
+.authoring-panel textarea:focus { border-color: #9eb8c2; box-shadow: 0 0 0 2px rgba(105,145,160,.09); }
+.authoring-controls { display: flex; align-items: end; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.authoring-controls label span { display: block; margin-bottom: 3px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.authoring-controls select { border: 1px solid #d8e2e5; border-radius: 6px; background: #fff; color: #425962; padding: 5px 7px; font-size: 9px; }
+.authoring-save { border: 1px solid #a9bec6; border-radius: 6px; padding: 6px 9px; background: #e9f1f3; color: #355460; font-size: 9px; cursor: pointer; }
+.authoring-save:hover { background: #dee9ec; }
+.authoring-save:disabled { opacity: .55; cursor: default; }
+.authoring-panel > small { margin-top: 6px; font-size: 8px; color: #8a989e; }
+.authoring-panel > small.saveOk { color: #4f7665; }
+.authoring-progress { margin-top: 9px; display: flex; justify-content: space-between; gap: 8px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.authoring-progress strong { margin: 0; font-family: inherit; font-size: 8px; color: #516870; font-weight: 600; text-transform: none; letter-spacing: 0; }

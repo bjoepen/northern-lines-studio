@@ -1,4 +1,5 @@
 import type { EditorialComponentId } from './grammar/types';
+import type { AuthoringEntry } from './authoring/types';
 
 export type PageType =
   | 'cover'
@@ -31,6 +32,7 @@ export interface StudioPage {
   journeyStage?: string;
   knowledgeType?: string;
   components?: EditorialComponentId[];
+  authoring?: Partial<Record<EditorialComponentId, AuthoringEntry>>;
 }
 
 export interface JourneyStage {
