@@ -57,7 +57,7 @@ describe('workspace model', () => {
   });
 
   it('returns a calm project status instead of a technical build state', () => {
-    expect(projectStatus(project())).toBe('6 Seiten · Projekt gültig');
+    expect(projectStatus(project())).toBe('6 Seiten · Reise bereit');
   });
 
   it('uses author-facing labels for page roles', () => {

@@ -11,8 +11,14 @@
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
   import type { EditorialComponentId } from './lib/grammar/types';
-  import { AUTHORING_STATUSES, AUTHORING_STATUS_LABELS, authoringCompletion, authoringViewFor } from './lib/authoring';
+  import { AUTHORING_STATUSES, AUTHORING_STATUS_LABELS, authoringCompletion, authoringViewFor, authoredComponentCount, authoringIsDirty } from './lib/authoring';
   import type { AuthoringStatus } from './lib/authoring/types';
+
+  type PendingAction =
+    | { kind: 'select-page'; pageId: string }
+    | { kind: 'select-component'; componentId: EditorialComponentId }
+    | { kind: 'open-travel' }
+    | { kind: 'close-travel' };
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -24,13 +30,16 @@
   let authoringDraft = '';
   let authoringStatus: AuthoringStatus = 'empty';
   let authoringSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  let projectMenuOpen = false;
+  let pendingAction: PendingAction | null = null;
 
-  async function openProject() {
+  async function openTravelNow() {
+    projectMenuOpen = false;
     errorMessage = '';
     const selected = await open({
       directory: true,
       multiple: false,
-      title: 'Northern Lines Studio Projekt öffnen'
+      title: 'Northern Lines Studio Reise öffnen'
     });
 
     if (!selected || Array.isArray(selected)) return;
@@ -44,6 +53,8 @@
       };
       requireEditorialWorld(project.editorialWorldId ?? '');
       selectedPage = project.pageManifest[0] ?? null;
+      activeAuthoringComponent = null;
+      authoringSaveState = 'idle';
     } catch (error) {
       project = null;
       selectedPage = null;
@@ -53,13 +64,58 @@
     }
   }
 
-  function selectPage(page: StudioPage) {
+  function requestOpenTravel() {
+    projectMenuOpen = false;
+    if (authoringDirty) {
+      pendingAction = { kind: 'open-travel' };
+      return;
+    }
+    void openTravelNow();
+  }
+
+  function closeTravelNow() {
+    project = null;
+    selectedPage = null;
+    activeAuthoringComponent = null;
+    authoringDraft = '';
+    authoringStatus = 'empty';
+    authoringSaveState = 'idle';
+    projectMenuOpen = false;
+    errorMessage = '';
+  }
+
+  function requestCloseTravel() {
+    projectMenuOpen = false;
+    if (authoringDirty) {
+      pendingAction = { kind: 'close-travel' };
+      return;
+    }
+    closeTravelNow();
+  }
+
+  function selectPageNow(page: StudioPage) {
     selectedPage = page;
     activeAuthoringComponent = null;
+    authoringDraft = '';
+    authoringStatus = 'empty';
     authoringSaveState = 'idle';
   }
 
+  function requestPageSelection(page: StudioPage) {
+    if (selectedPage?.id === page.id) return;
+    if (authoringDirty) {
+      pendingAction = { kind: 'select-page', pageId: page.id };
+      return;
+    }
+    selectPageNow(page);
+  }
+
   function editStoryComponent(componentId: EditorialComponentId) {
+    if (activeAuthoringComponent === componentId) return;
+    if (authoringDirty) {
+      pendingAction = { kind: 'select-component', componentId };
+      return;
+    }
     activeAuthoringComponent = componentId;
     const component = storyStructure?.story.find((entry) => entry.type === componentId);
     const view = authoringViewFor(selectedPage, componentId, component?.label ?? '');
@@ -68,8 +124,8 @@
     authoringSaveState = 'idle';
   }
 
-  async function saveAuthoring() {
-    if (!project || !selectedPage || !activeAuthoringComponent) return;
+  async function saveAuthoring(): Promise<boolean> {
+    if (!project || !selectedPage || !activeAuthoringComponent) return false;
     authoringSaveState = 'saving';
     try {
       const selectedPageId = selectedPage.id;
@@ -87,10 +143,50 @@
       };
       selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
       authoringSaveState = 'saved';
+      return true;
     } catch (error) {
       errorMessage = String(error);
       authoringSaveState = 'error';
+      return false;
     }
+  }
+
+  async function continuePendingAction(saveFirst: boolean) {
+    const action = pendingAction;
+    if (!action) return;
+
+    if (saveFirst) {
+      const saved = await saveAuthoring();
+      if (!saved) return;
+    }
+
+    pendingAction = null;
+
+    if (action.kind === 'open-travel') {
+      await openTravelNow();
+      return;
+    }
+    if (action.kind === 'close-travel') {
+      closeTravelNow();
+      return;
+    }
+    if (action.kind === 'select-component') {
+      activeAuthoringComponent = action.componentId;
+      const component = storyStructure?.story.find((entry) => entry.type === action.componentId);
+      const view = authoringViewFor(selectedPage, action.componentId, component?.label ?? '');
+      authoringDraft = view?.content ?? '';
+      authoringStatus = view?.status ?? 'empty';
+      authoringSaveState = 'idle';
+      return;
+    }
+    if (action.kind === 'select-page' && project) {
+      const page = project.pageManifest.find((entry) => entry.id === action.pageId);
+      if (page && page.id !== selectedPage?.id) selectPageNow(page);
+    }
+  }
+
+  function cancelPendingAction() {
+    pendingAction = null;
   }
 
   function updatePreviewScale() {
@@ -119,6 +215,8 @@
   $: storyMissing = missingStoryComponents(storyStructure);
   $: activeAuthoring = authoringViewFor(selectedPage, activeAuthoringComponent, storyStructure?.story.find((entry) => entry.type === activeAuthoringComponent)?.label ?? '');
   $: authoringProgress = authoringCompletion(selectedPage);
+  $: authoredCount = authoredComponentCount(selectedPage);
+  $: authoringDirty = authoringIsDirty(activeAuthoring, authoringDraft, authoringStatus);
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
 </script>
@@ -147,13 +245,29 @@
       </div>
     {/if}
 
-    <div class="toolbar-zone toolbar-zone-end">
-      <button class="primary-action" on:click={openProject} disabled={isLoading}>
-        <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
-        </svg>
-        <span>{isLoading ? 'Öffnen …' : 'Projekt'}</span>
-      </button>
+    <div class="toolbar-zone toolbar-zone-end travel-menu-wrap">
+      {#if project}
+        <button class="primary-action" on:click={() => projectMenuOpen = !projectMenuOpen} disabled={isLoading} aria-expanded={projectMenuOpen}>
+          <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+          </svg>
+          <span>Reise</span>
+          <span class="menu-chevron" aria-hidden="true">⌄</span>
+        </button>
+        {#if projectMenuOpen}
+          <div class="travel-menu" aria-label="Reiseaktionen">
+            <button on:click={requestOpenTravel}>Reise öffnen …</button>
+            <button on:click={requestCloseTravel}>Reise schließen</button>
+          </div>
+        {/if}
+      {:else}
+        <button class="primary-action" on:click={requestOpenTravel} disabled={isLoading}>
+          <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+          </svg>
+          <span>{isLoading ? 'Öffnen …' : 'Reise öffnen'}</span>
+        </button>
+      {/if}
     </div>
   </header>
 
@@ -165,7 +279,7 @@
     <aside class="sidebar" aria-label="Travelbook-Navigation">
       <div class="panel-heading">
         <span>Travelbook</span>
-        <strong>{project?.title ?? 'Kein Projekt geöffnet'}</strong>
+        <strong>{project?.title ?? 'Keine Reise geöffnet'}</strong>
         {#if project?.edition}<small>Edition {project.edition}</small>{/if}
         {#if project?.journey?.title}<small>{project.journey.title}</small>{/if}
       </div>
@@ -192,7 +306,7 @@
               {#each section.pages as page}
                 <button
                   class:active={selectedPage?.id === page.id}
-                  on:click={() => selectPage(page)}
+                  on:click={() => requestPageSelection(page)}
                 >
                   <span class="page-order">{String(page.order).padStart(2, '0')}</span>
                   <span>
@@ -207,7 +321,7 @@
       {:else}
         <div class="empty-state">
           <strong>Deine Reise beginnt hier.</strong>
-          <span>Öffne ein gültiges <code>.nls</code>-Travelbook, um seine Struktur zu erkunden.</span>
+          <span>Öffne ein Travelbook und gib deiner nächsten Reise ihren eigenen Raum.</span>
         </div>
       {/if}
     </aside>
@@ -247,7 +361,7 @@
     <aside class="inspector" aria-label="Inspector">
       <div class="panel-heading">
         <span>Inspector</span>
-        <strong>{selectedPage ? 'Seite' : 'Projekt'}</strong>
+        <strong>{selectedPage ? 'Seite' : 'Reise'}</strong>
       </div>
 
       {#if editorialWorld}
@@ -273,14 +387,14 @@
           <small>{editorialGrammar.purpose}</small>
           <div class="grammar-status">
             <div class="grammar-status-line">
-              <span>Story Completeness</span>
+              <span>Story Vollständigkeit</span>
               <strong>{grammarEvaluation.completeness}%</strong>
             </div>
-            <div class="grammar-meter" aria-label={`Editorial Completeness ${grammarEvaluation.completeness}%`}>
+            <div class="grammar-meter" aria-label={`Story Vollständigkeit ${grammarEvaluation.completeness}%`}>
               <span style={`width:${grammarEvaluation.completeness}%`}></span>
             </div>
             <div class="grammar-facts">
-              <span>Required Story</span>
+              <span>Kernelemente</span>
               <strong>{grammarEvaluation.presentRequiredCount}/{grammarEvaluation.requiredCount} vorhanden</strong>
             </div>
             {#if grammarEvaluation.missingRequired.length > 0}
@@ -306,8 +420,8 @@
       {#if storyStructure}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
-          <strong>Ausdrucksmöglichkeiten</strong>
-          <small>Die Seite wird nach Bedeutung gegliedert – nicht nach technischen Objekten.</small>
+          <strong>Deine Geschichte</strong>
+          <small>Wähle den Teil der Geschichte, an dem du gerade arbeiten möchtest.</small>
 
           <div class="story-component-list">
             {#each storyPresent as component}
@@ -318,10 +432,11 @@
                 on:click={() => editStoryComponent(component.type)}
               >
                 <span class="story-component-state" aria-hidden="true">✓</span>
-                <span>
+                <span class="story-component-copy">
                   <strong>{component.label}</strong>
                   <small>{component.role.replaceAll('_', ' ')}</small>
                 </span>
+                <span class="story-status-label">{AUTHORING_STATUS_LABELS[authoringViewFor(selectedPage, component.type, component.label)?.status ?? 'empty']}</span>
               </button>
             {/each}
 
@@ -337,7 +452,7 @@
           </div>
 
           {#if activeAuthoring}
-            <div class="authoring-panel" aria-label={`Authoring ${activeAuthoring.label}`}>
+            <div class="authoring-panel" aria-label={`Story bearbeiten: ${activeAuthoring.label}`}>
               <div class="authoring-heading">
                 <span>Bearbeiten</span>
                 <strong>{activeAuthoring.label}</strong>
@@ -361,15 +476,21 @@
                   {authoringSaveState === 'saving' ? 'Sichern …' : 'Sichern'}
                 </button>
               </div>
-              <small class:saveOk={authoringSaveState === 'saved'}>
-                {authoringSaveState === 'saved' ? 'Gespeichert' : activeAuthoring.isPersisted ? 'Im Projekt gespeichert' : 'Noch nicht im Projekt gespeichert'}
+              <small class:saveOk={authoringSaveState === 'saved'} class:saveDirty={authoringDirty}>
+                {authoringDirty
+                  ? '● Nicht gesichert'
+                  : authoringSaveState === 'saved'
+                    ? 'Gespeichert'
+                    : activeAuthoring.isPersisted
+                      ? 'Gespeichert'
+                      : 'Noch nicht gespeichert'}
               </small>
             </div>
           {/if}
 
           <div class="authoring-progress">
-            <span>Authoring</span>
-            <strong>{authoringProgress}% erfasst</strong>
+            <span>Story Fortschritt</span>
+            <strong>{authoredCount} von {storyPresent.length} Story-Elementen authoriert · {authoringProgress}%</strong>
           </div>
 
           {#if storyAvailable.length > 0}
@@ -399,13 +520,28 @@
         {/if}
         <dt>Layout</dt><dd>{selectedPage?.layout ?? '–'}</dd>
         <dt>Format</dt><dd>{project?.document.pageFormat ?? 'A5'} {project?.document.orientation ?? 'portrait'}</dd>
-        <dt>Projektformat</dt><dd>{project?.formatVersion ?? '–'}</dd>
+        <dt>Travelbook-Format</dt><dd>{project?.formatVersion ?? '–'}</dd>
       </dl>
     </aside>
   </main>
 
-  <footer class="status-bar" aria-label="Projektstatus">
+  <footer class="status-bar" aria-label="Reisestatus">
     <span>{editorialWorld ? `${editorialWorld.name} · ${editorialWorld.isReference ? 'Reference World' : 'Editorial World'}` : 'Northern Lines Studio'}</span>
     <span class:status-ok={project}>{statusText}</span>
   </footer>
+
+  {#if pendingAction}
+    <div class="save-dialog-backdrop" role="presentation">
+      <section class="save-dialog" role="dialog" aria-modal="true" aria-labelledby="save-dialog-title">
+        <span class="inspector-label">Deine Geschichte</span>
+        <strong id="save-dialog-title">Änderungen an „{activeAuthoring?.label ?? 'Story'}“ sichern?</strong>
+        <p>Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden.</p>
+        <div class="save-dialog-actions">
+          <button class="dialog-secondary" on:click={() => continuePendingAction(false)}>Verwerfen</button>
+          <button class="dialog-secondary" on:click={cancelPendingAction}>Abbrechen</button>
+          <button class="dialog-primary" on:click={() => continuePendingAction(true)}>Sichern</button>
+        </div>
+      </section>
+    </div>
+  {/if}
 </div>

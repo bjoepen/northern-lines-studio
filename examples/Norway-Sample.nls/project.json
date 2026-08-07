@@ -100,12 +100,13 @@
         "history",
         "photography",
         "knowledge",
+        "souvenirs",
         "qr"
       ],
       "authoring": {
         "introduction": {
           "componentId": "introduction",
-          "content": "Bergen lohnt sich auf jeden Fall!",
+          "content": "Bergen ist die zweitgrößte Stadt Norwegens und gilt als das „Tor zu den Fjorden“. Die Hansestadt an der Westküste ist berühmt für ihr historisches hanseatisches Kaimuseum (Bryggen, UNESCO-Welterbe), den Fischmarkt und ihre Lage umgeben von sieben Bergen. ",
           "status": "revised",
           "updatedAt": null
         },
@@ -113,6 +114,12 @@
           "componentId": "photography",
           "content": "Morgens lohnt sich Bryggen mit weichem Seitenlicht; bei Regen spiegeln die Fassaden besonders schön.",
           "status": "draft",
+          "updatedAt": null
+        },
+        "souvenirs": {
+          "componentId": "souvenirs",
+          "content": "Trolle",
+          "status": "empty",
           "updatedAt": null
         },
         "title": {
@@ -140,6 +147,7 @@
         "history",
         "photography",
         "knowledge",
+        "souvenirs",
         "qr"
       ],
       "authoring": {}

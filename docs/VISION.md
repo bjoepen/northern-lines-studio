@@ -2,18 +2,13 @@
 
 ## Northern Lines Studio
 
-Northern Lines Studio is a specialized visual publishing environment for
-Travel Fieldbooks, photography-led travel documentation and curated memory
-books.
+Northern Lines Studio is a specialized visual and editorial environment for Northern Lines Travel Fieldbooks.
 
-It is not intended to compete with general-purpose DTP applications.
-Instead, it should understand the specific editorial and visual language of
-Northern Lines.
+It is not intended to compete with general-purpose DTP applications. Studio exists to help an author turn a journey into a coherent, beautiful and printable Travelbook while preserving the specific editorial and visual language of Northern Lines.
 
 ## Product Promise
 
-Northern Lines Studio should help transform a journey into a coherent,
-beautiful and printable publication while preserving:
+Northern Lines Studio should preserve and strengthen:
 
 - atmosphere
 - anticipation
@@ -23,38 +18,42 @@ beautiful and printable publication while preserving:
 - functional travel information
 - personal memories
 
+The author should not have to think about the technical machinery that makes this possible.
+
 ## Experience Goal
 
-The application should feel calm, focused and editorial.
+Studio should feel calm, focused and editorial.
 
-A user should be able to:
+> Studio shows the journey, not the software.
 
-1. create or open a travel project
-2. select supported page types
-3. add structured content and images
-4. choose a curated composition variant
-5. preview the publication
-6. refine key editorial decisions
-7. export or hand off the result for final production
+The page remains the centre of the workspace. Navigation, Inspector and publishing logic support the story without competing with it.
+
+The interface speaks the language of the traveller and author. A user opens a **Reise**, works on **Story Components**, writes an **Einleitung** or **Northern Lines Wissen**, and returns to **Deine Reise beginnt hier.** Technical project, file and rendering concepts remain below the editorial surface whenever possible.
+
+## Authoring Principle
+
+> Authors work on meaning, never on generic page objects.
+
+Studio does not begin with rectangles, arbitrary text frames or layers. It begins with the editorial purpose of a page and the story the author wants to tell.
 
 ## Long-Term Direction
 
-Northern Lines Studio may eventually include:
+Northern Lines Studio may grow to include:
 
-- project library
-- destination and journey structure
-- page-type browser
-- live page preview
-- asset library
-- typography and design profiles
-- visual template selection
+- journey library and Travelbook lifecycle
+- Editorial Worlds
+- semantic Story Authoring
+- photography and asset workflows
+- curated composition variants
 - content-fit feedback
-- page sequencing
-- PDF export
-- Affinity handoff
-- production validation
+- Publisher integration
+- print and production validation
+- reusable knowledge and Companion libraries
 
-## Guiding Principle
+Growth must never make the application feel louder or more technical.
 
-> The system should automate consistency without automating away editorial
-> judgment.
+## Guiding Principles
+
+> The system should automate consistency without automating away editorial judgment.
+
+> The technical complexity belongs to Studio. The journey belongs to the author.

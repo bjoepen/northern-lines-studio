@@ -11,21 +11,21 @@ const bergen: StudioPage = {
   title: 'Bergen',
   content: 'content/pages/010-bergen.md',
   layout: 'destination-standard',
-  components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'qr']
+  components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'souvenirs', 'qr']
 };
 
 describe('story components foundation', () => {
   it('materializes semantic story components from page data and grammar', () => {
     const structure = buildStoryStructure(bergen, requireGrammar('destination'));
-    expect(structure?.presentCount).toBe(7);
+    expect(structure?.presentCount).toBe(8);
     expect(presentStoryComponents(structure).map((component) => component.type)).toEqual([
-      'hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'qr'
+      'hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'souvenirs', 'qr'
     ]);
   });
 
   it('keeps optional expression possibilities visible without treating them as missing', () => {
     const structure = buildStoryStructure(bergen, requireGrammar('destination'));
-    expect(availableStoryComponents(structure).map((component) => component.type)).toEqual(['souvenirs']);
+    expect(availableStoryComponents(structure).map((component) => component.type)).toEqual([]);
     expect(structure?.missingRequiredCount).toBe(0);
   });
 

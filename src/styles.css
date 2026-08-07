@@ -178,3 +178,28 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .authoring-panel > small.saveOk { color: #4f7665; }
 .authoring-progress { margin-top: 9px; display: flex; justify-content: space-between; gap: 8px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
 .authoring-progress strong { margin: 0; font-family: inherit; font-size: 8px; color: #516870; font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+/* Build 011 — Editorial Story Workspace */
+.travel-menu-wrap { position: relative; }
+.menu-chevron { margin-left: 1px; color: #b8c8d1; font-size: 11px; transform: translateY(-1px); }
+.travel-menu { position: absolute; top: calc(50% + 22px); right: 0; z-index: 30; min-width: 154px; padding: 5px; border: 1px solid rgba(30, 53, 65, .18); border-radius: 8px; background: rgba(250, 252, 252, .98); box-shadow: 0 12px 28px rgba(15, 34, 44, .2); }
+.travel-menu button { width: 100%; border: 0; border-radius: 6px; padding: 8px 9px; background: transparent; color: #314a54; text-align: left; font-size: 10px; cursor: pointer; }
+.travel-menu button:hover { background: #e9f0f2; }
+
+.story-component-action { grid-template-columns: 17px minmax(0, 1fr) auto; align-items: center; padding: 5px 4px; }
+.story-component-copy { min-width: 0; }
+.story-status-label { align-self: center; color: #7f8e94; font-size: 8px; white-space: nowrap; }
+.story-component-action.active .story-status-label { color: #4f7080; font-weight: 600; }
+.story-component-missing { grid-template-columns: 17px minmax(0, 1fr); }
+.authoring-panel > small.saveDirty { color: #8a6348; }
+
+.save-dialog-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(14, 29, 38, .26); backdrop-filter: blur(2px); }
+.save-dialog { width: min(390px, calc(100vw - 48px)); padding: 18px; border: 1px solid rgba(40, 65, 76, .16); border-radius: 12px; background: #fbfcfc; box-shadow: 0 20px 54px rgba(12, 31, 40, .24); }
+.save-dialog > strong { display: block; margin-top: 6px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 500; color: #253b45; }
+.save-dialog p { margin: 8px 0 0; color: #697a82; font-size: 11px; line-height: 1.5; }
+.save-dialog-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 17px; }
+.save-dialog-actions button { border-radius: 7px; padding: 7px 10px; font-size: 10px; cursor: pointer; }
+.dialog-secondary { border: 1px solid #d4dee1; background: #f5f8f8; color: #50656e; }
+.dialog-secondary:hover { background: #edf3f4; }
+.dialog-primary { border: 1px solid #8baab7; background: #dce9ed; color: #294b5a; font-weight: 600; }
+.dialog-primary:hover { background: #d2e2e7; }

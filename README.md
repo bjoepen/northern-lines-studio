@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing – Build 010.1**
+**Travel Publishing – Build 011**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -10,6 +10,13 @@ Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](d
 
 
 
+
+
+## Build 011 – Editorial Story Workspace
+
+Build 011 turns semantic Story Authoring into an author-facing editorial workspace. Studio now protects unsaved changes, shows editorial status for Story Components, lets the user **Reise öffnen …** and **Reise schließen**, and uses persisted authored text in the A5 preview.
+
+The build also establishes **Human Language First**: the interface speaks in journeys, stories and Travelbooks while technical project mechanics remain below the surface. The `.nls` format remains `0.5.0`.
 
 ## Build 010.1 – Story Authoring Engineering Stabilization
 
@@ -115,7 +122,7 @@ pnpm install
 pnpm tauri dev
 ```
 
-Nach dem Start über **Projekt öffnen** auswählen:
+Nach dem Start über **Reise öffnen** auswählen:
 
 ```text
 examples/Norway-Sample.nls
@@ -131,6 +138,12 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 ## Build-Dokumentation
+
+- `docs/builds/BUILD-011.md`
+- `docs/adr/ADR-009-HUMAN-LANGUAGE-FIRST.md`
+- `docs/ecr/ECR-011-EDITORIAL-STORY-WORKSPACE.md`
+- `docs/validation/BUILD-011-VALIDATION.md`
+- `docs/git/BUILD-011-GIT-WORKFLOW.md`
 
 - `docs/builds/BUILD-009.md`
 - `docs/adr/ADR-007-EDITORIAL-COMPANION-SYSTEM.md`
@@ -156,10 +169,10 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ## Commit-Vorschlag
 
 ```text
-feat(studio): establish companion collection foundation
+feat(studio): introduce the editorial story workspace
 ```
 
 
 ## Current development milestone
 
-**Build 010 – Story Authoring Foundation** introduces semantic authoring: authors edit meaning-bearing Story Components rather than generic page objects.
+**Build 011 – Editorial Story Workspace** makes semantic authoring safe, understandable and immediate while preserving the calm Northern Lines shell.

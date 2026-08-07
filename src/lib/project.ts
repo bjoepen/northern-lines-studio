@@ -124,10 +124,41 @@ const emptyPreview: PreviewContent = {
   body: 'Öffne ein Travelbook und gib der nächsten Reise ihren eigenen Raum.'
 };
 
+const previewAuthoringPriority: readonly EditorialComponentId[] = [
+  'introduction',
+  'history',
+  'photography',
+  'knowledge',
+  'souvenirs',
+  'quote',
+  'closing_text',
+  'notes_area',
+  'workflow_steps',
+  'weather_guidance',
+  'light_phases'
+];
+
+function authoredPreviewContent(page: StudioPage): { heading?: string; body?: string } {
+  const authoredTitle = page.authoring?.title?.content.trim();
+  const bodyEntry = previewAuthoringPriority
+    .map((id) => page.authoring?.[id]?.content.trim())
+    .find((content) => Boolean(content));
+
+  return {
+    heading: authoredTitle || page.title,
+    body: bodyEntry || undefined
+  };
+}
+
 export function previewFor(page: StudioPage | null): PreviewContent {
   if (!page) return emptyPreview;
   const base = previewCopy[page.type];
-  return { ...base, heading: page.title };
+  const authored = authoredPreviewContent(page);
+  return {
+    ...base,
+    heading: authored.heading ?? page.title,
+    body: authored.body ?? base.body
+  };
 }
 
 export function journeyStageFor(project: StudioProject | null, page: StudioPage | null): JourneyStage | null {

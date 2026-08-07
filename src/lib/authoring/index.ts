@@ -44,3 +44,15 @@ export function authoringCompletion(page: StudioPage | null): number {
   }).length;
   return Math.round((authored / page.components.length) * 100);
 }
+export function authoredComponentCount(page: StudioPage | null): number {
+  if (!page?.components?.length) return 0;
+  return page.components.filter((id) => {
+    const entry = page.authoring?.[id];
+    return Boolean(entry && entry.status !== 'empty' && entry.content.trim().length > 0);
+  }).length;
+}
+
+export function authoringIsDirty(view: AuthoringView | null, draft: string, status: AuthoringStatus): boolean {
+  if (!view) return false;
+  return draft !== view.content || status !== view.status;
+}

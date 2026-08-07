@@ -10,7 +10,7 @@ const destinationPage: StudioPage = {
   content: 'content/pages/010-bergen.md',
   layout: 'destination-standard',
   journeyStage: 'bergen',
-  components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'qr']
+  components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'souvenirs', 'qr']
 };
 
 const project: StudioProject = {
@@ -37,6 +37,20 @@ describe('project domain model', () => {
 
   it('uses a neutral Northern Lines invitation when no project page is selected', () => {
     expect(previewFor(null).heading).toBe('Deine Reise beginnt hier.');
+  });
+
+  it('shows persisted authoring content in the page preview', () => {
+    const authoredPage: StudioPage = {
+      ...destinationPage,
+      authoring: {
+        introduction: {
+          componentId: 'introduction',
+          content: 'Ankommen zwischen sieben Bergen.',
+          status: 'revised'
+        }
+      }
+    };
+    expect(previewFor(authoredPage).body).toContain('sieben Bergen');
   });
 
   it('resolves the journey stage for a destination page', () => {
