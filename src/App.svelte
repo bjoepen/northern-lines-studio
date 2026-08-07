@@ -9,6 +9,7 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
   import { requireEditorialWorld } from './lib/worlds';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
+  import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -65,6 +66,10 @@
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: editorialGrammar = grammarForPage(selectedPage);
   $: grammarEvaluation = evaluateGrammar(selectedPage, editorialGrammar);
+  $: storyStructure = buildStoryStructure(selectedPage, editorialGrammar);
+  $: storyPresent = presentStoryComponents(storyStructure);
+  $: storyAvailable = availableStoryComponents(storyStructure);
+  $: storyMissing = missingStoryComponents(storyStructure);
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
 </script>
@@ -228,8 +233,6 @@
             <div class="grammar-facts">
               <span>Required Story</span>
               <strong>{grammarEvaluation.presentRequiredCount}/{grammarEvaluation.requiredCount} vorhanden</strong>
-              <span>Editorial Frame</span>
-              <strong>{editorialGrammar.editorialFrame.length ? 'Header · Footer · Seitenzahl · Companion' : 'Cover-spezifisch'}</strong>
             </div>
             {#if grammarEvaluation.missingRequired.length > 0}
               <div class="grammar-note grammar-warning">
@@ -247,6 +250,48 @@
                 <strong>Editorial vollständig</strong>
               </div>
             {/if}
+          </div>
+        </section>
+      {/if}
+
+      {#if storyStructure}
+        <section class="inspector-card story-card" aria-label="Story Components">
+          <span class="inspector-label">Story</span>
+          <strong>Ausdrucksmöglichkeiten</strong>
+          <small>Die Seite wird nach Bedeutung gegliedert – nicht nach technischen Objekten.</small>
+
+          <div class="story-component-list">
+            {#each storyPresent as component}
+              <div class="story-component-row story-component-present" title={component.description}>
+                <span class="story-component-state" aria-hidden="true">✓</span>
+                <span>
+                  <strong>{component.label}</strong>
+                  <small>{component.role.replaceAll('_', ' ')}</small>
+                </span>
+              </div>
+            {/each}
+
+            {#each storyMissing as component}
+              <div class="story-component-row story-component-missing" title={component.description}>
+                <span class="story-component-state" aria-hidden="true">!</span>
+                <span>
+                  <strong>{component.label}</strong>
+                  <small>erforderlich</small>
+                </span>
+              </div>
+            {/each}
+          </div>
+
+          {#if storyAvailable.length > 0}
+            <div class="story-optional">
+              <span>Optional möglich</span>
+              <strong>{storyAvailable.map((component) => component.label).join(' · ')}</strong>
+            </div>
+          {/if}
+
+          <div class="story-layer-summary">
+            <span>Editorial Frame</span>
+            <strong>{storyStructure.editorialFrame.length ? storyStructure.editorialFrame.map((component) => component.label).join(' · ') : 'Cover-spezifisch'}</strong>
           </div>
         </section>
       {/if}

@@ -141,3 +141,19 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .grammar-warning strong { color: #76533d; }
 .grammar-ok { background: #edf5f0; }
 .grammar-ok strong { color: #3f735c; }
+
+
+/* Build 008: Story Components are semantic expressions, not DTP objects. */
+.story-card { background: linear-gradient(150deg, rgba(255,255,255,.9), rgba(246,249,249,.84)); }
+.story-card > small { line-height: 1.45; }
+.story-component-list { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5ebed; display: grid; gap: 2px; }
+.story-component-row { display: grid; grid-template-columns: 17px minmax(0, 1fr); gap: 6px; align-items: start; padding: 4px 0; }
+.story-component-row > span:last-child { min-width: 0; }
+.story-component-row strong { margin: 0; font-family: inherit; font-size: 10px; font-weight: 500; color: #425962; line-height: 1.25; }
+.story-component-row small { margin-top: 1px; color: #89969c; font-size: 8px; text-transform: capitalize; }
+.story-component-state { display: grid !important; place-items: center; width: 14px; height: 14px; margin-top: 1px; border-radius: 50%; background: #e8f1ed; color: #3f735c; font-size: 8px; font-weight: 700; }
+.story-component-missing .story-component-state { background: #f7ebe4; color: #8b5c40; }
+.story-optional, .story-layer-summary { margin-top: 9px; padding: 8px 9px; border-radius: 7px; background: #eef4f5; }
+.story-layer-summary { background: #f4f6f6; }
+.story-optional span, .story-layer-summary span { display: block; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.story-optional strong, .story-layer-summary strong { display: block; margin-top: 3px; font-family: inherit; font-size: 9px; font-weight: 500; color: #425962; line-height: 1.4; }
