@@ -203,3 +203,23 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .dialog-secondary:hover { background: #edf3f4; }
 .dialog-primary { border: 1px solid #8baab7; background: #dce9ed; color: #294b5a; font-weight: 600; }
 .dialog-primary:hover { background: #d2e2e7; }
+
+
+/* Build 013 — Journey Beginning Foundation */
+.empty-state-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin-top: 16px; }
+.journey-begin-button { border: 1px solid #9eb7c1; border-radius: 7px; padding: 7px 10px; background: #e7f0f2; color: #31515e; font-size: 9px; font-weight: 600; cursor: pointer; }
+.journey-open-link { border: 0; padding: 2px 0; background: transparent; color: #687d86; font-size: 9px; cursor: pointer; }
+.journey-begin-dialog { width: min(440px, calc(100vw - 48px)); padding: 20px; border: 1px solid rgba(40,65,76,.16); border-radius: 13px; background: #fbfcfc; box-shadow: 0 20px 54px rgba(12,31,40,.24); }
+.journey-begin-dialog > strong { display: block; margin-top: 6px; font-family: Georgia, "Times New Roman", serif; font-size: 20px; font-weight: 500; color: #253b45; }
+.journey-begin-dialog > p { margin: 8px 0 15px; color: #697a82; font-size: 11px; line-height: 1.5; }
+.journey-field { display: block; margin-top: 10px; }
+.journey-field > span { display: block; margin-bottom: 4px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.journey-field input, .journey-field select { box-sizing: border-box; width: 100%; border: 1px solid #d8e2e5; border-radius: 7px; padding: 8px 9px; background: #fff; color: #314a54; font: 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; outline: none; }
+.journey-field input:focus, .journey-field select:focus, .save-dialog button:focus-visible, .journey-begin-dialog button:focus-visible { border-color: #8eabb7; box-shadow: 0 0 0 3px rgba(105,145,160,.13); outline: none; }
+.companion-first-encounter { display: grid; grid-template-columns: 82px minmax(0,1fr); gap: 14px; align-items: center; margin-top: 15px; padding: 12px; border-radius: 10px; background: #eef4f5; }
+.companion-first-encounter img { width: 82px; height: 82px; object-fit: contain; }
+.companion-first-encounter small, .companion-first-encounter strong, .companion-first-encounter span { display: block; }
+.companion-first-encounter small { color: #73858d; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.companion-first-encounter strong { margin-top: 4px; font-family: Georgia, "Times New Roman", serif; color: #304b57; font-size: 16px; font-weight: 500; }
+.companion-first-encounter span { margin-top: 4px; color: #74858c; font-size: 9px; }
+.dialog-primary:disabled { opacity: .5; cursor: default; }

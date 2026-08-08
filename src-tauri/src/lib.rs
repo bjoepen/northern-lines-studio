@@ -352,6 +352,72 @@ fn write_project(path: &Path, project: &StudioProject) -> Result<(), String> {
         .map_err(|error| format!("project.json konnte nicht gespeichert werden: {error}"))
 }
 
+fn slugify(value: &str) -> String {
+    let mut slug = String::new();
+    let mut last_dash = false;
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            slug.push(ch.to_ascii_lowercase());
+            last_dash = false;
+        } else if !last_dash && !slug.is_empty() {
+            slug.push('-');
+            last_dash = true;
+        }
+    }
+    while slug.ends_with('-') { slug.pop(); }
+    if slug.is_empty() { "reise".into() } else { slug }
+}
+
+fn starter_page(id: &str, order: u32, page_type: &str, role: &str, title: &str, content: &str, layout: &str, knowledge_type: Option<&str>) -> StudioPage {
+    let mut page = StudioPage {
+        id: id.into(), order, page_type: page_type.into(), role: Some(role.into()), title: title.into(),
+        content: content.into(), layout: layout.into(), journey_stage: None,
+        knowledge_type: knowledge_type.map(str::to_string), components: Vec::new(), authoring: BTreeMap::new(),
+    };
+    page.components = infer_components(&page);
+    page
+}
+
+#[tauri::command]
+fn create_nls_project(parent_path: String, title: String, editorial_world_id: String, language: String) -> Result<StudioProject, String> {
+    let title = title.trim();
+    if title.is_empty() { return Err("Die Reise braucht einen Namen.".into()); }
+    if editorial_world_id != REFERENCE_WORLD_ID {
+        return Err(format!("Editorial World '{editorial_world_id}' ist für neue Reisen noch nicht freigegeben."));
+    }
+    let folder = Path::new(&parent_path).join(format!("{}.nls", slugify(title)));
+    if folder.exists() { return Err(format!("Eine Reise mit diesem Namen existiert dort bereits: {}", folder.display())); }
+    fs::create_dir_all(folder.join("content/pages")).map_err(|e| format!("Die Reise konnte nicht angelegt werden: {e}"))?;
+
+    let pages = vec![
+        starter_page("page-cover", 1, "cover", "front_matter", title, "content/pages/001-cover.md", "cover", None),
+        starter_page("page-welcome", 2, "welcome", "front_matter", "Willkommen", "content/pages/002-welcome.md", "welcome", None),
+        starter_page("page-contents", 3, "contents", "front_matter", "Inhaltsverzeichnis", "content/pages/003-contents.md", "contents", None),
+        starter_page("page-light", 10, "knowledge", "journey_knowledge", "Licht", "content/pages/010-light.md", "light", Some("photography_light")),
+        starter_page("page-weather", 11, "knowledge", "journey_knowledge", "Wetter", "content/pages/011-weather.md", "weather", Some("travel_weather")),
+        starter_page("page-workflow", 20, "workflow", "workflow", "Fotografie-Workflow", "content/pages/020-workflow.md", "workflow", None),
+        starter_page("page-notes", 30, "notes", "notes", "Notizen", "content/pages/030-notes.md", "notes", None),
+        starter_page("page-closing", 40, "closing", "closing_memory", "Die Reise bleibt", "content/pages/040-closing.md", "closing", None),
+    ];
+    for page in &pages {
+        let target = folder.join(&page.content);
+        fs::write(target, format!("# {}
+", page.title)).map_err(|e| format!("Startseite konnte nicht angelegt werden: {e}"))?;
+    }
+
+    let project = StudioProject {
+        format: EXPECTED_FORMAT.into(), format_version: CURRENT_FORMAT_VERSION.into(),
+        project_id: slugify(title), title: title.into(), edition: Some("1.0".into()), language,
+        editorial_world_id: Some(editorial_world_id), legacy_editorial_world: None,
+        journey: Some(Journey { id: format!("{}-journey", slugify(title)), title: title.into(), journey_type: "travel".into(), start_date: None, end_date: None, stages: Vec::new() }),
+        document: DocumentSettings { page_format: "A5".into(), orientation: "portrait".into() },
+        page_manifest: pages, project_path: folder.to_string_lossy().into_owned(), migrated_from_version: None,
+    };
+    validate_project(&project)?;
+    write_project(&folder, &project)?;
+    read_project(&folder)
+}
+
 #[tauri::command]
 fn load_nls_project(path: String) -> Result<StudioProject, String> {
     read_project(Path::new(&path))
@@ -391,7 +457,7 @@ fn save_authoring_component(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![load_nls_project, save_authoring_component])
+        .invoke_handler(tauri::generate_handler![load_nls_project, create_nls_project, save_authoring_component])
         .run(tauri::generate_context!())
         .expect("error while running Northern Lines Studio");
 }
@@ -505,6 +571,22 @@ mod tests {
         assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
         assert!(migrated.page_manifest[0].components.contains(&"knowledge".to_string()));
         assert!(validate_project(&migrated).is_ok());
+    }
+
+    #[test]
+    fn creates_a_new_fjord_journey() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Island im Winter".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        ).expect("new journey");
+        assert_eq!(created.title, "Island im Winter");
+        assert_eq!(created.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
+        assert_eq!(created.page_manifest.len(), 8);
+        assert!(Path::new(&created.project_path).join("project.json").exists());
+        assert!(validate_project(&created).is_ok());
     }
 
     #[test]
