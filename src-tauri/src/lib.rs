@@ -504,11 +504,107 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
     Ok(project_session(project, project_path))
 }
 
+
+#[tauri::command]
+fn move_journey_place(path: String, stage_id: String, direction: String) -> Result<ProjectSession, String> {
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let journey = project
+        .journey
+        .as_mut()
+        .ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+
+    let index = journey
+        .stages
+        .iter()
+        .position(|stage| stage.id == stage_id)
+        .ok_or_else(|| format!("Der Ort '{stage_id}' gehört nicht zu deiner Route."))?;
+
+    let target = match direction.as_str() {
+        "earlier" if index > 0 => Some(index - 1),
+        "later" if index + 1 < journey.stages.len() => Some(index + 1),
+        "earlier" | "later" => None,
+        _ => return Err("Unbekannte Routenrichtung.".into()),
+    };
+
+    if let Some(target) = target {
+        journey.stages.swap(index, target);
+    }
+
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+#[tauri::command]
+fn update_journey_place(
+    path: String,
+    stage_id: String,
+    title: String,
+    country: String,
+) -> Result<ProjectSession, String> {
+    let title = title.trim();
+    if title.is_empty() {
+        return Err("Gib dem Ort zuerst einen Namen.".into());
+    }
+
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+
+    {
+        let journey = project
+            .journey
+            .as_mut()
+            .ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+
+        if journey
+            .stages
+            .iter()
+            .any(|stage| stage.id != stage_id && stage.title.eq_ignore_ascii_case(title))
+        {
+            return Err(format!("{title} gehört bereits zu deiner Reise."));
+        }
+
+        let stage = journey
+            .stages
+            .iter_mut()
+            .find(|stage| stage.id == stage_id)
+            .ok_or_else(|| format!("Der Ort '{stage_id}' gehört nicht zu deiner Route."))?;
+
+        stage.title = title.to_string();
+        stage.country = (!country.trim().is_empty()).then(|| country.trim().to_string());
+    }
+
+    let page = project
+        .page_manifest
+        .iter_mut()
+        .find(|page| page.journey_stage.as_deref() == Some(stage_id.as_str()))
+        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Seite gefunden."))?;
+
+    page.title = title.to_string();
+    if let Some(entry) = page.authoring.get_mut("title") {
+        entry.content = title.to_string();
+    }
+
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![load_nls_project, create_nls_project, save_authoring_component, add_journey_place])
+        .invoke_handler(tauri::generate_handler![
+            load_nls_project,
+            create_nls_project,
+            save_authoring_component,
+            add_journey_place,
+            move_journey_place,
+            update_journey_place
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Northern Lines Studio");
 }
@@ -638,6 +734,95 @@ mod tests {
         assert_eq!(created.project.page_manifest.len(), 8);
         assert!(Path::new(&created.project_path).join("project.json").exists());
         assert!(validate_project(&created.project).is_ok());
+    }
+
+    #[test]
+    fn reorders_and_updates_journey_places() {
+        let temp = tempfile::tempdir().expect("tempdir");
+
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Route Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        )
+        .expect("new journey");
+
+        let path = created.project_path.clone();
+
+        add_journey_place(
+            path.clone(),
+            "Bergen".into(),
+            "Norwegen".into(),
+        )
+        .expect("bergen");
+
+        let with_alesund = add_journey_place(
+            path.clone(),
+            "Ålesund".into(),
+            "Norwegen".into(),
+        )
+        .expect("alesund");
+
+        let alesund_id = with_alesund
+            .project
+            .journey
+            .as_ref()
+            .expect("journey")
+            .stages
+            .iter()
+            .find(|stage| stage.title == "Ålesund")
+            .expect("Ålesund stage")
+            .id
+            .clone();
+
+        let moved = move_journey_place(
+            path.clone(),
+            alesund_id.clone(),
+            "earlier".into(),
+        )
+        .expect("move");
+
+        let stages = &moved
+            .project
+            .journey
+            .as_ref()
+            .expect("journey")
+            .stages;
+
+        assert_eq!(stages[0].title, "Ålesund");
+        assert_eq!(stages[1].title, "Bergen");
+
+        let updated = update_journey_place(
+            path,
+            alesund_id.clone(),
+            "Ålesund Stadt".into(),
+            "Norwegen".into(),
+        )
+        .expect("update");
+
+        let stages = &updated
+            .project
+            .journey
+            .as_ref()
+            .expect("journey")
+            .stages;
+
+        assert_eq!(stages[0].title, "Ålesund Stadt");
+        assert_eq!(stages[0].country.as_deref(), Some("Norwegen"));
+
+        assert_eq!(
+            updated
+                .project
+                .page_manifest
+                .iter()
+                .find(|page| page.journey_stage.as_deref() == Some(alesund_id.as_str()))
+                .expect("destination page")
+                .title,
+            "Ålesund Stadt"
+        );
+
+        assert!(validate_project(&updated.project).is_ok());
     }
 
     #[test]

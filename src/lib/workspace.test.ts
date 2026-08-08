@@ -35,7 +35,7 @@ describe('workspace model', () => {
   it('groups pages by editorial role, not by technical page type', () => {
     expect(groupPages(pages).map((section) => section.label)).toEqual([
       'Buch',
-      'Reiseziele',
+      'Deine Route',
       'Reisebegleitung',
       'Fotografie',
       'Erinnerungen'

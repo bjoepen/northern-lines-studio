@@ -232,3 +232,45 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   width: 100%;
   justify-content: flex-start;
 }
+
+
+/* Build 015 · Journey Route Foundation */
+.route-card {
+  gap: 10px;
+}
+
+.route-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.route-actions button,
+.route-edit-button {
+  border: 1px solid rgba(28, 51, 62, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+}
+
+.route-actions button:hover:not(:disabled),
+.route-edit-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(28, 51, 62, 0.22);
+}
+
+.route-actions button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.route-edit-button {
+  width: 100%;
+  margin-top: 2px;
+}

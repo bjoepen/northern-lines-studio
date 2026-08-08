@@ -41,8 +41,8 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   },
   destinations: {
     id: 'destinations',
-    label: 'Reiseziele',
-    description: 'Orte und Etappen'
+    label: 'Deine Route',
+    description: 'Orte in Reise-Reihenfolge'
   },
   journey: {
     id: 'journey',
@@ -61,14 +61,27 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   }
 };
 
-export function groupPages(pages: StudioPage[]): WorkspaceSection[] {
+export function groupPages(pages: StudioPage[], routeStageIds: readonly string[] = []): WorkspaceSection[] {
   const grouped = new Map<WorkspaceSectionId, StudioPage[]>();
+  const routeOrder = new Map(routeStageIds.map((id, index) => [id, index]));
 
   for (const page of pages) {
     const section = sectionForRole[page.role];
     const current = grouped.get(section) ?? [];
     current.push(page);
     grouped.set(section, current);
+  }
+
+  const destinations = grouped.get('destinations');
+  if (destinations) {
+    destinations.sort((a, b) => {
+      const aRoute = a.journeyStage ? routeOrder.get(a.journeyStage) : undefined;
+      const bRoute = b.journeyStage ? routeOrder.get(b.journeyStage) : undefined;
+      if (aRoute !== undefined && bRoute !== undefined) return aRoute - bRoute;
+      if (aRoute !== undefined) return -1;
+      if (bRoute !== undefined) return 1;
+      return a.order - b.order;
+    });
   }
 
   return (Object.keys(sectionMeta) as WorkspaceSectionId[])

@@ -182,3 +182,8 @@ feat(studio): introduce the editorial story workspace
 ## Current development milestone
 
 **Build 011 – Editorial Story Workspace** makes semantic authoring safe, understandable and immediate while preserving the calm Northern Lines shell.
+
+
+## Journey Route Foundation
+
+Studio behandelt die Reihenfolge von Orten als **Deine Route**. Der Reisende ordnet seine Reise; technische Seiten- und Dateistrukturen bleiben im Hintergrund.
