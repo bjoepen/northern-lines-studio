@@ -114,6 +114,21 @@ struct StudioProject {
     migrated_from_version: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ProjectSession {
+    #[serde(flatten)]
+    project: StudioProject,
+    project_path: String,
+}
+
+fn project_session(project: StudioProject, path: &Path) -> ProjectSession {
+    ProjectSession {
+        project,
+        project_path: path.to_string_lossy().into_owned(),
+    }
+}
+
 fn infer_role(page_type: &str) -> &'static str {
     match page_type {
         "cover" | "welcome" | "contents" => "front_matter",
@@ -379,7 +394,7 @@ fn starter_page(id: &str, order: u32, page_type: &str, role: &str, title: &str, 
 }
 
 #[tauri::command]
-fn create_nls_project(parent_path: String, title: String, editorial_world_id: String, language: String) -> Result<StudioProject, String> {
+fn create_nls_project(parent_path: String, title: String, editorial_world_id: String, language: String) -> Result<ProjectSession, String> {
     let title = title.trim();
     if title.is_empty() { return Err("Die Reise braucht einen Namen.".into()); }
     if editorial_world_id != REFERENCE_WORLD_ID {
@@ -415,12 +430,15 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
     };
     validate_project(&project)?;
     write_project(&folder, &project)?;
-    read_project(&folder)
+    let project = read_project(&folder)?;
+    Ok(project_session(project, &folder))
 }
 
 #[tauri::command]
-fn load_nls_project(path: String) -> Result<StudioProject, String> {
-    read_project(Path::new(&path))
+fn load_nls_project(path: String) -> Result<ProjectSession, String> {
+    let project_path = Path::new(&path);
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
 }
 
 #[tauri::command]
@@ -430,7 +448,7 @@ fn save_authoring_component(
     component_id: String,
     content: String,
     status: String,
-) -> Result<StudioProject, String> {
+) -> Result<ProjectSession, String> {
     if !matches!(status.as_str(), "empty" | "draft" | "revised" | "approved" | "final") {
         return Err("Ungültiger Authoring-Status.".into());
     }
@@ -450,14 +468,47 @@ fn save_authoring_component(
     project.migrated_from_version = None;
     validate_project(&project)?;
     write_project(project_path, &project)?;
-    read_project(project_path)
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+
+#[tauri::command]
+fn add_journey_place(path: String, title: String, country: String) -> Result<ProjectSession, String> {
+    let title = title.trim();
+    if title.is_empty() { return Err("Gib dem Ort zuerst einen Namen.".into()); }
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let base = slugify(title);
+    if base.is_empty() { return Err("Für diesen Ortsnamen konnte keine gültige Kennung erzeugt werden.".into()); }
+    let journey = project.journey.as_mut().ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+    if journey.stages.iter().any(|stage| stage.id == base || stage.title.eq_ignore_ascii_case(title)) {
+        return Err(format!("{title} gehört bereits zu deiner Reise."));
+    }
+    journey.stages.push(JourneyStage { id: base.clone(), kind: "destination".into(), title: title.into(), country: (!country.trim().is_empty()).then(|| country.trim().to_string()) });
+    let destination_count = project.page_manifest.iter().filter(|page| page.page_type == "destination").count() as u32;
+    let order = 4 + destination_count;
+    let content = format!("content/pages/{:03}-{}.md", order, base);
+    let mut page = StudioPage {
+        id: format!("page-{base}"), order, page_type: "destination".into(), role: Some("destination".into()),
+        title: title.into(), content: content.clone(), layout: "destination-standard".into(), journey_stage: Some(base),
+        knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
+    };
+    page.components = infer_components(&page);
+    fs::write(project_path.join(&content), format!("# {title}\n")).map_err(|e| format!("Der Ort konnte nicht angelegt werden: {e}"))?;
+    project.page_manifest.push(page);
+    project.page_manifest.sort_by_key(|page| page.order);
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![load_nls_project, create_nls_project, save_authoring_component])
+        .invoke_handler(tauri::generate_handler![load_nls_project, create_nls_project, save_authoring_component, add_journey_place])
         .run(tauri::generate_context!())
         .expect("error while running Northern Lines Studio");
 }
@@ -582,11 +633,11 @@ mod tests {
             REFERENCE_WORLD_ID.into(),
             "de".into(),
         ).expect("new journey");
-        assert_eq!(created.title, "Island im Winter");
-        assert_eq!(created.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
-        assert_eq!(created.page_manifest.len(), 8);
+        assert_eq!(created.project.title, "Island im Winter");
+        assert_eq!(created.project.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
+        assert_eq!(created.project.page_manifest.len(), 8);
         assert!(Path::new(&created.project_path).join("project.json").exists());
-        assert!(validate_project(&created).is_ok());
+        assert!(validate_project(&created.project).is_ok());
     }
 
     #[test]

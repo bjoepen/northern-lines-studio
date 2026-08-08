@@ -223,3 +223,12 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .companion-first-encounter strong { margin-top: 4px; font-family: Georgia, "Times New Roman", serif; color: #304b57; font-size: 16px; font-weight: 500; }
 .companion-first-encounter span { margin-top: 4px; color: #74858c; font-size: 9px; }
 .dialog-primary:disabled { opacity: .5; cursor: default; }
+
+/* Build 014 · Journey Places Foundation */
+.place-add-wrap {
+  padding: 10px 14px 18px;
+}
+.place-add-wrap .journey-open-link {
+  width: 100%;
+  justify-content: flex-start;
+}
