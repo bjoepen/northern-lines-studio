@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
@@ -7,7 +7,8 @@
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
-  import { requireEditorialWorld } from './lib/worlds';
+  import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
+  import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
   import type { EditorialComponentId } from './lib/grammar/types';
@@ -18,7 +19,8 @@
     | { kind: 'select-page'; pageId: string }
     | { kind: 'select-component'; componentId: EditorialComponentId }
     | { kind: 'open-travel' }
-    | { kind: 'close-travel' };
+    | { kind: 'close-travel' }
+    | { kind: 'begin-travel' };
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -32,6 +34,71 @@
   let authoringSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let projectMenuOpen = false;
   let pendingAction: PendingAction | null = null;
+  let journeyBeginningOpen = false;
+  let newJourneyTitle = '';
+  let newJourneyWorldId = 'fjord';
+  let newJourneyLanguage = 'de';
+  let saveDialogPrimary: HTMLButtonElement | null = null;
+  let journeyTitleInput: HTMLInputElement | null = null;
+  const journeyWorlds = availableEditorialWorlds();
+
+  async function showJourneyBeginning() {
+    projectMenuOpen = false;
+    journeyBeginningOpen = true;
+    newJourneyTitle = '';
+    newJourneyWorldId = journeyWorlds[0]?.id ?? 'fjord';
+    await tick();
+    journeyTitleInput?.focus();
+  }
+
+  function requestBeginTravel() {
+    projectMenuOpen = false;
+    if (authoringDirty) {
+      pendingAction = { kind: 'begin-travel' };
+      return;
+    }
+    void showJourneyBeginning();
+  }
+
+  function cancelJourneyBeginning() {
+    journeyBeginningOpen = false;
+  }
+
+  async function createJourney() {
+    const title = newJourneyTitle.trim();
+    if (!title) {
+      errorMessage = 'Gib deiner Reise zuerst einen Namen.';
+      journeyTitleInput?.focus();
+      return;
+    }
+    const parent = await open({
+      directory: true,
+      multiple: false,
+      title: 'Wo möchtest du deine Reise aufbewahren?'
+    });
+    if (!parent || Array.isArray(parent)) return;
+
+    isLoading = true;
+    errorMessage = '';
+    try {
+      const created = await invoke<StudioProject>('create_nls_project', {
+        parentPath: parent,
+        title,
+        editorialWorldId: newJourneyWorldId,
+        language: newJourneyLanguage
+      });
+      project = created;
+      requireEditorialWorld(project.editorialWorldId ?? '');
+      selectedPage = project.pageManifest[0] ?? null;
+      activeAuthoringComponent = null;
+      authoringSaveState = 'idle';
+      journeyBeginningOpen = false;
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
+  }
 
   async function openTravelNow() {
     projectMenuOpen = false;
@@ -166,6 +233,10 @@
       await openTravelNow();
       return;
     }
+    if (action.kind === 'begin-travel') {
+      await showJourneyBeginning();
+      return;
+    }
     if (action.kind === 'close-travel') {
       closeTravelNow();
       return;
@@ -182,6 +253,28 @@
     if (action.kind === 'select-page' && project) {
       const page = project.pageManifest.find((entry) => entry.id === action.pageId);
       if (page && page.id !== selectedPage?.id) selectPageNow(page);
+    }
+  }
+
+  async function focusSaveDialog() {
+    await tick();
+    saveDialogPrimary?.focus();
+  }
+
+  function handleSaveDialogKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelPendingAction();
+    } else if (event.key === 'Enter' && event.target instanceof HTMLElement && event.target.tagName !== 'TEXTAREA') {
+      event.preventDefault();
+      void continuePendingAction(true);
+    }
+  }
+
+  function handleJourneyBeginningKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelJourneyBeginning();
     }
   }
 
@@ -219,6 +312,9 @@
   $: authoringDirty = authoringIsDirty(activeAuthoring, authoringDraft, authoringStatus);
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
+  $: selectedJourneyWorld = journeyWorlds.find((world) => world.id === newJourneyWorldId) ?? journeyWorlds[0] ?? null;
+  $: selectedJourneyCompanion = loadCompanion(selectedJourneyWorld?.companionId);
+  $: if (pendingAction) { void focusSaveDialog(); }
 </script>
 
 <svelte:head>
@@ -256,6 +352,7 @@
         </button>
         {#if projectMenuOpen}
           <div class="travel-menu" aria-label="Reiseaktionen">
+            <button on:click={requestBeginTravel}>Neue Reise beginnen …</button>
             <button on:click={requestOpenTravel}>Reise öffnen …</button>
             <button on:click={requestCloseTravel}>Reise schließen</button>
           </div>
@@ -321,7 +418,11 @@
       {:else}
         <div class="empty-state">
           <strong>Deine Reise beginnt hier.</strong>
-          <span>Öffne ein Travelbook und gib deiner nächsten Reise ihren eigenen Raum.</span>
+          <span>Öffne ein Travelbook oder beginne ein neues Abenteuer.</span>
+          <div class="empty-state-actions">
+            <button class="journey-begin-button" on:click={requestBeginTravel}>Neue Reise beginnen</button>
+            <button class="journey-open-link" on:click={requestOpenTravel}>Reise öffnen …</button>
+          </div>
         </div>
       {/if}
     </aside>
@@ -531,17 +632,67 @@
   </footer>
 
   {#if pendingAction}
-    <div class="save-dialog-backdrop" role="presentation">
-      <section class="save-dialog" role="dialog" aria-modal="true" aria-labelledby="save-dialog-title">
+    <div class="save-dialog-backdrop">
+      <div
+        class="save-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="save-dialog-title"
+        aria-describedby="save-dialog-description"
+	tabindex="-1"
+        on:keydown={handleSaveDialogKeydown}
+      >
         <span class="inspector-label">Deine Geschichte</span>
         <strong id="save-dialog-title">Änderungen an „{activeAuthoring?.label ?? 'Story'}“ sichern?</strong>
-        <p>Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden.</p>
+        <p id="save-dialog-description">Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden.</p>
         <div class="save-dialog-actions">
           <button class="dialog-secondary" on:click={() => continuePendingAction(false)}>Verwerfen</button>
           <button class="dialog-secondary" on:click={cancelPendingAction}>Abbrechen</button>
-          <button class="dialog-primary" on:click={() => continuePendingAction(true)}>Sichern</button>
+          <button bind:this={saveDialogPrimary} class="dialog-primary" on:click={() => continuePendingAction(true)}>Sichern</button>
         </div>
-      </section>
+      </div>
+    </div>
+  {/if}
+
+  {#if journeyBeginningOpen}
+    <div class="save-dialog-backdrop">
+      <div class="journey-begin-dialog" role="dialog" aria-modal="true" aria-labelledby="journey-begin-title" aria-describedby="journey-begin-description" on:keydown={handleJourneyBeginningKeydown} tabindex="-1">
+        <span class="inspector-label">Neue Reise</span>
+        <strong id="journey-begin-title">Wo beginnt deine nächste Geschichte?</strong>
+        <p id="journey-begin-description">Gib deiner Reise einen Namen und wähle die Editorial World, die sie begleiten soll.</p>
+
+        <label class="journey-field">
+          <span>Name deiner Reise</span>
+          <input bind:this={journeyTitleInput} bind:value={newJourneyTitle} placeholder="Zum Beispiel: Island im Winter" />
+        </label>
+
+        <label class="journey-field">
+          <span>Editorial World</span>
+          <select bind:value={newJourneyWorldId}>
+            {#each journeyWorlds as world}
+              <option value={world.id}>{world.name}</option>
+            {/each}
+          </select>
+        </label>
+
+        {#if selectedJourneyWorld && selectedJourneyCompanion}
+          <div class="companion-first-encounter">
+            <img src={`/${selectedJourneyCompanion.assetPath}`} alt={selectedJourneyCompanion.name} />
+            <div>
+              <small>Dein Reisebegleiter</small>
+              <strong>{selectedJourneyCompanion.name}</strong>
+              <span>{selectedJourneyCompanion.character}</span>
+            </div>
+          </div>
+        {/if}
+
+        <div class="save-dialog-actions">
+          <button class="dialog-secondary" on:click={cancelJourneyBeginning}>Abbrechen</button>
+          <button class="dialog-primary" on:click={createJourney} disabled={isLoading || !newJourneyTitle.trim()}>
+            {isLoading ? 'Reise entsteht …' : 'Reise beginnen'}
+          </button>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

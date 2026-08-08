@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Travel Publishing – Build 011**
+**Travel Publishing – Build 013**
 
 Northern Lines Studio ist die ruhige visuelle und redaktionelle Arbeitsumgebung für Northern Lines Travel Fieldbooks. Es ist kein allgemeines DTP-Programm.
 
@@ -11,6 +11,12 @@ Vor der technischen Dokumentation sollte zuerst [`docs/000-NORTHERN-LINES.md`](d
 
 
 
+
+## Build 013 – Journey Beginning Foundation
+
+Build 013 closes the journey lifecycle at its beginning: Studio can now create a new `.nls` travelbook from the calm Empty State. The first creation world is **Fjord**, and the Papageientaucher appears as the first deliberate **Companion First Encounter**. The known Build-011 accessibility warning is also resolved as part of this build.
+
+The creation flow deliberately asks only for what the traveller needs to understand: the journey name and its Editorial World. Technical project structure is generated in the background.
 
 ## Build 011 – Editorial Story Workspace
 
