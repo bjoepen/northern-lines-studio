@@ -40,6 +40,10 @@
   let newJourneyLanguage = 'de';
   let saveDialogPrimary: HTMLButtonElement | null = null;
   let journeyTitleInput: HTMLInputElement | null = null;
+  let placeBeginningOpen = false;
+  let newPlaceTitle = '';
+  let newPlaceCountry = '';
+  let placeTitleInput: HTMLInputElement | null = null;
   const journeyWorlds = availableEditorialWorlds();
 
   async function showJourneyBeginning() {
@@ -98,6 +102,36 @@
     } finally {
       isLoading = false;
     }
+  }
+
+  async function showPlaceBeginning() {
+    newPlaceTitle = '';
+    newPlaceCountry = '';
+    placeBeginningOpen = true;
+    await tick();
+    placeTitleInput?.focus();
+  }
+
+  function cancelPlaceBeginning() { placeBeginningOpen = false; }
+
+  async function createPlace() {
+    if (!project) return;
+    const title = newPlaceTitle.trim();
+    if (!title) { errorMessage = 'Gib dem Ort zuerst einen Namen.'; placeTitleInput?.focus(); return; }
+    isLoading = true; errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const updated = await invoke<StudioProject>('add_journey_place', { path: projectPath, title, country: newPlaceCountry });
+      project = { ...updated, projectPath };
+      const created = project.pageManifest.find((page) => page.type === 'destination' && page.title === title) ?? null;
+      if (created) selectPageNow(created);
+      placeBeginningOpen = false;
+    } catch (error) { errorMessage = String(error); }
+    finally { isLoading = false; }
+  }
+
+  function handlePlaceBeginningKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') { event.preventDefault(); cancelPlaceBeginning(); }
   }
 
   async function openTravelNow() {
@@ -414,6 +448,9 @@
               {/each}
             </section>
           {/each}
+          <div class="place-add-wrap">
+            <button class="journey-open-link" on:click={() => void showPlaceBeginning()}>+ Ort hinzufügen</button>
+          </div>
         </nav>
       {:else}
         <div class="empty-state">
@@ -649,6 +686,22 @@
           <button class="dialog-secondary" on:click={() => continuePendingAction(false)}>Verwerfen</button>
           <button class="dialog-secondary" on:click={cancelPendingAction}>Abbrechen</button>
           <button bind:this={saveDialogPrimary} class="dialog-primary" on:click={() => continuePendingAction(true)}>Sichern</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if placeBeginningOpen}
+    <div class="save-dialog-backdrop">
+      <div class="journey-begin-dialog" role="dialog" aria-modal="true" aria-labelledby="place-begin-title" aria-describedby="place-begin-description" tabindex="-1" on:keydown={handlePlaceBeginningKeydown}>
+        <span class="inspector-label">Neuer Ort</span>
+        <strong id="place-begin-title">Welcher Ort gehört zu deiner Reise?</strong>
+        <p id="place-begin-description">Nenne den Ort. Studio baut daraus die passende Seite für deine Geschichte.</p>
+        <label class="journey-field"><span>Name des Ortes</span><input bind:this={placeTitleInput} bind:value={newPlaceTitle} placeholder="Zum Beispiel: Bergen" /></label>
+        <label class="journey-field"><span>Land / Region</span><input bind:value={newPlaceCountry} placeholder="Zum Beispiel: Norwegen" /></label>
+        <div class="save-dialog-actions">
+          <button class="dialog-secondary" on:click={cancelPlaceBeginning}>Abbrechen</button>
+          <button class="dialog-primary" on:click={createPlace} disabled={isLoading || !newPlaceTitle.trim()}>{isLoading ? 'Ort entsteht …' : 'Ort hinzufügen'}</button>
         </div>
       </div>
     </div>
