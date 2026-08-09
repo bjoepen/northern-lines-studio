@@ -187,3 +187,11 @@ feat(studio): introduce the editorial story workspace
 ## Journey Route Foundation
 
 Studio behandelt die Reihenfolge von Orten als **Deine Route**. Der Reisende ordnet seine Reise; technische Seiten- und Dateistrukturen bleiben im Hintergrund.
+
+
+## Journey Opening Foundation
+
+Ab Build 016 ist `.nls` nicht nur ein Projektformat, sondern ein Reisedokument:
+Auf macOS kann eine Reise direkt aus dem Finder geöffnet werden.
+
+> Der Reisende öffnet kein Projekt. Er öffnet seine Reise.

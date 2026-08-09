@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::{BTreeMap, HashSet}, fs, path::Path};
+use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
 const CURRENT_FORMAT_VERSION: &str = "0.5.0";
@@ -127,6 +127,29 @@ fn project_session(project: StudioProject, path: &Path) -> ProjectSession {
         project,
         project_path: path.to_string_lossy().into_owned(),
     }
+}
+
+
+#[derive(Default)]
+struct OpenRequestState {
+    path: Mutex<Option<String>>,
+}
+
+fn is_nls_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("nls"))
+}
+
+fn remember_open_request(state: &OpenRequestState, path: String) {
+    if let Ok(mut pending) = state.path.lock() {
+        *pending = Some(path);
+    }
+}
+
+#[tauri::command]
+fn take_pending_open_path(state: tauri::State<'_, OpenRequestState>) -> Option<String> {
+    state.path.lock().ok()?.take()
 }
 
 fn infer_role(page_type: &str) -> &'static str {
@@ -595,7 +618,8 @@ fn update_journey_place(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
+        .manage(OpenRequestState::default())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             load_nls_project,
@@ -603,10 +627,36 @@ pub fn run() {
             save_authoring_component,
             add_journey_place,
             move_journey_place,
-            update_journey_place
+            update_journey_place,
+            take_pending_open_path
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Northern Lines Studio");
+        .build(tauri::generate_context!())
+        .expect("error while building Northern Lines Studio");
+
+    app.run(|app_handle, event| {
+        #[cfg(target_os = "macos")]
+        {
+            use tauri::{Emitter, Manager};
+
+            if let tauri::RunEvent::Opened { urls } = event {
+                if let Some(path) = urls
+                    .iter()
+                    .filter_map(|url| url.to_file_path().ok())
+                    .find(|path| is_nls_path(path))
+                {
+                    let path = path.to_string_lossy().into_owned();
+                    let state = app_handle.state::<OpenRequestState>();
+                    remember_open_request(&state, path.clone());
+                    let _ = app_handle.emit("open-nls", path);
+                }
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (app_handle, event);
+        }
+    });
 }
 
 #[cfg(test)]
@@ -682,6 +732,13 @@ mod tests {
             project_path: String::new(),
             migrated_from_version: None,
         }
+    }
+
+    #[test]
+    fn recognizes_nls_journey_packages() {
+        assert!(is_nls_path(Path::new("/tmp/Norwegen.nls")));
+        assert!(is_nls_path(Path::new("/tmp/Island.NLS")));
+        assert!(!is_nls_path(Path::new("/tmp/project.json")));
     }
 
     #[test]
