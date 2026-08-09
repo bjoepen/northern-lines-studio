@@ -753,15 +753,15 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview.destination-hero-left .destination-modules-preview,
 .destination-preview.destination-hero-right .destination-modules-preview { grid-column: 1 / -1; grid-row: 2; }
 
-/* Build 021 · Layout Resilience & Content Capacity Foundation
-   A5 preview = 420 × 594 px. 17 mm binding safety on a 148 mm page is ~48.2 px.
-   The visible preview keeps 52 px on the binding side, so the safe area is never violated. */
+/* Build 021/022 · Layout Resilience & Content Capacity Foundation
+   A5 preview = 420 × 594 px. Build 022 defines 15 mm (~42.57 px) as the
+   technical minimum binding zone for relevant content. */
 .a5-page.destination-page {
-  --binding-safe-left: 48.25px;
+  --binding-safe-left: 42.57px;
   --companion-safe-width: 78px;
   --companion-safe-height: 76px;
   padding-top: 40px;
-  padding-left: max(52px, var(--binding-safe-left));
+  padding-left: var(--binding-safe-left);
 }
 
 /* The destination title is a protected editorial anchor. The subtitle follows;
@@ -843,13 +843,13 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   min-width: 0;
 }
 
-/* Binding and companion are protected anchors. The companion begins only after
-   the 17 mm binding safety and remains stable across all Destination layouts. */
+/* Binding and Companion are separate protected anchors. The Companion keeps the
+   Editorial-World home established across Fjord pages and is not shifted by the content inset. */
 .a5-page.destination-page .companion-zone-bottom-left {
-  left: max(52px, var(--binding-safe-left));
+  left: 34px;
   bottom: 51px;
-  width: var(--companion-safe-width);
-  height: var(--companion-safe-height);
+  width: 62px;
+  height: 74px;
 }
 
 /* Capacity states are intentionally non-destructive. They may guide later
@@ -861,3 +861,128 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview.capacity-overflow {
   --content-fit-state: 1;
 }
+
+/* Build 022 · Destination Imagery Foundation */
+.destination-hero-placeholder {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.destination-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.destination-image-empty {
+  color: rgba(255,255,255,.82);
+  font-size: 7px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(27,55,65,.22);
+}
+
+.destination-image-picker {
+  padding: 9px 10px;
+  border: 1px solid #e1e8e9;
+  border-radius: 8px;
+  background: rgba(248,250,249,.72);
+}
+.destination-image-picker-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.destination-image-picker-heading > div > span,
+.destination-image-picker-heading > div > strong {
+  display: block;
+}
+.destination-image-picker-heading > div > span {
+  color: #7b8a90;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.destination-image-picker-heading > div > strong {
+  margin-top: 2px;
+  color: #314a54;
+  font-size: 9px;
+  font-weight: 600;
+}
+.destination-image-picker-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.destination-image-picker-actions button {
+  flex: 1;
+  min-width: 0;
+}
+.destination-image-picker-actions .quiet-action {
+  background: transparent;
+  color: #687b83;
+  border-color: #dce5e7;
+}
+.destination-image-picker > small {
+  display: block;
+  margin-top: 5px;
+  color: #849298;
+  font-size: 7px;
+  line-height: 1.35;
+}
+.destination-image-help {
+  position: relative;
+}
+.destination-image-help > summary {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d3dfe2;
+  border-radius: 50%;
+  color: #617982;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.destination-image-help > summary::-webkit-details-marker { display: none; }
+.destination-image-help-card {
+  position: absolute;
+  z-index: 20;
+  top: 25px;
+  right: 0;
+  width: 190px;
+  padding: 10px;
+  border: 1px solid #d9e3e5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 26px rgba(34,58,68,.16);
+}
+.destination-image-help-card > strong,
+.destination-image-help-card > p,
+.destination-image-help-card > small { display: block; }
+.destination-image-help-card > strong { color: #314a54; font-size: 9px; }
+.destination-image-help-card > p { margin: 7px 0 2px; color: #50666f; font-size: 7.5px; }
+.destination-image-help-card > small { margin-top: 4px; color: #7b8a90; font-size: 7px; line-height: 1.35; }
+.image-geometry-miniature {
+  display: grid;
+  place-items: center;
+  margin-top: 8px;
+  height: 48px;
+  border-radius: 5px;
+  background: #f5f8f7;
+}
+.image-geometry-miniature i {
+  display: block;
+  border: 1px solid #91aab2;
+  background: linear-gradient(145deg, #e1ecee, #9fbcc5);
+}
+.image-geometry-miniature.image-role-wide i { width: 134px; height: 32px; }
+.image-geometry-miniature.image-role-left i,
+.image-geometry-miniature.image-role-right i { width: 28px; height: 42px; }

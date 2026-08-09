@@ -1,9 +1,9 @@
 # Northern Lines Studio – Produkt-DNA & Retrospektive
 
-**Stand:** Build 020 Final / Vorbereitung Build 021  
-**Projekt:** Northern Lines Studio  
-**Dokumenttyp:** Produkt- und UX-Retrospektive  
-**Zweck:** Verbindliche Zusammenfassung der bisher entwickelten Produktphilosophie, UX-Grundsätze, Architekturgrenzen und Layoutregeln  
+**Stand:** Build 022 – Destination Imagery Foundation
+**Projekt:** Northern Lines Studio
+**Dokumenttyp:** Dauerhafte Produkt-, UX- und Layoutreferenz
+**Zweck:** Verbindliche Zusammenfassung der bisher entwickelten Produktphilosophie, UX-Grundsätze, Architekturgrenzen und Layoutregeln
 **Status:** Referenzdokument für alle nachfolgenden Builds
 
 ---
@@ -527,7 +527,7 @@ Sondern als interne Seitenregeln.
 
 Links gilt verbindlich:
 
-**17 mm Sicherheitsrand**
+**15 mm technische Mindestzone**
 
 Dieser Bereich ist für relevante Inhalte tabu.
 
@@ -1060,7 +1060,7 @@ Wichtige Konsequenzen:
 
 - DIN A5 Hochformat
 - Bindung berücksichtigen
-- 17 mm Sicherheitsrand links
+- 15 mm technische Mindestzone links
 - Footer stabil
 - Companion stabil
 - Seitenzahl stabil
@@ -1462,7 +1462,7 @@ Der Knigge-Test steht sinngemäß für:
 
 ## Layout
 
-7. 17 mm Binding Safe Area.
+7. 15 mm Binding Safe Area als technische Mindestzone.
 8. Companion Safe Area.
 9. Footer Safe Area.
 10. Title Safe Area.
@@ -1511,7 +1511,7 @@ Vor der Freigabe eines neuen Features sollten mindestens diese Fragen beantworte
 ### Layout
 
 - Funktioniert es auf A5?
-- Bleibt der 17-mm-Bindungsrand geschützt?
+- Bleibt die 15-mm-Mindest-Bindungszone geschützt?
 - Bleiben Companion und Footer unberührt?
 - Funktioniert es mit wenig und viel Content?
 - Wird Typografie geopfert?
@@ -1573,3 +1573,23 @@ Im besten Fall verschwindet die Software gedanklich.
 - und später ein Rucksack voller Erinnerungen.
 
 Das ist die DNA, die alle kommenden Builds schützen sollen.
+
+
+# 60. Destination Imagery Foundation
+
+Build 022 führt echte Ortsbilder ein, ohne Northern Lines Studio zu einer Medienverwaltung zu machen.
+
+Verbindliche Regeln:
+
+- Studio spricht von **Bild des Ortes**, nicht von Asset oder Media Resource.
+- Für **Weite**, **Bild links** und **Bild rechts** dürfen passend vorbereitete Bildrollen existieren.
+- **Weite** zielt auf ein breites, flaches Panorama (ca. 4:1).
+- **Bild links** und **Bild rechts** zielen auf hochformatige Leitbilder (ca. 2:3).
+- Studio bietet bei Bedarf eine kleine Geometrie-Hilfe neben der Bildauswahl.
+- Build 022 besitzt keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung.
+- Bilder werden innerhalb des `.nls`-Packages verwaltet; technische Pfade bleiben unsichtbar.
+- Die Bildrolle gehört semantisch zum Ortsprofil. Finale Geometrie bleibt Publisher-Verantwortung.
+
+> **Hilfe bei Bedarf – nicht Technik auf Vorrat.**
+
+Die Binding Safe Area ist ab Build 022 eine **15-mm-Mindestzone für relevante Nutzinhalte**. Der Companion wird davon nicht verschoben. Seine Position ist Bestandteil der Editorial World und über geeignete Seitentypen invariant.

@@ -1,8 +1,8 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 021 – Layout Resilience & Content Capacity Foundation
-**Studio:** 0.21.0
-**Projektformat:** `.nls` 0.8.0
+**Aktueller Stand:** Build 022 – Destination Imagery Foundation
+**Studio:** 0.22.0
+**Projektformat:** `.nls` 0.9.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -111,7 +111,7 @@ Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner.
 
 Build 021 macht die vorhandenen Ortsseiten belastbarer, ohne neue Produktfunktionen oder neue `.nls`-Felder einzuführen. Die A5-Komposition kennt jetzt geschützte redaktionelle Zonen:
 
-- **17 mm Bindungsraum** links
+- **15 mm technische Mindest-Bindungszone** links
 - geschützte Titelhierarchie
 - geschützter Raum für den Fjord-Reisebegleiter
 - stabiler Northern-Lines-Footer und Seitenzahl
@@ -122,6 +122,19 @@ Build 021 macht die vorhandenen Ortsseiten belastbarer, ohne neue Produktfunktio
 Für Ankunft und Abfahrt tippt der Reisende nur die Uhrzeit, zum Beispiel `08:00`; Studio zeigt daraus automatisch **08:00 Uhr**.
 
 > **Der Begleiter ist unantastbar – und sein Raum ebenfalls.**
+
+
+## Destination Imagery Foundation
+
+Build 022 gibt Reisezielen erstmals echte Ortsbilder, ohne Studio in eine Bildverwaltung zu verwandeln. Für die drei Seitenwirkungen werden bewusst passende Bildrollen verwendet:
+
+- **Weite** – breites, flaches Panorama, empfohlen ca. **4:1 / 2400 × 600 px**
+- **Bild links** – hochformatiges Leitbild, empfohlen ca. **2:3 / 1500 × 2250 px**
+- **Bild rechts** – hochformatiges Leitbild, empfohlen ca. **2:3 / 1500 × 2250 px**
+
+Studio zeigt neben **Bild auswählen …** eine kleine Hilfe mit der empfohlenen Geometrie. Es gibt in Build 022 bewusst **keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung**. Gewählte Bilder werden innerhalb des `.nls`-Packages unter `assets/destinations/` abgelegt; sichtbare Dateipfade oder Asset-IDs gehören nicht zur Reisenden-UX.
+
+Die Binding Safe Area beträgt ab Build 022 **15 mm technische Mindestzone**. Der Papageientaucher bleibt davon unabhängig an seiner bewährten Editorial-World-Position: **Der Begleiter ist unantastbar – und sein Zuhause ebenfalls.**
 
 ## Reisewelten
 
@@ -176,8 +189,7 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 020 aktualisierte das Format auf **0.8.0**; Build 021 behält dieses Format bewusst bei. Projekte im bisherigen Format 0.7.0 sowie
-die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
+Build 022 aktualisiert das Format auf **0.9.0** und ergänzt semantische Bildrollen für Ortsprofile. Projekte im Format 0.8.0 sowie die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
 Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
 redaktionelle Inhalte werden dabei bewusst nicht erfunden.
 
@@ -214,6 +226,7 @@ TypeScript Model
 → Preview
 → Layout Variants (für Destinations)
 → Layout Resilience / Content Capacity
+→ Destination Imagery
 → Tests
 ```
 

@@ -28,9 +28,14 @@
   import {
     destinationDraft,
     destinationForPage,
+    destinationImageGeometry,
+    destinationImagePath,
+    destinationImageRole,
+    destinationImageRoleLabel,
     destinationIsDirty,
     formatTravelTime
   } from './lib/destinations';
+  import type { DestinationImageRole } from './lib/destinations';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -88,6 +93,13 @@
   let destinationPracticalInfo: DestinationPracticalInfo[] = [];
   let destinationLayoutVariant: DestinationLayoutVariantId = 'destination-hero-banner';
   let destinationSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  let destinationActiveImageRole: DestinationImageRole = 'wide';
+  let destinationActiveImagePath = '';
+  let destinationImagePreviewUrl = '';
+  let destinationImagePreviewSource = '';
+  let destinationImagePreviewError = '';
+  let destinationImageState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  let destinationImagePreviewRequest = 0;
   const journeyWorlds = availableEditorialWorlds();
 
   async function showJourneyBeginning() {
@@ -320,6 +332,92 @@
     destinationPracticalInfo = draft.practicalInfo;
     destinationLayoutVariant = draft.layoutVariant;
     destinationSaveState = 'idle';
+  }
+
+  function destinationProjectImageAbsolutePath(relativePath: string): string {
+    if (!project?.projectPath || !relativePath) return '';
+    return `${project.projectPath.replace(/\/$/, '')}/${relativePath}`;
+  }
+
+  function imageMimeType(path: string): string {
+    return path.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+  }
+
+  async function refreshDestinationImagePreview(sourcePath: string) {
+    const request = ++destinationImagePreviewRequest;
+    destinationImagePreviewError = '';
+    if (!sourcePath) {
+      if (destinationImagePreviewUrl) URL.revokeObjectURL(destinationImagePreviewUrl);
+      destinationImagePreviewUrl = '';
+      destinationImagePreviewSource = '';
+      return;
+    }
+    try {
+      const bytes = await invoke<number[]>('read_image_preview', { path: sourcePath });
+      if (request !== destinationImagePreviewRequest) return;
+      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: imageMimeType(sourcePath) }));
+      if (destinationImagePreviewUrl) URL.revokeObjectURL(destinationImagePreviewUrl);
+      destinationImagePreviewUrl = url;
+      destinationImagePreviewSource = sourcePath;
+    } catch (error) {
+      if (request !== destinationImagePreviewRequest) return;
+      if (destinationImagePreviewUrl) URL.revokeObjectURL(destinationImagePreviewUrl);
+      destinationImagePreviewUrl = '';
+      destinationImagePreviewSource = sourcePath;
+      destinationImagePreviewError = String(error);
+    }
+  }
+
+  async function chooseDestinationImage() {
+    if (!project || !journeyStage || selectedPage?.type !== 'destination') return;
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      title: `Bild für ${destinationImageRoleLabel(destinationActiveImageRole)} auswählen`,
+      filters: [{ name: 'Bilder', extensions: ['jpg', 'jpeg', 'png'] }]
+    });
+    if (!selected || Array.isArray(selected)) return;
+    destinationImageState = 'saving';
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const selectedPageId = selectedPage.id;
+      const updated = await invoke<StudioProject>('set_destination_image', {
+        path: projectPath,
+        stageId: journeyStage.id,
+        role: destinationActiveImageRole,
+        sourcePath: selected
+      });
+      project = { ...updated, projectPath };
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      destinationImagePreviewSource = '';
+      destinationImageState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      destinationImageState = 'error';
+    }
+  }
+
+  async function removeDestinationImage() {
+    if (!project || !journeyStage || selectedPage?.type !== 'destination' || !destinationActiveImagePath) return;
+    destinationImageState = 'saving';
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const selectedPageId = selectedPage.id;
+      const updated = await invoke<StudioProject>('remove_destination_image', {
+        path: projectPath,
+        stageId: journeyStage.id,
+        role: destinationActiveImageRole
+      });
+      project = { ...updated, projectPath };
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      destinationImagePreviewSource = '';
+      destinationImageState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      destinationImageState = 'error';
+    }
   }
 
   function updateDestinationReasonText(value: string) {
@@ -735,6 +833,12 @@
   $: authoringProgress = authoringCompletion(selectedPage);
   $: authoredCount = authoredComponentCount(selectedPage);
   $: authoringDirty = authoringIsDirty(activeAuthoring, authoringDraft, authoringStatus);
+  $: destinationActiveImageRole = destinationImageRole(destinationLayoutVariant);
+  $: destinationActiveImagePath = destinationImagePath(selectedDestination, destinationActiveImageRole);
+  $: {
+    const nextImageSource = destinationProjectImageAbsolutePath(destinationActiveImagePath);
+    if (nextImageSource !== destinationImagePreviewSource) void refreshDestinationImagePreview(nextImageSource);
+  }
   $: destinationDirty = selectedPage?.type === 'destination' && destinationIsDirty(selectedDestination, {
     name: destinationName,
     subtitle: destinationSubtitle,
@@ -909,7 +1013,13 @@
                     </div>
                   </div>
 
-                  <div class="destination-hero-placeholder" aria-label="Bild"></div>
+                  <div class="destination-hero-placeholder" aria-label={`Bild für ${destinationImageRoleLabel(destinationActiveImageRole)}`}>
+                    {#if destinationImagePreviewUrl}
+                      <img class="destination-hero-image" src={destinationImagePreviewUrl} alt={`Bild von ${destinationName || selectedPage.title}`} />
+                    {:else}
+                      <span class="destination-image-empty">Bild für {destinationImageRoleLabel(destinationActiveImageRole)}</span>
+                    {/if}
+                  </div>
 
                   <div class:destination-modules-three={destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).length > 0} class="destination-modules-preview">
                     <section>
@@ -1072,6 +1182,31 @@
             <label><span>Reiseziel</span><input bind:value={destinationName} placeholder="Zum Beispiel: Bergen" /></label>
             <label><span>Ein Satz für diesen Ort</span><input bind:value={destinationSubtitle} placeholder="Zum Beispiel: Tor zu den Fjorden" /></label>
             <label><span>Der Ort in Kürze</span><textarea rows="4" bind:value={destinationIntroduction} placeholder="Was macht diesen Ort für deine Reise besonders?"></textarea></label>
+
+            <div class="destination-image-picker">
+              <div class="destination-image-picker-heading">
+                <div><span>Bild des Ortes</span><strong>Für {destinationImageRoleLabel(destinationActiveImageRole)}</strong></div>
+                <details class="destination-image-help">
+                  <summary aria-label="Empfohlene Bildgeometrie">?</summary>
+                  <div class="destination-image-help-card">
+                    <strong>{destinationImageRoleLabel(destinationActiveImageRole)}</strong>
+                    <span class={`image-geometry-miniature image-role-${destinationActiveImageRole}`} aria-hidden="true"><i></i></span>
+                    <p>{destinationImageGeometry(destinationActiveImageRole).ratio} · {destinationImageGeometry(destinationActiveImageRole).pixels}</p>
+                    <small>{destinationImageGeometry(destinationActiveImageRole).millimetres}</small>
+                    <small>Bereite das Bild möglichst in dieser Geometrie vor. Studio schneidet es in Build 022 nicht frei zu.</small>
+                  </div>
+                </details>
+              </div>
+              <div class="destination-image-picker-actions">
+                <button type="button" on:click={chooseDestinationImage} disabled={destinationImageState === 'saving'}>
+                  {destinationActiveImagePath ? 'Bild ersetzen …' : 'Bild auswählen …'}
+                </button>
+                {#if destinationActiveImagePath}<button type="button" class="quiet-action" on:click={removeDestinationImage} disabled={destinationImageState === 'saving'}>Bild entfernen</button>{/if}
+              </div>
+              {#if destinationActiveImagePath}<small>Das Bild für {destinationImageRoleLabel(destinationActiveImageRole)} ist Teil dieser Reise.</small>{/if}
+              {#if destinationImageState === 'saved'}<small>Bild übernommen.</small>{/if}
+              {#if destinationImagePreviewError}<small class="planning-save-error">Die Bildvorschau konnte nicht geladen werden.</small>{/if}
+            </div>
 
             <label class="destination-editorial-question">
               <span>Was möchtest du erleben?</span>
