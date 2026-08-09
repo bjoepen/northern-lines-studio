@@ -10,6 +10,9 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { layoutSystemForWorld } from './lib/layout';
+  import { northernLinesFooter } from './lib/travel-language/footer';
+  import { requireCompanion } from './lib/companions';
+  import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
@@ -499,6 +502,9 @@
   $: sections = groupPages(project?.pageManifest ?? [], project?.journey?.stages.map((stage) => stage.id) ?? []);
   $: editorialWorld = editorialWorldFor(project);
   $: editorialLayout = layoutSystemForWorld(project?.editorialWorldId);
+  $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
+  $: companionVisible = editorialWorld?.id === 'fjord'
+    && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
   $: statusText = projectStatus(project);
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -664,9 +670,33 @@
               <p class="eyebrow">{preview.eyebrow}</p>
               <h1>{preview.heading}</h1>
               <p class="preview-body">{preview.body}</p>
+              {#if companionVisible && activeCompanion}
+                <div
+                  class="companion-zone companion-zone-bottom-left"
+                  aria-label={`Dein Reisebegleiter: ${activeCompanion.name}`}
+                >
+                  <img
+                    class="page-companion"
+                    src={`/${activeCompanion.assetPath}`}
+                    alt={activeCompanion.name}
+                  />
+                </div>
+              {/if}
+
               <footer class="editorial-footer">
-                <span class="footer-anchor">{editorialLayout?.footer.anchor ?? editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-                <span class="footer-world">{editorialLayout?.footer.worldLabel ?? editorialWorld?.name ?? ''}</span>
+                <div class="travel-language-footer" aria-label={northernLinesFooter.ariaLabel}>
+                  <span>{northernLinesFooter.left}</span>
+                  <span class="travel-footer-dot" aria-hidden="true">•</span>
+                  <span>{northernLinesFooter.centerLeft}</span>
+                  <span class="travel-footer-dot" aria-hidden="true">•</span>
+                  <span class="travel-footer-signet" aria-hidden="true">
+                    <svg viewBox="0 0 54 18" role="presentation">
+                      <path d="M2 10 C13 2, 20 4, 27 10 C34 4, 41 2, 52 10" />
+                      <path d="M20 7 L27 12 L34 7" />
+                    </svg>
+                  </span>
+                  <span>{northernLinesFooter.centerRight}</span>
+                </div>
                 <span class="footer-page-number">{selectedPage ? visiblePageNumber(selectedPage) : '–'}</span>
               </footer>
             </article>
@@ -709,6 +739,24 @@
             <strong>{editorialLayout.footer.anchor}</strong>
             <span>Ortsseiten</span>
             <strong>{editorialLayout.destinationLayouts.map((layout) => layout.label).join(' · ')}</strong>
+          </div>
+        </section>
+      {/if}
+
+      {#if activeCompanion}
+        <section class="inspector-card companion-layout-card" aria-label="Reisebegleiter im Layout">
+          <span class="inspector-label">Reisebegleiter</span>
+          <div class="companion-layout-preview">
+            <img src={`/${activeCompanion.assetPath}`} alt={activeCompanion.name} />
+            <div>
+              <strong>{activeCompanion.name}</strong>
+              <small>{companionVisible ? 'Begleitet diese Seite' : 'Beginnt erst mit der Reiseplanung'}</small>
+            </div>
+          </div>
+          <div class="companion-layout-facts">
+            <span>Platz</span><strong>unten links</strong>
+            <span>Pose</span><strong>Standard</strong>
+            <span>Spiegelung</span><strong>aus</strong>
           </div>
         </section>
       {/if}

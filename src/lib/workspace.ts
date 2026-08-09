@@ -4,7 +4,7 @@ import { requireCompanion } from './companions';
 import type { EditorialWorldDefinition } from './worlds/types';
 import { layoutSystemForWorld } from './layout';
 
-export type WorkspaceSectionId = 'book' | 'destinations' | 'journey' | 'workflow' | 'memories';
+export type WorkspaceSectionId = 'book' | 'planning' | 'destinations' | 'journey' | 'workflow' | 'memories';
 
 export interface WorkspaceSection {
   id: WorkspaceSectionId;
@@ -29,6 +29,7 @@ export interface EditorialWorldView {
 
 const sectionForRole: Record<PageRole, WorkspaceSectionId> = {
   front_matter: 'book',
+  journey_planning: 'planning',
   destination: 'destinations',
   journey_knowledge: 'journey',
   workflow: 'workflow',
@@ -41,6 +42,11 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
     id: 'book',
     label: 'Buch',
     description: 'Einstieg und Orientierung'
+  },
+  planning: {
+    id: 'planning',
+    label: 'Reiseplanung',
+    description: 'Bevor es losgeht'
   },
   destinations: {
     id: 'destinations',
@@ -134,6 +140,7 @@ export function projectStatus(project: StudioProject | null): string {
 export function pageRoleLabel(role: PageRole | undefined): string {
   switch (role) {
     case 'front_matter': return 'Buch';
+    case 'journey_planning': return 'Reiseplanung';
     case 'destination': return 'Reiseziel';
     case 'journey_knowledge': return 'Reisebegleitung';
     case 'workflow': return 'Fotografie-Workflow';

@@ -11,9 +11,10 @@ export const fjordLayoutSystem: EditorialLayoutSystem = {
   headingFamily: 'Georgia, "Times New Roman", serif',
   bodyFamily: 'Georgia, "Times New Roman", serif',
   footer: {
-    anchor: 'Northern Lines · Deine Reise beginnt hier.',
+    anchor: 'TRAVEL · PHOTOGRAPHY · MEMORIES',
     worldLabel: 'Fjord'
   },
+  companionLayoutId: 'fjord-companion-layout',
   destinationLayouts: [
     {
       id: 'destination-hero-banner',
@@ -38,6 +39,7 @@ export const fjordLayoutSystem: EditorialLayoutSystem = {
     cover: 'cover',
     welcome: 'welcome',
     contents: 'contents',
+    planning: 'planning',
     destination: 'destination-hero-banner',
     knowledge: 'knowledge',
     workflow: 'workflow',

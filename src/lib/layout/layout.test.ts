@@ -5,7 +5,7 @@ describe('editorial layout systems', () => {
   it('loads the Fjord layout language', () => {
     const layout = requireLayoutSystem('fjord');
     expect(layout.name).toBe('Fjord Layout Language');
-    expect(layout.footer.anchor).toContain('Deine Reise beginnt hier');
+    expect(layout.footer.anchor).toBe('TRAVEL · PHOTOGRAPHY · MEMORIES');
   });
 
   it('keeps the destination layout vocabulary intentionally small', () => {
@@ -18,6 +18,10 @@ describe('editorial layout systems', () => {
 
   it('uses Weite as the Fjord destination default', () => {
     expect(requireLayoutSystem('fjord').defaultLayoutByPageType.destination).toBe('destination-hero-banner');
+  });
+
+  it('binds Fjord to its fixed companion layout foundation', () => {
+    expect(requireLayoutSystem('fjord').companionLayoutId).toBe('fjord-companion-layout');
   });
 
   it('does not invent layout languages for unknown worlds', () => {
