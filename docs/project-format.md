@@ -1,72 +1,105 @@
 # Northern Lines Studio Project Format
 
-## Current version
+**Current format:** `.nls` 0.8.0
 
-`.nls` format: **0.4.0**
+An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
-A `.nls` project is a transparent project directory with the `.nls` extension. Build 005 continues to use `project.json` as the manifest while the domain model evolves.
+## Core structure
 
-## Principle
+```text
+<journey>.nls/
+├── project.json
+└── content/
+    └── pages/
+```
 
-The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and does not contain Publisher render jobs as primary project data.
+## Journey
 
-## Editorial World reference
+The `journey` object describes the trip itself. Journey stages form the route. Since 0.8.0 destination stages can reference a stable Destination Profile:
 
 ```json
 {
-  "editorialWorldId": "fjord"
+  "id": "bergen",
+  "kind": "destination",
+  "title": "Bergen",
+  "country": "Norway",
+  "destinationId": "destination-bergen"
 }
 ```
 
-The world definition remains owned by Studio.
+The route order remains the order of `journey.stages`.
 
-## Story component presence
+## Destination Profiles
 
-Build 005 adds a per-page `components` list. It records which editorial Story components are present without copying the grammar itself:
-
-```json
-{
-  "id": "page-bergen",
-  "type": "destination",
-  "components": [
-    "hero",
-    "title",
-    "introduction",
-    "history",
-    "photography",
-    "knowledge",
-    "qr"
-  ]
-}
-```
-
-The Destination grammar itself remains in Studio and can therefore evolve independently under versioned rules.
-
-## Core manifest shape
+Build 020 introduces top-level `destinations`:
 
 ```json
 {
-  "format": "northern-lines-studio-project",
-  "formatVersion": "0.4.0",
-  "projectId": "nl-norway-sample",
-  "title": "Norwegen Fieldbook",
-  "edition": "2.0",
-  "language": "de",
-  "editorialWorldId": "fjord",
-  "journey": {},
-  "document": {
-    "pageFormat": "A5",
-    "orientation": "portrait"
+  "id": "destination-bergen",
+  "name": "Bergen",
+  "subtitle": "Tor zu den Fjorden",
+  "introduction": "...",
+  "journeyContext": {
+    "arrival": "08:00 Uhr",
+    "departure": "17:00 Uhr",
+    "timezone": "MEZ / MESZ"
   },
-  "pageManifest": []
+  "reasons": [
+    "Bryggen im Morgenlicht"
+  ],
+  "highlights": [
+    {
+      "id": "highlight-bryggen",
+      "name": "Bryggen",
+      "description": "Historische Hansehäuser",
+      "category": "architecture"
+    }
+  ],
+  "practicalInfo": [
+    {
+      "id": "practical-walk",
+      "title": "Zu Fuß",
+      "text": "Viele Highlights liegen dicht beieinander."
+    }
+  ],
+  "editorial": {
+    "layoutVariant": "destination-hero-banner"
+  }
 }
 ```
 
-## Compatibility
+## Destination layout values
 
-- 0.4.0 – current Build-005 format; pages declare present Story components.
-- 0.3.0 – Build-004 format; component presence is inferred in memory from page semantics.
-- 0.2.0 – Build-003 format; embedded Editorial World is normalized and components are inferred.
-- 0.1.0 – legacy format; Journey, roles, Fjord reference and components are inferred in memory.
+Only three semantic values are valid in 0.8.0:
 
-Studio never rewrites the source project merely because it was opened through a migration path.
+- `destination-hero-banner`
+- `destination-hero-left`
+- `destination-hero-right`
+
+They are editorial choices, not geometry descriptions. Coordinates and Publisher-specific layout measurements do not belong in `.nls`.
+
+
+## Studio Travel Language for destination layouts
+
+The persisted values remain technical and stable, while Studio presents them as Travel Language:
+
+| `.nls` value | Studio |
+|---|---|
+| `destination-hero-banner` | **Weite** |
+| `destination-hero-left` | **Bild links** |
+| `destination-hero-right` | **Bild rechts** |
+
+Build 020 Final introduces **no schema change** beyond 0.8.0 and stores no preview geometry. The exact A5 composition remains outside the project data.
+
+## Migration 0.7.0 → 0.8.0
+
+When a 0.7.0 project is opened:
+
+1. every destination Journey Stage receives a stable `destinationId`;
+2. a matching Destination Profile is created if absent;
+3. the visible destination name is preserved;
+4. an existing authored `introduction` is reused when available;
+5. older `destination-standard` page layouts normalize to `destination-hero-banner`;
+6. missing subtitles, reasons, highlights and practical information remain empty.
+
+Migration must not invent editorial content.

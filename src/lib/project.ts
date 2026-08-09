@@ -42,6 +42,45 @@ export interface JourneyStage {
   kind: JourneyStageKind;
   title: string;
   country?: string;
+  destinationId?: string;
+}
+
+export type DestinationLayoutVariantId =
+  | 'destination-hero-banner'
+  | 'destination-hero-left'
+  | 'destination-hero-right';
+
+export interface DestinationJourneyContext {
+  arrival?: string;
+  departure?: string;
+  timezone?: string;
+}
+
+export interface DestinationHighlight {
+  id: string;
+  name: string;
+  description: string;
+  category: 'landmark' | 'viewpoint' | 'architecture' | 'nature' | 'culture' | 'photography' | 'other';
+}
+
+export interface DestinationPracticalInfo {
+  id: string;
+  title: string;
+  text: string;
+}
+
+export interface Destination {
+  id: string;
+  name: string;
+  subtitle?: string;
+  introduction?: string;
+  journeyContext?: DestinationJourneyContext;
+  reasons: string[];
+  highlights: DestinationHighlight[];
+  practicalInfo: DestinationPracticalInfo[];
+  editorial: {
+    layoutVariant: DestinationLayoutVariantId;
+  };
 }
 
 export interface Journey {
@@ -67,6 +106,7 @@ export interface StudioProject {
   language: string;
   editorialWorldId?: string;
   journey: Journey;
+  destinations: Destination[];
   document: {
     pageFormat: 'A5';
     orientation: 'portrait';
