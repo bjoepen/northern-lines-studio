@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.7.0";
+const CURRENT_FORMAT_VERSION: &str = "0.8.0";
+const BUILD_019_FORMAT_VERSION: &str = "0.7.0";
 const BUILD_018_FORMAT_VERSION: &str = "0.6.0";
 const BUILD_017_FORMAT_VERSION: &str = "0.5.0";
 const BUILD_009_FORMAT_VERSION: &str = "0.4.0";
@@ -43,6 +44,8 @@ struct JourneyStage {
     title: String,
     #[serde(default)]
     country: Option<String>,
+    #[serde(default)]
+    destination_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,6 +71,73 @@ struct Journey {
     travel_focus: Vec<String>,
     #[serde(default)]
     stages: Vec<JourneyStage>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DestinationJourneyContext {
+    #[serde(default)]
+    arrival: Option<String>,
+    #[serde(default)]
+    departure: Option<String>,
+    #[serde(default)]
+    timezone: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DestinationHighlight {
+    id: String,
+    name: String,
+    #[serde(default)]
+    description: String,
+    #[serde(default = "default_highlight_category")]
+    category: String,
+}
+
+fn default_highlight_category() -> String { "other".into() }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DestinationPracticalInfo {
+    id: String,
+    title: String,
+    #[serde(default)]
+    text: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DestinationEditorial {
+    #[serde(default = "default_destination_layout")]
+    layout_variant: String,
+}
+
+fn default_destination_layout() -> String { "destination-hero-banner".into() }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Destination {
+    id: String,
+    name: String,
+    #[serde(default)]
+    subtitle: Option<String>,
+    #[serde(default)]
+    introduction: Option<String>,
+    #[serde(default)]
+    journey_context: Option<DestinationJourneyContext>,
+    #[serde(default)]
+    reasons: Vec<String>,
+    #[serde(default)]
+    highlights: Vec<DestinationHighlight>,
+    #[serde(default)]
+    practical_info: Vec<DestinationPracticalInfo>,
+    #[serde(default = "default_destination_editorial")]
+    editorial: DestinationEditorial,
+}
+
+fn default_destination_editorial() -> DestinationEditorial {
+    DestinationEditorial { layout_variant: default_destination_layout() }
 }
 
 
@@ -118,6 +188,8 @@ struct StudioProject {
     legacy_editorial_world: Option<EditorialWorld>,
     #[serde(default)]
     journey: Option<Journey>,
+    #[serde(default)]
+    destinations: Vec<Destination>,
     document: DocumentSettings,
     page_manifest: Vec<StudioPage>,
     #[serde(default, skip_serializing)]
@@ -241,6 +313,7 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
                 kind: "destination".into(),
                 title: page.title.clone(),
                 country: None,
+                destination_id: None,
             });
         }
     }
@@ -260,9 +333,67 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
     }
 }
 
+fn ensure_destination_profiles(project: &mut StudioProject) {
+    let page_by_stage: BTreeMap<String, (String, String, String)> = project
+        .page_manifest
+        .iter()
+        .filter_map(|page| {
+            if page.page_type != "destination" { return None; }
+            let stage_id = page.journey_stage.clone()?;
+            let intro = page.authoring.get("introduction").map(|entry| entry.content.clone()).unwrap_or_default();
+            Some((stage_id, (page.title.clone(), intro, page.layout.clone())))
+        })
+        .collect();
+
+    let Some(journey) = project.journey.as_mut() else { return; };
+    for stage in journey.stages.iter_mut().filter(|stage| stage.kind == "destination") {
+        let destination_id = stage
+            .destination_id
+            .clone()
+            .unwrap_or_else(|| format!("destination-{}", stage.id));
+        stage.destination_id = Some(destination_id.clone());
+
+        if project.destinations.iter().any(|destination| destination.id == destination_id) {
+            continue;
+        }
+
+        let (page_title, introduction, page_layout) = page_by_stage
+            .get(&stage.id)
+            .cloned()
+            .unwrap_or_else(|| (stage.title.clone(), String::new(), String::new()));
+        let layout_variant = match page_layout.as_str() {
+            "destination-hero-left" | "destination-hero-right" | "destination-hero-banner" => page_layout,
+            _ => default_destination_layout(),
+        };
+        project.destinations.push(Destination {
+            id: destination_id,
+            name: if page_title.trim().is_empty() { stage.title.clone() } else { page_title },
+            subtitle: None,
+            introduction: (!introduction.trim().is_empty()).then_some(introduction),
+            journey_context: None,
+            reasons: Vec::new(),
+            highlights: Vec::new(),
+            practical_info: Vec::new(),
+            editorial: DestinationEditorial { layout_variant },
+        });
+    }
+
+    for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination") {
+        if !matches!(page.layout.as_str(), "destination-hero-banner" | "destination-hero-left" | "destination-hero-right") {
+            page.layout = default_destination_layout();
+        }
+    }
+}
+
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_019_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_019_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+        }
         BUILD_018_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_018_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -336,6 +467,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
         }
     }
     ensure_journey_planning_page(&mut project);
+    ensure_destination_profiles(&mut project);
     project.legacy_editorial_world = None;
     Ok(project)
 }
@@ -414,12 +546,40 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
     }
 
     let mut stage_ids = HashSet::new();
+    let destination_ids: HashSet<String> = project.destinations.iter().map(|destination| destination.id.clone()).collect();
     for stage in &journey.stages {
         if stage.id.trim().is_empty() || stage.title.trim().is_empty() || stage.kind.trim().is_empty() {
             return Err("Journey Stage besitzt ungültige Pflichtfelder.".into());
         }
         if !stage_ids.insert(stage.id.clone()) {
             return Err(format!("Doppelte Journey-Stage-ID: {}", stage.id));
+        }
+        if stage.kind == "destination" {
+            let destination_id = stage.destination_id.as_deref().ok_or_else(|| format!("Reiseziel '{}' besitzt keine stabile Destination-Referenz.", stage.title))?;
+            if !destination_ids.contains(destination_id) {
+                return Err(format!("Reiseziel '{}' verweist auf unbekanntes Destination Profile '{}'.", stage.title, destination_id));
+            }
+        }
+    }
+
+    if destination_ids.len() != project.destinations.len() {
+        return Err("Destination Profile IDs müssen eindeutig sein.".into());
+    }
+    for destination in &project.destinations {
+        if destination.id.trim().is_empty() || destination.name.trim().is_empty() {
+            return Err("Destination Profile besitzt keine gültige ID oder keinen Namen.".into());
+        }
+        if !matches!(destination.editorial.layout_variant.as_str(), "destination-hero-banner" | "destination-hero-left" | "destination-hero-right") {
+            return Err(format!("Destination '{}' besitzt eine unbekannte Layout-Variante.", destination.name));
+        }
+        let mut highlight_ids = HashSet::new();
+        for highlight in &destination.highlights {
+            if highlight.id.trim().is_empty() || highlight.name.trim().is_empty() {
+                return Err(format!("Destination '{}' besitzt ein ungültiges Highlight.", destination.name));
+            }
+            if !highlight_ids.insert(highlight.id.clone()) {
+                return Err(format!("Destination '{}' besitzt doppelte Highlight-IDs.", destination.name));
+            }
         }
     }
 
@@ -543,6 +703,7 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
         travel_focus: Vec::new(),
         stages: Vec::new()
     }),
+        destinations: Vec::new(),
         document: DocumentSettings { page_format: "A5".into(), orientation: "portrait".into() },
         page_manifest: pages, project_path: folder.to_string_lossy().into_owned(), migrated_from_version: None,
     };
@@ -572,17 +733,41 @@ fn save_authoring_component(
     }
     let project_path = Path::new(&path);
     let mut project = read_project(project_path)?;
-    let page = project.page_manifest.iter_mut().find(|page| page.id == page_id)
-        .ok_or_else(|| format!("Unbekannte Seite: {page_id}"))?;
-    if !page.components.contains(&component_id) {
-        return Err(format!("Die Komponente '{component_id}' gehört nicht zur Seite '{}'.", page.title));
+    let destination_sync = {
+        let page = project.page_manifest.iter_mut().find(|page| page.id == page_id)
+            .ok_or_else(|| format!("Unbekannte Seite: {page_id}"))?;
+        if !page.components.contains(&component_id) {
+            return Err(format!("Die Komponente '{component_id}' gehört nicht zur Seite '{}'.", page.title));
+        }
+        if component_id == "title" && !content.trim().is_empty() {
+            page.title = content.trim().to_string();
+        }
+        page.authoring.insert(component_id.clone(), AuthoringEntry {
+            component_id, content, status, updated_at: None
+        });
+        if page.page_type == "destination" {
+            page.journey_stage.clone().map(|stage_id| {
+                let title = page.authoring.get("title").map(|entry| entry.content.trim().to_string()).filter(|value| !value.is_empty());
+                let introduction = page.authoring.get("introduction").map(|entry| entry.content.trim().to_string());
+                (stage_id, title, introduction)
+            })
+        } else { None }
+    };
+    if let Some((stage_id, title, introduction)) = destination_sync {
+        if let Some(destination_id) = project
+            .journey
+            .as_ref()
+            .and_then(|journey| journey.stages.iter().find(|stage| stage.id == stage_id))
+            .and_then(|stage| stage.destination_id.clone())
+        {
+            if let Some(destination) = project.destinations.iter_mut().find(|destination| destination.id == destination_id) {
+                if let Some(title) = title { destination.name = title; }
+                if let Some(introduction) = introduction {
+                    destination.introduction = (!introduction.is_empty()).then_some(introduction);
+                }
+            }
+        }
     }
-    if component_id == "title" && !content.trim().is_empty() {
-        page.title = content.trim().to_string();
-    }
-    page.authoring.insert(component_id.clone(), AuthoringEntry {
-        component_id, content, status, updated_at: None
-    });
     project.migrated_from_version = None;
     validate_project(&project)?;
     write_project(project_path, &project)?;
@@ -603,13 +788,31 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
     if journey.stages.iter().any(|stage| stage.id == base || stage.title.eq_ignore_ascii_case(title)) {
         return Err(format!("{title} gehört bereits zu deiner Reise."));
     }
-    journey.stages.push(JourneyStage { id: base.clone(), kind: "destination".into(), title: title.into(), country: (!country.trim().is_empty()).then(|| country.trim().to_string()) });
+    let destination_id = format!("destination-{base}");
+    journey.stages.push(JourneyStage {
+        id: base.clone(),
+        kind: "destination".into(),
+        title: title.into(),
+        country: (!country.trim().is_empty()).then(|| country.trim().to_string()),
+        destination_id: Some(destination_id.clone()),
+    });
+    project.destinations.push(Destination {
+        id: destination_id,
+        name: title.into(),
+        subtitle: None,
+        introduction: None,
+        journey_context: None,
+        reasons: Vec::new(),
+        highlights: Vec::new(),
+        practical_info: Vec::new(),
+        editorial: default_destination_editorial(),
+    });
     let destination_count = project.page_manifest.iter().filter(|page| page.page_type == "destination").count() as u32;
     let order = 5 + destination_count;
     let content = format!("content/pages/{:03}-{}.md", order, base);
     let mut page = StudioPage {
         id: format!("page-{base}"), order, page_type: "destination".into(), role: Some("destination".into()),
-        title: title.into(), content: content.clone(), layout: "destination-standard".into(), journey_stage: Some(base),
+        title: title.into(), content: content.clone(), layout: default_destination_layout(), journey_stage: Some(base),
         knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
     };
     page.components = infer_components(&page);
@@ -751,7 +954,84 @@ fn update_journey_place(
     if let Some(entry) = page.authoring.get_mut("title") {
         entry.content = title.to_string();
     }
+    if let Some(destination) = project.destinations.iter_mut().find(|destination| destination.id == format!("destination-{stage_id}")) {
+        destination.name = title.to_string();
+    }
 
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+#[tauri::command]
+fn update_destination_profile(
+    path: String,
+    stage_id: String,
+    name: String,
+    subtitle: String,
+    introduction: String,
+    arrival: String,
+    departure: String,
+    timezone: String,
+    reasons: Vec<String>,
+    highlights: Vec<DestinationHighlight>,
+    practical_info: Vec<DestinationPracticalInfo>,
+    layout_variant: String,
+) -> Result<ProjectSession, String> {
+    let name = name.trim();
+    if name.is_empty() { return Err("Gib dem Ort zuerst einen Namen.".into()); }
+    if !matches!(layout_variant.as_str(), "destination-hero-banner" | "destination-hero-left" | "destination-hero-right") {
+        return Err("Unbekannte Destination-Layout-Variante.".into());
+    }
+
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+
+    let destination_id = {
+        let journey = project.journey.as_mut().ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+        let stage = journey.stages.iter_mut().find(|stage| stage.id == stage_id)
+            .ok_or_else(|| format!("Der Ort '{stage_id}' gehört nicht zu deiner Route."))?;
+        stage.title = name.to_string();
+        stage.destination_id.clone().ok_or_else(|| "Der Ort besitzt noch keine Destination-Referenz.".to_string())?
+    };
+
+    let destination = project.destinations.iter_mut().find(|destination| destination.id == destination_id)
+        .ok_or_else(|| format!("Destination Profile '{destination_id}' wurde nicht gefunden."))?;
+    destination.name = name.to_string();
+    destination.subtitle = optional_text(subtitle);
+    destination.introduction = optional_text(introduction.clone());
+    let arrival = optional_text(arrival);
+    let departure = optional_text(departure);
+    let timezone = optional_text(timezone);
+    destination.journey_context = if arrival.is_some() || departure.is_some() || timezone.is_some() {
+        Some(DestinationJourneyContext { arrival, departure, timezone })
+    } else { None };
+    destination.reasons = reasons.into_iter().map(|value| value.trim().to_string()).filter(|value| !value.is_empty()).collect();
+    destination.highlights = highlights.into_iter().filter_map(|mut highlight| {
+        highlight.name = highlight.name.trim().to_string();
+        highlight.description = highlight.description.trim().to_string();
+        if highlight.name.is_empty() { None } else { Some(highlight) }
+    }).collect();
+    destination.practical_info = practical_info.into_iter().filter_map(|mut info| {
+        info.title = info.title.trim().to_string();
+        info.text = info.text.trim().to_string();
+        if info.title.is_empty() && info.text.is_empty() { None } else { Some(info) }
+    }).collect();
+    destination.editorial.layout_variant = layout_variant.clone();
+
+    let page = project.page_manifest.iter_mut().find(|page| page.journey_stage.as_deref() == Some(stage_id.as_str()))
+        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Seite gefunden."))?;
+    page.title = name.to_string();
+    page.layout = layout_variant;
+    if let Some(entry) = page.authoring.get_mut("title") { entry.content = name.to_string(); }
+    if !introduction.trim().is_empty() {
+        page.authoring.insert("introduction".into(), AuthoringEntry {
+            component_id: "introduction".into(), content: introduction.trim().to_string(), status: "draft".into(), updated_at: None
+        });
+    }
+
+    project.migrated_from_version = None;
     validate_project(&project)?;
     write_project(project_path, &project)?;
     let project = read_project(project_path)?;
@@ -771,6 +1051,7 @@ pub fn run() {
             update_journey_planning,
             move_journey_place,
             update_journey_place,
+            update_destination_profile,
             take_pending_open_path
         ])
         .build(tauri::generate_context!())
@@ -815,6 +1096,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
                 || version == BUILD_017_FORMAT_VERSION
                 || version == BUILD_009_FORMAT_VERSION
@@ -825,6 +1107,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
                 || version == BUILD_017_FORMAT_VERSION
                 || version == BUILD_009_FORMAT_VERSION
@@ -859,11 +1142,25 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
                 None
             },
+            destinations: if version == CURRENT_FORMAT_VERSION {
+                vec![Destination {
+                    id: "destination-bergen".into(),
+                    name: "Bergen".into(),
+                    subtitle: None,
+                    introduction: None,
+                    journey_context: None,
+                    reasons: Vec::new(),
+                    highlights: Vec::new(),
+                    practical_info: Vec::new(),
+                    editorial: default_destination_editorial(),
+                }]
+            } else { Vec::new() },
             document: DocumentSettings {
                 page_format: "A5".into(),
                 orientation: "portrait".into(),
@@ -875,7 +1172,7 @@ mod tests {
                 role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
-                layout: "destination-standard".into(),
+                layout: if version == CURRENT_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
                 components: if version == CURRENT_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
@@ -1072,6 +1369,66 @@ mod tests {
         assert!(journey.departure_place.is_none());
         assert!(journey.return_place.is_none());
         assert!(journey.travel_focus.is_empty());
+    }
+
+    #[test]
+    fn migrates_build_019_destinations_to_structured_profiles() {
+        let mut build_019 = sample_project(BUILD_019_FORMAT_VERSION);
+        build_019.page_manifest[0].authoring.insert("introduction".into(), AuthoringEntry {
+            component_id: "introduction".into(),
+            content: "Zwischen sieben Bergen und dem offenen Meer.".into(),
+            status: "revised".into(),
+            updated_at: None,
+        });
+        let migrated = migrate_project(build_019).expect("Build-019 migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_019_FORMAT_VERSION));
+        let stage = &migrated.journey.as_ref().expect("journey").stages[0];
+        assert_eq!(stage.destination_id.as_deref(), Some("destination-bergen"));
+        let destination = migrated.destinations.iter().find(|destination| destination.id == "destination-bergen").expect("destination profile");
+        assert_eq!(destination.name, "Bergen");
+        assert_eq!(destination.introduction.as_deref(), Some("Zwischen sieben Bergen und dem offenen Meer."));
+        assert!(destination.subtitle.is_none());
+        assert!(destination.reasons.is_empty());
+        assert_eq!(destination.editorial.layout_variant, "destination-hero-banner");
+        validate_project(&migrated).expect("migrated destination must validate");
+    }
+
+    #[test]
+    fn stores_destination_profile_without_changing_route_identity() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Destination Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        ).expect("new journey");
+        let with_bergen = add_journey_place(created.project_path.clone(), "Bergen".into(), "Norwegen".into()).expect("bergen");
+        let stage = with_bergen.project.journey.as_ref().expect("journey").stages[0].clone();
+        let updated = update_destination_profile(
+            created.project_path,
+            stage.id.clone(),
+            "Bergen".into(),
+            "Tor zu den Fjorden".into(),
+            "Eine Stadt zwischen Bergen und Meer.".into(),
+            "08:00 Uhr".into(),
+            "17:00 Uhr".into(),
+            "MEZ / MESZ".into(),
+            vec!["Bryggen im Morgenlicht".into(), "Blick vom Fløyen".into()],
+            vec![DestinationHighlight { id: "highlight-bryggen".into(), name: "Bryggen".into(), description: "Historische Hansehäuser".into(), category: "architecture".into() }],
+            vec![DestinationPracticalInfo { id: "practical-walk".into(), title: "Zu Fuß".into(), text: "Viele Highlights liegen dicht beieinander.".into() }],
+            "destination-hero-right".into(),
+        ).expect("destination update");
+        let updated_stage = &updated.project.journey.as_ref().expect("journey").stages[0];
+        assert_eq!(updated_stage.id, stage.id);
+        assert_eq!(updated_stage.destination_id, stage.destination_id);
+        let destination = updated.project.destinations.iter().find(|destination| destination.id == stage.destination_id.as_deref().unwrap()).expect("destination");
+        assert_eq!(destination.subtitle.as_deref(), Some("Tor zu den Fjorden"));
+        assert_eq!(destination.highlights.len(), 1);
+        assert_eq!(destination.editorial.layout_variant, "destination-hero-right");
+        let page = updated.project.page_manifest.iter().find(|page| page.journey_stage.as_deref() == Some(stage.id.as_str())).expect("page");
+        assert_eq!(page.layout, "destination-hero-right");
+        validate_project(&updated.project).expect("updated destination must validate");
     }
 
     #[test]

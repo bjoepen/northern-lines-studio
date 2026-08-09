@@ -1,8 +1,8 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 019 – Journey Planning Foundation  
-**Studio:** 0.19.0  
-**Projektformat:** `.nls` 0.7.0
+**Aktueller Stand:** Build 020 – Final · Ortsprofil & Seitenwirkung
+**Studio:** 0.20.0
+**Projektformat:** `.nls` 0.8.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -37,19 +37,19 @@ für Schemas, Validierung, Layout Grammar, Content Fit, Render Jobs, Assets und 
 ## Aktueller Journey Lifecycle
 
 1. Reise beginnen
-2. Editorial World wählen
-3. Companion kennenlernen
+2. Reisewelt wählen
+3. Reisebegleiter kennenlernen
 4. Reiseplanung ausfüllen
 5. Orte hinzufügen
 6. Route formen
-7. Story Components bearbeiten
+7. Geschichten bearbeiten
 8. Änderungen sichern
 9. Travelbook-Preview prüfen
 10. `.nls` direkt aus dem Finder wieder öffnen
 
 ## Journey Planning Foundation
 
-Build 019 macht die Reiseplanung erstmals zu strukturierten Reisedaten.
+Build 019 machte die Reiseplanung erstmals zu strukturierten Reisedaten.
 
 Der Reisende kann festhalten:
 
@@ -69,10 +69,36 @@ der Reiseplanungsseite sichtbar.
 
 Die Dauer ist eine abgeleitete Größe und wird nicht redundant im `.nls` gespeichert.
 
-## Editorial Worlds
 
-Eine Editorial World bringt eine visuelle und redaktionelle Haltung mit. Die aktuelle
-Reference World ist **Fjord**.
+## Ortsprofil & Seitenwirkung
+
+Build 020 macht den Ort selbst zu einem strukturierten redaktionellen Objekt. Im normalen Studio-Workflow spricht die Oberfläche dabei bewusst **Travel Language**: Der Reisende arbeitet am **Ortsprofil** und wählt die **Seitenwirkung**, während technische Destination-Strukturen im Hintergrund bleiben.
+
+Ein Ortsprofil kann unter anderem enthalten:
+
+- Reiseziel und persönliche Unterzeile
+- **Der Ort in Kürze**
+- **Was möchtest du erleben?**
+- **Reise vor Ort** mit Ankunft, Abfahrt und Zeitzone
+- nachgelagerte **Orte & Motive**
+- nachgelagerte Hinweise **Für unterwegs**
+- eine von drei kuratierten Seitenwirkungen
+
+Die Route referenziert intern weiterhin stabile `destinationId`-Werte. Ein Wechsel der Seitenwirkung ändert keine Inhalte, sondern ausschließlich die semantische Layoutentscheidung.
+
+> **Der Inhalt gehört zum Ort. Das Layout gehört zur Erzählweise.**
+
+### Seitenwirkung
+
+- **Weite** – der Ort öffnet sich über ein ruhiges, flaches Panorama
+- **Bild links** – das Bild führt in den Ort
+- **Bild rechts** – die Geschichte führt, das Bild begleitet
+
+Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner. Footer, Seitenzahl und Reisebegleiter bleiben beim Wechsel stabil. Northern Lines Publisher bleibt die authoritative Publishing Engine; Studio zeigt eine schnelle, glaubwürdige redaktionelle Vorschau.
+
+## Reisewelten
+
+Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Die aktuelle Reisewelt ist **Fjord**.
 
 Fjord definiert unter anderem:
 
@@ -89,9 +115,9 @@ Fjord definiert unter anderem:
 
 Für Ortsseiten sind bewusst nur drei Varianten vorbereitet:
 
-- **Weite** – Hero als Banner
-- **Bild links**
-- **Bild rechts**
+- **Weite** – ruhiges, flaches Panorama
+- **Bild links** – Bild führt
+- **Bild rechts** – Geschichte führt, Bild begleitet
 
 Studio bleibt damit ein Travel-Publishing-System und wird nicht zum freien DTP-Baukasten.
 
@@ -123,9 +149,10 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 019 aktualisiert das Format auf **0.7.0**. Projekte im bisherigen Format 0.6.0
-werden beim Öffnen automatisch migriert. Die neuen Planungsfelder sind optional, damit
-bestehende Reisen ihren bisherigen Inhalt unverändert behalten.
+Build 020 aktualisiert das Format auf **0.8.0**. Projekte im bisherigen Format 0.7.0 sowie
+die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
+Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
+redaktionelle Inhalte werden dabei bewusst nicht erfunden.
 
 ## Entwicklung
 
@@ -149,7 +176,7 @@ git diff --check
 
 ### Consistency Gate
 
-Neue Journey-Felder müssen durch die vollständige Datenkette geprüft werden:
+Neue Journey- und Destination-Felder müssen durch die vollständige Datenkette geprüft werden:
 
 ```text
 TypeScript Model
@@ -158,6 +185,7 @@ TypeScript Model
 → Tauri Command
 → Inspector
 → Preview
+→ Layout Variants (für Destinations)
 → Tests
 ```
 
@@ -195,5 +223,5 @@ Gestaltungsmöglichkeit abzubilden.
 
 ---
 
-**Northern Lines Studio**  
+**Northern Lines Studio**
 *Deine Reise. Deine Geschichten. Dein Fieldbook.*

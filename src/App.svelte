@@ -4,7 +4,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { open } from '@tauri-apps/plugin-dialog';
-  import type { JourneyStage, StudioPage, StudioProject } from './lib/project';
+  import type { DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
@@ -24,6 +24,10 @@
     journeyPlanningDraft,
     travelFocusValues
   } from './lib/journey-planning';
+  import {
+    destinationDraft,
+    destinationForPage
+  } from './lib/destinations';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -70,6 +74,17 @@
   let planningRouteSummary = '';
   let planningTravelFocus = '';
   let planningSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  let destinationName = '';
+  let destinationSubtitle = '';
+  let destinationIntroduction = '';
+  let destinationArrival = '';
+  let destinationDeparture = '';
+  let destinationTimezone = '';
+  let destinationReasons: string[] = [];
+  let destinationHighlights: DestinationHighlight[] = [];
+  let destinationPracticalInfo: DestinationPracticalInfo[] = [];
+  let destinationLayoutVariant: DestinationLayoutVariantId = 'destination-hero-banner';
+  let destinationSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   const journeyWorlds = availableEditorialWorlds();
 
   async function showJourneyBeginning() {
@@ -247,6 +262,7 @@
       if (selectedPageId) {
         selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
       }
+      if (selectedPage?.type === 'destination') syncDestinationDraft();
       placeEditOpen = false;
       editPlaceStageId = '';
     } catch (error) {
@@ -285,6 +301,95 @@
     planningRouteSummary = draft.routeSummary;
     planningTravelFocus = draft.travelFocus;
     planningSaveState = 'idle';
+  }
+
+  function syncDestinationDraft() {
+    const destination = destinationForPage(project, selectedPage);
+    const draft = destinationDraft(destination, selectedPage?.title ?? '');
+    destinationName = draft.name;
+    destinationSubtitle = draft.subtitle;
+    destinationIntroduction = draft.introduction;
+    destinationArrival = draft.arrival;
+    destinationDeparture = draft.departure;
+    destinationTimezone = draft.timezone;
+    destinationReasons = draft.reasons;
+    destinationHighlights = draft.highlights;
+    destinationPracticalInfo = draft.practicalInfo;
+    destinationLayoutVariant = draft.layoutVariant;
+    destinationSaveState = 'idle';
+  }
+
+  function updateDestinationReasonText(value: string) {
+    destinationReasons = value.split('\n').map((entry) => entry.trim()).filter(Boolean);
+    destinationSaveState = 'idle';
+  }
+
+  function addDestinationHighlight() {
+    destinationHighlights = [...destinationHighlights, {
+      id: `highlight-${Date.now()}-${destinationHighlights.length + 1}`,
+      name: '', description: '', category: 'landmark'
+    }];
+  }
+
+  function removeDestinationHighlight(id: string) {
+    destinationHighlights = destinationHighlights.filter((entry) => entry.id !== id);
+  }
+
+  function updateDestinationHighlight(id: string, patch: Partial<DestinationHighlight>) {
+    destinationHighlights = destinationHighlights.map((entry) => entry.id === id ? { ...entry, ...patch } : entry);
+  }
+
+  function updateDestinationHighlightCategory(id: string, value: string) {
+    const categories: DestinationHighlight['category'][] = ['landmark', 'viewpoint', 'architecture', 'nature', 'culture', 'photography', 'other'];
+    const category = categories.includes(value as DestinationHighlight['category']) ? value as DestinationHighlight['category'] : 'other';
+    updateDestinationHighlight(id, { category });
+  }
+
+  function addDestinationPracticalInfo() {
+    destinationPracticalInfo = [...destinationPracticalInfo, { id: `practical-${Date.now()}-${destinationPracticalInfo.length + 1}`, title: '', text: '' }];
+  }
+
+  function removeDestinationPracticalInfo(id: string) {
+    destinationPracticalInfo = destinationPracticalInfo.filter((entry) => entry.id !== id);
+  }
+
+  function updateDestinationPracticalInfo(id: string, patch: Partial<DestinationPracticalInfo>) {
+    destinationPracticalInfo = destinationPracticalInfo.map((entry) => entry.id === id ? { ...entry, ...patch } : entry);
+  }
+
+  async function saveDestinationProfile() {
+    if (!project || !selectedPage?.journeyStage || selectedPage.type !== 'destination') return;
+    if (!destinationName.trim()) {
+      errorMessage = 'Gib dem Ort zuerst einen Namen.';
+      return;
+    }
+    destinationSaveState = 'saving';
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const selectedPageId = selectedPage.id;
+      const updated = await invoke<StudioProject>('update_destination_profile', {
+        path: projectPath,
+        stageId: selectedPage.journeyStage,
+        name: destinationName,
+        subtitle: destinationSubtitle,
+        introduction: destinationIntroduction,
+        arrival: destinationArrival,
+        departure: destinationDeparture,
+        timezone: destinationTimezone,
+        reasons: destinationReasons,
+        highlights: destinationHighlights,
+        practicalInfo: destinationPracticalInfo,
+        layoutVariant: destinationLayoutVariant
+      });
+      project = { ...updated, projectPath };
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      syncDestinationDraft();
+      destinationSaveState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      destinationSaveState = 'error';
+    }
   }
 
   async function saveJourneyPlanning() {
@@ -406,6 +511,7 @@
     authoringStatus = 'empty';
     authoringSaveState = 'idle';
     if (page.type === 'planning') syncPlanningDraft();
+    if (page.type === 'destination') syncDestinationDraft();
   }
 
   function requestPageSelection(page: StudioPage) {
@@ -449,6 +555,7 @@
         projectPath
       };
       selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
+      if (selectedPage?.type === 'destination') syncDestinationDraft();
       authoringSaveState = 'saved';
       return true;
     } catch (error) {
@@ -579,6 +686,7 @@
   $: statusText = projectStatus(project);
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
+  $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
   $: journeyRoutePosition = journeyStage ? routePosition(journeyStage.id) : 0;
   $: editorialGrammar = grammarForPage(selectedPage);
@@ -617,7 +725,7 @@
         <span class="world-wave" aria-hidden="true">≈</span>
         <div>
           <strong>{project?.title ?? editorialWorld.name}</strong>
-          <small>Editorial World · {editorialWorld.name}</small>
+          <small>Reisewelt · {editorialWorld.name}</small>
         </div>
       </div>
     {/if}
@@ -663,12 +771,12 @@
       </div>
 
       {#if editorialWorld}
-        <section class="world-card" aria-label="Reference Editorial World">
+        <section class="world-card" aria-label="Reisewelt">
           <div class="world-icon" aria-hidden="true">≈</div>
           <div>
-            <small>{editorialWorld.isReference ? `Reference World ${String(editorialWorld.referenceNumber ?? 1).padStart(3, '0')}` : 'Editorial World'}</small>
+            <small>Reisewelt</small>
             <strong>{editorialWorld.name}</strong>
-            <span>Companion · {editorialWorld.companionName}</span>
+            <span>Reisebegleiter · {editorialWorld.companionName}</span>
           </div>
         </section>
       {/if}
@@ -717,7 +825,11 @@
           <span>Editorial Workspace</span>
           <strong>{selectedPage?.title ?? 'Keine Seite ausgewählt'}</strong>
         </div>
-        <small>{editorialWorld ? `${editorialWorld.name} · ${selectedPage?.layout ?? 'ohne Layout'}` : selectedPage?.layout ?? 'ohne Layout'}</small>
+        <small>{editorialWorld
+          ? `${editorialWorld.name} · ${selectedPage?.type === 'destination'
+              ? (editorialLayout?.destinationLayouts.find((layout) => layout.id === destinationLayoutVariant)?.label ?? 'Ortsseite')
+              : pageRoleLabel(selectedPage?.role)}`
+          : pageRoleLabel(selectedPage?.role)}</small>
       </div>
 
       <div class="preview-stage" bind:this={previewStage}>
@@ -731,17 +843,51 @@
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'}`}
               in:fade={{ duration: 190 }}
             >
-              {#if editorialWorld?.id === 'fjord'}
-                <div class="fjord-page-marker" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+              {#if selectedPage?.type === 'destination'}
+                <div class={`destination-preview ${destinationLayoutVariant}`}>
+                  <div class="destination-story">
+                    <div class="page-rule"></div>
+                    <p class="eyebrow">Reiseziel</p>
+                    <h1>{destinationName || selectedPage.title}</h1>
+                    {#if destinationSubtitle}<p class="destination-subtitle">{destinationSubtitle}</p>{/if}
+                    <p class="preview-body">{destinationIntroduction || 'Erzähle, was diesen Ort für deine Reise besonders macht.'}</p>
+
+                    <div class="destination-facts-preview">
+                      <div><span>Ankunft</span><strong>{destinationArrival || 'offen'}</strong></div>
+                      <div><span>Abfahrt</span><strong>{destinationDeparture || 'offen'}</strong></div>
+                      <div><span>Zeitzone</span><strong>{destinationTimezone || 'offen'}</strong></div>
+                    </div>
+                  </div>
+
+                  <div class="destination-hero-placeholder" aria-label="Bild"></div>
+
+                  <div class="destination-modules-preview">
+                    <section>
+                      <span>Warum dieser Ort?</span>
+                      {#if destinationReasons.length}
+                        <ul>{#each destinationReasons.slice(0, 4) as reason}<li>{reason}</li>{/each}</ul>
+                      {:else}<small>Noch keine Gründe notiert.</small>{/if}
+                    </section>
+                    <section>
+                      <span>Highlights</span>
+                      {#if destinationHighlights.filter((entry) => entry.name.trim()).length}
+                        <ul>{#each destinationHighlights.filter((entry) => entry.name.trim()).slice(0, 4) as highlight}<li><strong>{highlight.name}</strong>{#if highlight.description}<em>{highlight.description}</em>{/if}</li>{/each}</ul>
+                      {:else}<small>Fotospots und Highlights warten auf deine Auswahl.</small>{/if}
+                    </section>
+                    {#if destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).length}
+                      <section class="destination-practical-preview">
+                        <span>Praktische Infos</span>
+                        <div>{#each destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).slice(0, 3) as info}<p><strong>{info.title}</strong> {info.text}</p>{/each}</div>
+                      </section>
+                    {/if}
+                  </div>
                 </div>
+              {:else}
+                <div class="page-rule"></div>
+                <p class="eyebrow">{preview.eyebrow}</p>
+                <h1>{preview.heading}</h1>
+                <p class="preview-body">{preview.body}</p>
               {/if}
-              <div class="page-rule"></div>
-              <p class="eyebrow">{preview.eyebrow}</p>
-              <h1>{preview.heading}</h1>
-              <p class="preview-body">{preview.body}</p>
               {#if selectedPage?.type === 'planning' && project}
                 <div class="journey-planning-preview">
                   <div>
@@ -866,7 +1012,96 @@
         </section>
       {/if}
 
-      {#if editorialWorld}
+      {#if selectedPage?.type === 'destination' && project && journeyStage}
+        <section class="inspector-card destination-profile-card" aria-label="Ortsprofil">
+          <span class="inspector-label">Ortsprofil</span>
+          <strong>Was bedeutet {destinationName || journeyStage.title} für deine Reise?</strong>
+          <small>Halte nur fest, was den Ort für dich besonders macht. Die Seite bleibt dabei ruhig und klar.</small>
+
+          <div class="destination-form">
+            <label><span>Reiseziel</span><input bind:value={destinationName} placeholder="Zum Beispiel: Bergen" /></label>
+            <label><span>Ein Satz für diesen Ort</span><input bind:value={destinationSubtitle} placeholder="Zum Beispiel: Tor zu den Fjorden" /></label>
+            <label><span>Der Ort in Kürze</span><textarea rows="4" bind:value={destinationIntroduction} placeholder="Was macht diesen Ort für deine Reise besonders?"></textarea></label>
+
+            <label class="destination-editorial-question">
+              <span>Was möchtest du erleben?</span>
+              <textarea rows="3" value={destinationReasons.join('\n')} on:input={(event) => updateDestinationReasonText(event.currentTarget.value)} placeholder="Zum Beispiel: Bryggen am Morgen&#10;Blick vom Fløyen&#10;Maritime Atmosphäre"></textarea>
+              <small>Ein Gedanke pro Zeile.</small>
+            </label>
+
+            <div class="destination-section-title destination-quiet-section"><span>Reise vor Ort</span><strong>Für deinen Aufenthalt</strong></div>
+            <div class="planning-field-row">
+              <label><span>Ankunft</span><input bind:value={destinationArrival} placeholder="08:00 Uhr" /></label>
+              <label><span>Abfahrt</span><input bind:value={destinationDeparture} placeholder="17:00 Uhr" /></label>
+            </div>
+            <label><span>Zeitzone</span><input bind:value={destinationTimezone} placeholder="MEZ / MESZ" /></label>
+
+            <details class="destination-more">
+              <summary>
+                <span>Orte &amp; Motive</span>
+                <small>{destinationHighlights.filter((entry) => entry.name.trim()).length || 'Noch keine'} notiert</small>
+              </summary>
+              <div class="destination-more-content">
+                <div class="destination-list-heading"><div><strong>Was möchtest du vor Ort entdecken?</strong></div><button type="button" on:click={addDestinationHighlight}>+ Ort</button></div>
+                <div class="destination-edit-list">
+                  {#each destinationHighlights as highlight (highlight.id)}
+                    <div class="destination-edit-item">
+                      <input value={highlight.name} on:input={(event) => updateDestinationHighlight(highlight.id, { name: event.currentTarget.value })} placeholder="Ort oder Motiv" />
+                      <textarea rows="2" value={highlight.description} on:input={(event) => updateDestinationHighlight(highlight.id, { description: event.currentTarget.value })} placeholder="Was macht diesen Ort besonders?"></textarea>
+                      <div class="destination-item-actions">
+                        <select aria-label="Art des Ortes" value={highlight.category} on:change={(event) => updateDestinationHighlightCategory(highlight.id, event.currentTarget.value)}>
+                          <option value="landmark">Sehenswürdigkeit</option><option value="viewpoint">Aussicht</option><option value="architecture">Architektur</option><option value="nature">Natur</option><option value="culture">Kultur</option><option value="photography">Fotomotiv</option><option value="other">Sonstiges</option>
+                        </select>
+                        <button type="button" on:click={() => removeDestinationHighlight(highlight.id)}>Entfernen</button>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            </details>
+
+            <details class="destination-more">
+              <summary>
+                <span>Für unterwegs</span>
+                <small>{destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).length || 'Noch keine'} notiert</small>
+              </summary>
+              <div class="destination-more-content">
+                <div class="destination-list-heading"><div><strong>Was hilft dir vor Ort?</strong></div><button type="button" on:click={addDestinationPracticalInfo}>+ Hinweis</button></div>
+                <div class="destination-edit-list">
+                  {#each destinationPracticalInfo as info (info.id)}
+                    <div class="destination-edit-item">
+                      <input value={info.title} on:input={(event) => updateDestinationPracticalInfo(info.id, { title: event.currentTarget.value })} placeholder="Zum Beispiel: Zu Fuß" />
+                      <textarea rows="2" value={info.text} on:input={(event) => updateDestinationPracticalInfo(info.id, { text: event.currentTarget.value })} placeholder="Was ist unterwegs hilfreich?"></textarea>
+                      <div class="destination-item-actions"><span></span><button type="button" on:click={() => removeDestinationPracticalInfo(info.id)}>Entfernen</button></div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            </details>
+
+            <div class="destination-section-title destination-effect-title"><span>Seitenwirkung</span><strong>Wie soll sich dieser Ort öffnen?</strong></div>
+            <div class="destination-layout-options" role="radiogroup" aria-label="Seitenwirkung">
+              {#each editorialLayout?.destinationLayouts ?? [] as layout}
+                <button type="button" class:active={destinationLayoutVariant === layout.id} aria-pressed={destinationLayoutVariant === layout.id} on:click={() => destinationLayoutVariant = layout.id}>
+                  <span class={`layout-miniature ${layout.id}`} aria-hidden="true">
+                    <i class="layout-miniature-image"></i>
+                    <i class="layout-miniature-copy"></i>
+                  </span>
+                  <span class="layout-option-copy"><strong>{layout.label}</strong><small>{layout.description}</small></span>
+                </button>
+              {/each}
+            </div>
+          </div>
+
+          <button class="planning-save-button" on:click={saveDestinationProfile} disabled={destinationSaveState === 'saving'}>
+            {destinationSaveState === 'saving' ? 'Ortsprofil wird gesichert …' : 'Ortsprofil sichern'}
+          </button>
+          {#if destinationSaveState === 'saved'}<small class="planning-save-state">Ortsprofil gesichert.</small>{/if}
+          {#if destinationSaveState === 'error'}<small class="planning-save-state planning-save-error">Ortsprofil konnte nicht gesichert werden.</small>{/if}
+        </section>
+      {/if}
+
+      {#if editorialWorld && selectedPage?.type !== 'destination'}
         <section class="inspector-card world-inspector-card">
           <span class="inspector-label">Reference World</span>
           <strong>{editorialWorld.name}</strong>
@@ -884,7 +1119,7 @@
         </section>
       {/if}
 
-      {#if editorialLayout}
+      {#if editorialLayout && selectedPage?.type !== 'destination'}
         <section class="inspector-card layout-language-card" aria-label="Layout Language">
           <span class="inspector-label">Layout Language</span>
           <strong>{editorialLayout.name}</strong>
@@ -898,7 +1133,7 @@
         </section>
       {/if}
 
-      {#if activeCompanion}
+      {#if activeCompanion && selectedPage?.type !== 'destination'}
         <section class="inspector-card companion-layout-card" aria-label="Reisebegleiter im Layout">
           <span class="inspector-label">Reisebegleiter</span>
           <div class="companion-layout-preview">
@@ -916,7 +1151,7 @@
         </section>
       {/if}
 
-      {#if editorialGrammar && grammarEvaluation}
+      {#if editorialGrammar && grammarEvaluation && selectedPage?.type !== 'destination'}
         <section class="inspector-card grammar-card" aria-label="Editorial Grammar">
           <span class="inspector-label">Editorial Grammar</span>
           <strong>{editorialGrammar.name}</strong>
@@ -953,7 +1188,7 @@
         </section>
       {/if}
 
-      {#if storyStructure}
+      {#if storyStructure && selectedPage?.type !== 'destination'}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
           <strong>Deine Geschichte</strong>
@@ -1062,6 +1297,7 @@
         </section>
       {/if}
 
+      {#if selectedPage?.type !== 'destination'}
       <dl>
         <dt>Seitentitel</dt><dd>{selectedPage?.title ?? '–'}</dd>
         <dt>Rolle</dt><dd>{pageRoleLabel(selectedPage?.role)}</dd>
@@ -1077,11 +1313,12 @@
         <dt>Format</dt><dd>{project?.document.pageFormat ?? 'A5'} {project?.document.orientation ?? 'portrait'}</dd>
         <dt>Travelbook-Format</dt><dd>{project?.formatVersion ?? '–'}</dd>
       </dl>
+      {/if}
     </aside>
   </main>
 
   <footer class="status-bar" aria-label="Reisestatus">
-    <span>{editorialWorld ? `${editorialWorld.name} · ${editorialWorld.isReference ? 'Reference World' : 'Editorial World'}` : 'Northern Lines Studio'}</span>
+    <span>{editorialWorld ? `${editorialWorld.name} · Reisewelt` : 'Northern Lines Studio'}</span>
     <span class:status-ok={project}>{statusText}</span>
   </footer>
 
@@ -1161,7 +1398,7 @@
       <div class="journey-begin-dialog" role="dialog" aria-modal="true" aria-labelledby="journey-begin-title" aria-describedby="journey-begin-description" on:keydown={handleJourneyBeginningKeydown} tabindex="-1">
         <span class="inspector-label">Neue Reise</span>
         <strong id="journey-begin-title">Wo beginnt deine nächste Geschichte?</strong>
-        <p id="journey-begin-description">Gib deiner Reise einen Namen und wähle die Editorial World, die sie begleiten soll.</p>
+        <p id="journey-begin-description">Gib deiner Reise einen Namen und wähle die Reisewelt, die sie begleiten soll.</p>
 
         <label class="journey-field">
           <span>Name deiner Reise</span>
@@ -1169,7 +1406,7 @@
         </label>
 
         <label class="journey-field">
-          <span>Editorial World</span>
+          <span>Reisewelt</span>
           <select bind:value={newJourneyWorldId}>
             {#each journeyWorlds as world}
               <option value={world.id}>{world.name}</option>
