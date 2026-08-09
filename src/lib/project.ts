@@ -5,6 +5,7 @@ export type PageType =
   | 'cover'
   | 'welcome'
   | 'contents'
+  | 'planning'
   | 'destination'
   | 'knowledge'
   | 'workflow'
@@ -13,6 +14,7 @@ export type PageType =
 
 export type PageRole =
   | 'front_matter'
+  | 'journey_planning'
   | 'destination'
   | 'journey_knowledge'
   | 'workflow'
@@ -90,6 +92,11 @@ const previewCopy: Record<PageType, PreviewContent> = {
     eyebrow: 'Orientierung',
     heading: 'Inhaltsverzeichnis',
     body: 'Eine statische Vorschau der geplanten Seitenstruktur.'
+  },
+  planning: {
+    eyebrow: 'Deine Reise',
+    heading: 'Reiseplanung',
+    body: 'Route, Reisezeit und alles, was deine nächste Geschichte vorbereitet.'
   },
   destination: {
     eyebrow: 'Reiseziel',

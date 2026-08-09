@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.5.0";
+const CURRENT_FORMAT_VERSION: &str = "0.6.0";
+const BUILD_017_FORMAT_VERSION: &str = "0.5.0";
 const BUILD_009_FORMAT_VERSION: &str = "0.4.0";
 const BUILD_004_FORMAT_VERSION: &str = "0.3.0";
 const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
@@ -155,6 +156,7 @@ fn take_pending_open_path(state: tauri::State<'_, OpenRequestState>) -> Option<S
 fn infer_role(page_type: &str) -> &'static str {
     match page_type {
         "cover" | "welcome" | "contents" => "front_matter",
+        "planning" => "journey_planning",
         "destination" => "destination",
         "knowledge" => "journey_knowledge",
         "workflow" => "workflow",
@@ -169,6 +171,7 @@ fn infer_components(page: &StudioPage) -> Vec<String> {
         "cover" => &["hero", "title", "subtitle"],
         "welcome" => &["hero", "title", "introduction", "quote"],
         "contents" => &["title", "contents"],
+        "planning" => &["title", "introduction"],
         "destination" => &["hero", "title", "introduction", "history", "photography", "knowledge", "souvenirs", "qr"],
         "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
         "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
@@ -185,6 +188,35 @@ fn ensure_components(project: &mut StudioProject) {
         if page.components.is_empty() {
             let inferred = infer_components(page);
             page.components = inferred;
+        }
+    }
+}
+
+
+fn ensure_journey_planning_page(project: &mut StudioProject) {
+    if project.page_manifest.iter().any(|page| page.page_type == "planning") {
+        return;
+    }
+
+    let mut planning = StudioPage {
+        id: "page-planning".into(),
+        order: 4,
+        page_type: "planning".into(),
+        role: Some("journey_planning".into()),
+        title: "Reiseplanung".into(),
+        content: "content/pages/004-planning.md".into(),
+        layout: "planning".into(),
+        journey_stage: None,
+        knowledge_type: None,
+        components: Vec::new(),
+        authoring: BTreeMap::new(),
+    };
+    planning.components = infer_components(&planning);
+    project.page_manifest.push(planning);
+
+    for page in &mut project.page_manifest {
+        if page.page_type == "destination" && page.order >= 4 {
+            page.order += 1;
         }
     }
 }
@@ -215,6 +247,12 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_017_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_017_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+        }
         BUILD_009_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_009_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -275,6 +313,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
             return Err(format!("Nicht unterstützte Projektformat-Version: {version}"));
         }
     }
+    ensure_journey_planning_page(&mut project);
     project.legacy_editorial_world = None;
     Ok(project)
 }
@@ -292,8 +331,24 @@ fn read_project(path: &Path) -> Result<StudioProject, String> {
         .map_err(|error| format!("project.json ist ungültig: {error}"))?;
 
     let mut project = migrate_project(project)?;
+
+    if project.page_manifest.iter().any(|page| page.page_type == "planning") {
+        let planning_path = path.join("content/pages/004-planning.md");
+        if !planning_path.exists() {
+            fs::create_dir_all(path.join("content/pages"))
+                .map_err(|error| format!("Reiseplanung konnte nicht vorbereitet werden: {error}"))?;
+            fs::write(&planning_path, "# Reiseplanung\n")
+                .map_err(|error| format!("Reiseplanung konnte nicht angelegt werden: {error}"))?;
+        }
+    }
+
     validate_project(&project)?;
     project.page_manifest.sort_by_key(|page| page.order);
+
+    if project.migrated_from_version.is_some() {
+        write_project(path, &project)?;
+    }
+
     project.project_path = path.to_string_lossy().into_owned();
     Ok(project)
 }
@@ -431,6 +486,7 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
         starter_page("page-cover", 1, "cover", "front_matter", title, "content/pages/001-cover.md", "cover", None),
         starter_page("page-welcome", 2, "welcome", "front_matter", "Willkommen", "content/pages/002-welcome.md", "welcome", None),
         starter_page("page-contents", 3, "contents", "front_matter", "Inhaltsverzeichnis", "content/pages/003-contents.md", "contents", None),
+        starter_page("page-planning", 4, "planning", "journey_planning", "Reiseplanung", "content/pages/004-planning.md", "planning", None),
         starter_page("page-light", 10, "knowledge", "journey_knowledge", "Licht", "content/pages/010-light.md", "light", Some("photography_light")),
         starter_page("page-weather", 11, "knowledge", "journey_knowledge", "Wetter", "content/pages/011-weather.md", "weather", Some("travel_weather")),
         starter_page("page-workflow", 20, "workflow", "workflow", "Fotografie-Workflow", "content/pages/020-workflow.md", "workflow", None),
@@ -510,7 +566,7 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
     }
     journey.stages.push(JourneyStage { id: base.clone(), kind: "destination".into(), title: title.into(), country: (!country.trim().is_empty()).then(|| country.trim().to_string()) });
     let destination_count = project.page_manifest.iter().filter(|page| page.page_type == "destination").count() as u32;
-    let order = 4 + destination_count;
+    let order = 5 + destination_count;
     let content = format!("content/pages/{:03}-{}.md", order, base);
     let mut page = StudioPage {
         id: format!("page-{base}"), order, page_type: "destination".into(), role: Some("destination".into()),
@@ -788,7 +844,7 @@ mod tests {
         ).expect("new journey");
         assert_eq!(created.project.title, "Island im Winter");
         assert_eq!(created.project.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
-        assert_eq!(created.project.page_manifest.len(), 8);
+        assert_eq!(created.project.page_manifest.len(), 9);
         assert!(Path::new(&created.project_path).join("project.json").exists());
         assert!(validate_project(&created.project).is_ok());
     }
@@ -880,6 +936,20 @@ mod tests {
         );
 
         assert!(validate_project(&updated.project).is_ok());
+    }
+
+    #[test]
+    fn migrates_build_017_project_and_adds_journey_planning() {
+        let mut legacy = sample_project(BUILD_017_FORMAT_VERSION);
+        legacy.page_manifest.retain(|page| page.page_type != "planning");
+        let migrated = migrate_project(legacy).expect("migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        let planning = migrated.page_manifest.iter()
+            .find(|page| page.page_type == "planning")
+            .expect("planning page");
+        assert_eq!(planning.role.as_deref(), Some("journey_planning"));
+        assert_eq!(planning.order, 4);
+        assert_eq!(planning.components, vec!["title".to_string(), "introduction".to_string()]);
     }
 
     #[test]

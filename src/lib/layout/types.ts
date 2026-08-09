@@ -28,6 +28,7 @@ export interface EditorialLayoutSystem {
   headingFamily: string;
   bodyFamily: string;
   footer: EditorialFooterDefinition;
+  companionLayoutId: string;
   destinationLayouts: readonly DestinationLayoutVariant[];
   defaultLayoutByPageType: Partial<Record<PageType, string>>;
 }

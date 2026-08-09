@@ -60,6 +60,25 @@ describe('workspace model', () => {
     expect(travelbookPageNumber(routePages, 'light', ['bergen', 'alesund', 'geiranger'])).toBe(7);
   });
 
+  it('places journey planning between book and route', () => {
+    const withPlanning: StudioPage[] = [
+      ...pages,
+      {
+        id: 'planning',
+        order: 4,
+        type: 'planning',
+        role: 'journey_planning',
+        title: 'Reiseplanung',
+        content: 'planning.md',
+        layout: 'planning'
+      }
+    ];
+
+    const labels = groupPages(withPlanning).map((section) => section.label);
+    expect(labels.indexOf('Buch')).toBeLessThan(labels.indexOf('Reiseplanung'));
+    expect(labels.indexOf('Reiseplanung')).toBeLessThan(labels.indexOf('Deine Route'));
+  });
+
   it('exposes the Fjord reference world and companion', () => {
     expect(editorialWorldFor(project())).toEqual({
       id: 'fjord',
@@ -69,9 +88,9 @@ describe('workspace model', () => {
       isReference: true,
       referenceNumber: 1,
       character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],
-      designLanguage: ['Northern', 'Calm', 'Image-led'],
       layoutSystemId: 'fjord-layout',
       layoutSystemName: 'Fjord Layout Language',
+      designLanguage: ['Northern', 'Calm', 'Image-led'],
       pageGrammars: ['cover', 'welcome', 'contents', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']
     });
   });
