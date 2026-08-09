@@ -89,6 +89,18 @@ export function groupPages(pages: StudioPage[], routeStageIds: readonly string[]
     .filter((section) => section.pages.length > 0);
 }
 
+
+export function travelbookPageNumber(
+  pages: StudioPage[],
+  pageId: string,
+  routeStageIds: readonly string[] = []
+): number | null {
+  const orderedPages = groupPages(pages, routeStageIds).flatMap((section) => section.pages);
+  const index = orderedPages.findIndex((page) => page.id === pageId);
+  return index >= 0 ? index + 1 : null;
+}
+
+
 export function editorialWorldFor(project: StudioProject | null): EditorialWorldView | null {
   const world = loadEditorialWorld(project?.editorialWorldId);
   if (!world) return null;

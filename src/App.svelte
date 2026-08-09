@@ -6,7 +6,7 @@
   import type { JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
-  import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
+  import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
@@ -145,10 +145,13 @@
     return (project?.journey?.stages.findIndex((stage) => stage.id === stageId) ?? -1) + 1;
   }
 
-  function routeNumberFor(page: StudioPage): number {
-    if (!page.journeyStage) return page.order;
-    const position = routePosition(page.journeyStage);
-    return position > 0 ? position : page.order;
+  function visiblePageNumber(page: StudioPage): number {
+    if (!project) return page.order;
+    return travelbookPageNumber(
+      project.pageManifest,
+      page.id,
+      project.journey?.stages.map((stage) => stage.id) ?? []
+    ) ?? page.order;
   }
 
   async function movePlaceNow(stageId: string, direction: 'earlier' | 'later') {
@@ -556,7 +559,7 @@
                   class:active={selectedPage?.id === page.id}
                   on:click={() => requestPageSelection(page)}
                 >
-                  <span class="page-order">{String(page.role === 'destination' ? routeNumberFor(page) : page.order).padStart(2, '0')}</span>
+                  <span class="page-order">{String(visiblePageNumber(page)).padStart(2, '0')}</span>
                   <span>
                     <strong>{page.title}</strong>
                     <small>{pageRoleLabel(page.role)}</small>
@@ -605,7 +608,7 @@
               <p class="preview-body">{preview.body}</p>
               <footer>
                 <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-                <span>{selectedPage?.order ?? '–'}</span>
+                <span>{selectedPage ? visiblePageNumber(selectedPage) : '–'}</span>
               </footer>
             </article>
           {/key}
