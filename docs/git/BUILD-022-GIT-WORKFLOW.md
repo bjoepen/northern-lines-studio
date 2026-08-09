@@ -29,3 +29,22 @@ git push -u origin fix/build-022-image-composition
 ```
 
 After review and real-world validation, merge back to `main` according to the normal repository workflow.
+
+## Final regression fix branch
+
+For the internal travel-opening regression discovered during Build-022 final validation:
+
+```bash
+git switch main
+git pull --ff-only
+git switch -c fix/build-022-internal-travel-opening
+```
+
+After applying the Drop-in, run all Build-022 gates and the seven opening regression scenarios documented in `docs/validation/BUILD-022-VALIDATION.md` before commit/merge.
+
+Suggested commit:
+
+```bash
+git add .
+git commit -m "fix(studio): restore internal nls travel opening in build 022"
+```

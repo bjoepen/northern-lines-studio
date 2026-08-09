@@ -567,9 +567,11 @@
     projectMenuOpen = false;
     errorMessage = '';
     const selected = await open({
-      directory: true,
       multiple: false,
-      title: 'Northern Lines Studio Reise öffnen'
+      title: 'Northern Lines Studio Reise öffnen',
+      filters: [
+        { name: 'Northern Lines Reise', extensions: ['nls'] }
+      ]
     });
 
     if (!selected || Array.isArray(selected)) return;

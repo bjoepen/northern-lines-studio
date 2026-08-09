@@ -49,3 +49,15 @@ Build 022 shall introduce real Destination imagery while preserving Northern Lin
 - content modules are not automatically cardified: yes.
 - Publisher remains Publishing truth: yes.
 - Companion remains unantastbar: yes.
+
+## Regression closure – internal travel opening
+
+Während der Final-Validierung wurde festgestellt, dass `.nls` per Finder weiterhin korrekt geöffnet wird, der interne Studio-Dialog jedoch nicht zuverlässig zum `.nls`-Package-Pfad gelangt.
+
+Ursache: Der interne Dialog verwendete `directory: true` für ein macOS-Package, das im Reisenden-Workflow als Dokument behandelt wird.
+
+Korrektur:
+- interner Open-Dialog wählt `.nls` als Dokument/Package;
+- kein Eingriff in UTType oder Finder-Integration;
+- bestehender gemeinsamer `load_nls_project`-Pfad bleibt erhalten;
+- keine Änderungen an Hero-/Destination-Layout oder Image Composition.
