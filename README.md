@@ -1,22 +1,23 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 018 – Companion Layout Foundation  
-**Studio:** 0.18.0  
-**Projektformat:** `.nls` 0.6.0
+**Aktueller Stand:** Build 019 – Journey Planning Foundation  
+**Studio:** 0.19.0  
+**Projektformat:** `.nls` 0.7.0
 
-Northern Lines Studio ist eine spezialisierte macOS-Anwendung für Travel Publishing.
+Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
-visuell – von der ersten Idee über Orte, Route und Geschichten bis zum späteren
-Publishing mit Northern Lines Publisher.
+visuell – von der ersten Idee über Reiseplanung, Orte, Route und Geschichten bis zum
+späteren Publishing mit Northern Lines Publisher.
 
 > **Der Reisende öffnet kein Projekt. Er öffnet seine Reise.**
 
 ## Produktidee
 
-Northern Lines Studio spricht in **Travel Language**. Technische Strukturen bleiben
+Northern Lines Studio spricht in **Travel Language**. Technische Mechanismen bleiben
 im Hintergrund:
 
 - **Neue Reise beginnen** statt Projekt anlegen
+- **Reiseplanung** statt Journey-Metadaten
 - **Ort hinzufügen** statt Destination Page erzeugen
 - **Deine Route** statt Manifest-Reihenfolge
 - **Deine Geschichte** statt Textblock-Editor
@@ -28,23 +29,45 @@ im Hintergrund:
 - **Desktop Shell:** Tauri 2
 - **Backend:** Rust
 - **Projektformat:** offenes `.nls`-Package
-- **Publishing:** Northern Lines Publisher bleibt eine eigenständige Engine
+- **Publishing:** Northern Lines Publisher bleibt eigenständige Publishing Engine
 
-Studio verwaltet redaktionelle Entscheidungen. Publisher bleibt zuständig für
-Schemas, Validierung, Layout Grammar, Content Fit, Render Jobs, Assets und Preflight.
+Studio verwaltet visuelle und redaktionelle Entscheidungen. Publisher bleibt zuständig
+für Schemas, Validierung, Layout Grammar, Content Fit, Render Jobs, Assets und Preflight.
 
 ## Aktueller Journey Lifecycle
 
 1. Reise beginnen
 2. Editorial World wählen
 3. Companion kennenlernen
-4. Reiseplanung
+4. Reiseplanung ausfüllen
 5. Orte hinzufügen
 6. Route formen
 7. Story Components bearbeiten
 8. Änderungen sichern
 9. Travelbook-Preview prüfen
 10. `.nls` direkt aus dem Finder wieder öffnen
+
+## Journey Planning Foundation
+
+Build 019 macht die Reiseplanung erstmals zu strukturierten Reisedaten.
+
+Der Reisende kann festhalten:
+
+- **Startdatum**
+- **Enddatum**
+- automatisch abgeleitete **Dauer**
+- **Startpunkt**
+- **Rückkehr / Ziel**
+- **Transport**
+- **Route im Überblick**
+- **Fokus der Reise**
+
+Studio speichert diese Informationen im Journey-Modell und macht sie unmittelbar auf
+der Reiseplanungsseite sichtbar.
+
+> **Der Reisende beschreibt den Rahmen seiner Reise. Studio macht ihn sichtbar.**
+
+Die Dauer ist eine abgeleitete Größe und wird nicht redundant im `.nls` gespeichert.
 
 ## Editorial Worlds
 
@@ -58,6 +81,7 @@ Fjord definiert unter anderem:
 - Northern-Lines-Travel-Language-Footer
 - Companion-Regeln
 - Page Grammars
+- Journey-Planning-Grammar
 
 ### Layout Principle
 
@@ -69,7 +93,7 @@ Für Ortsseiten sind bewusst nur drei Varianten vorbereitet:
 - **Bild links**
 - **Bild rechts**
 
-Build 018 macht daraus noch keinen DTP-Baukasten.
+Studio bleibt damit ein Travel-Publishing-System und wird nicht zum freien DTP-Baukasten.
 
 ## Travel Language Footer
 
@@ -80,11 +104,9 @@ Der wiederkehrende Fieldbook-Anker lautet:
 Die Editorial World bestimmt seine visuelle Expression. Die Seitenzahl bleibt davon
 getrennt und dient ausschließlich der Navigation.
 
-## Companion Layout Foundation
+## Companion Layout
 
-Build 018 bringt den Editorial Companion erstmals in die eigentliche Travelbook-Preview.
-
-Für Fjord gilt zunächst bewusst eine feste Regel:
+Für Fjord gilt aktuell:
 
 - kein Companion auf Cover, Willkommen und Inhaltsverzeichnis
 - erster Auftritt mit **Reiseplanung**
@@ -94,20 +116,16 @@ Für Fjord gilt zunächst bewusst eine feste Regel:
 - Spiegelung: **aus**
 - Größe: **klein**
 
-Freie Platzierung, Spiegelung und mehrere Posen bleiben bewusst zukünftige redaktionelle
-Entscheidungen.
-
 > **Der Companion begleitet die Reise. Er eröffnet sie nicht.**
 
 ## `.nls`
 
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
-als Reisedokument registriert. Ein Doppelklick im Finder startet Northern Lines Studio
-oder übergibt die Reise an die bereits laufende App.
+als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 018 aktualisiert das Format auf **0.6.0**, weil `Reiseplanung` als eigener
-semantischer Seitentyp eingeführt wird. Projekte im bisherigen Format 0.5.0 werden beim
-Öffnen automatisch ergänzt.
+Build 019 aktualisiert das Format auf **0.7.0**. Projekte im bisherigen Format 0.6.0
+werden beim Öffnen automatisch migriert. Die neuen Planungsfelder sind optional, damit
+bestehende Reisen ihren bisherigen Inhalt unverändert behalten.
 
 ## Entwicklung
 
@@ -121,6 +139,7 @@ pnpm tauri dev
 Jeder Build muss mindestens diese Gates bestehen:
 
 ```bash
+pnpm consistency
 pnpm check
 pnpm test
 pnpm build
@@ -128,7 +147,19 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-Für macOS-/Finder-Funktionen kommt die Installed-App-Validation hinzu.
+### Consistency Gate
+
+Neue Journey-Felder müssen durch die vollständige Datenkette geprüft werden:
+
+```text
+TypeScript Model
+→ Rust Schema
+→ .nls Migration
+→ Tauri Command
+→ Inspector
+→ Preview
+→ Tests
+```
 
 ## macOS-App installieren
 
@@ -160,6 +191,7 @@ Gestaltungsmöglichkeit abzubilden.
 - **016** Journey Opening Foundation – `.nls` als echtes macOS-Reisedokument
 - **017** Editorial World Layout Foundation
 - **018** Companion Layout Foundation + Reiseplanung
+- **019** Journey Planning Foundation – strukturierte Reisedaten
 
 ---
 

@@ -23,6 +23,7 @@ export type PageGrammarId =
   | 'cover'
   | 'welcome'
   | 'contents'
+  | 'planning'
   | 'destination'
   | 'light'
   | 'weather'

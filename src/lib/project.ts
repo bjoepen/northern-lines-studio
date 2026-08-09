@@ -50,6 +50,11 @@ export interface Journey {
   type: string;
   startDate?: string;
   endDate?: string;
+  departurePlace?: string;
+  returnPlace?: string;
+  transport?: string;
+  routeSummary?: string;
+  travelFocus?: string[];
   stages: JourneyStage[];
 }
 
