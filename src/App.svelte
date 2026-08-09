@@ -19,6 +19,11 @@
   import type { EditorialComponentId } from './lib/grammar/types';
   import { AUTHORING_STATUSES, AUTHORING_STATUS_LABELS, authoringCompletion, authoringViewFor, authoredComponentCount, authoringIsDirty } from './lib/authoring';
   import type { AuthoringStatus } from './lib/authoring/types';
+  import {
+    journeyDurationLabel,
+    journeyPlanningDraft,
+    travelFocusValues
+  } from './lib/journey-planning';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -57,6 +62,14 @@
   let editPlaceTitle = '';
   let editPlaceCountry = '';
   let editPlaceTitleInput: HTMLInputElement | null = null;
+  let planningStartDate = '';
+  let planningEndDate = '';
+  let planningDeparturePlace = '';
+  let planningReturnPlace = '';
+  let planningTransport = '';
+  let planningRouteSummary = '';
+  let planningTravelFocus = '';
+  let planningSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   const journeyWorlds = availableEditorialWorlds();
 
   async function showJourneyBeginning() {
@@ -109,6 +122,7 @@
       selectedPage = project.pageManifest[0] ?? null;
       activeAuthoringComponent = null;
       authoringSaveState = 'idle';
+      syncPlanningDraft();
       journeyBeginningOpen = false;
     } catch (error) {
       errorMessage = String(error);
@@ -249,6 +263,60 @@
     }
   }
 
+  function syncPlanningDraft() {
+    if (!project) {
+      planningStartDate = '';
+      planningEndDate = '';
+      planningDeparturePlace = '';
+      planningReturnPlace = '';
+      planningTransport = '';
+      planningRouteSummary = '';
+      planningTravelFocus = '';
+      planningSaveState = 'idle';
+      return;
+    }
+
+    const draft = journeyPlanningDraft(project.journey);
+    planningStartDate = draft.startDate;
+    planningEndDate = draft.endDate;
+    planningDeparturePlace = draft.departurePlace;
+    planningReturnPlace = draft.returnPlace;
+    planningTransport = draft.transport;
+    planningRouteSummary = draft.routeSummary;
+    planningTravelFocus = draft.travelFocus;
+    planningSaveState = 'idle';
+  }
+
+  async function saveJourneyPlanning() {
+    if (!project) return;
+
+    planningSaveState = 'saving';
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const selectedPageId = selectedPage?.id ?? null;
+      const updated = await invoke<StudioProject>('update_journey_planning', {
+        path: projectPath,
+        startDate: planningStartDate,
+        endDate: planningEndDate,
+        departurePlace: planningDeparturePlace,
+        returnPlace: planningReturnPlace,
+        transport: planningTransport,
+        routeSummary: planningRouteSummary,
+        travelFocus: travelFocusValues(planningTravelFocus)
+      });
+      project = { ...updated, projectPath };
+      if (selectedPageId) {
+        selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      }
+      syncPlanningDraft();
+      planningSaveState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      planningSaveState = 'error';
+    }
+  }
+
   async function openTravelPath(path: string) {
     if (project?.projectPath === path) return;
 
@@ -268,6 +336,7 @@
       authoringDraft = '';
       authoringStatus = 'empty';
       authoringSaveState = 'idle';
+      syncPlanningDraft();
     } catch (error) {
       errorMessage = String(error);
     } finally {
@@ -318,6 +387,7 @@
     authoringSaveState = 'idle';
     projectMenuOpen = false;
     errorMessage = '';
+    syncPlanningDraft();
   }
 
   function requestCloseTravel() {
@@ -335,6 +405,7 @@
     authoringDraft = '';
     authoringStatus = 'empty';
     authoringSaveState = 'idle';
+    if (page.type === 'planning') syncPlanningDraft();
   }
 
   function requestPageSelection(page: StudioPage) {
@@ -506,6 +577,7 @@
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
   $: statusText = projectStatus(project);
+  $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
   $: journeyRoutePosition = journeyStage ? routePosition(journeyStage.id) : 0;
@@ -670,6 +742,32 @@
               <p class="eyebrow">{preview.eyebrow}</p>
               <h1>{preview.heading}</h1>
               <p class="preview-body">{preview.body}</p>
+              {#if selectedPage?.type === 'planning' && project}
+                <div class="journey-planning-preview">
+                  <div>
+                    <span>Reisezeit</span>
+                    <strong>{project.journey.startDate || project.journey.endDate ? [project.journey.startDate, project.journey.endDate].filter(Boolean).join(' – ') : 'Noch offen'}</strong>
+                    <small>{planningDuration}</small>
+                  </div>
+                  <div>
+                    <span>Unterwegs</span>
+                    <strong>{[project.journey.departurePlace, project.journey.returnPlace].filter(Boolean).join(' → ') || 'Noch offen'}</strong>
+                    <small>{project.journey.transport ?? 'Transport noch offen'}</small>
+                  </div>
+                  {#if project.journey.routeSummary}
+                    <div class="planning-preview-wide">
+                      <span>Deine Route</span>
+                      <strong>{project.journey.routeSummary}</strong>
+                    </div>
+                  {/if}
+                  {#if project.journey.travelFocus?.length}
+                    <div class="planning-preview-wide">
+                      <span>Was dir wichtig ist</span>
+                      <strong>{project.journey.travelFocus.join(' · ')}</strong>
+                    </div>
+                  {/if}
+                </div>
+              {/if}
               {#if companionVisible && activeCompanion}
                 <div
                   class="companion-zone companion-zone-bottom-left"
@@ -710,6 +808,63 @@
         <span>Inspector</span>
         <strong>{selectedPage ? 'Seite' : 'Reise'}</strong>
       </div>
+
+      {#if selectedPage?.type === 'planning' && project}
+        <section class="inspector-card journey-planning-card" aria-label="Reiseplanung">
+          <span class="inspector-label">Reiseplanung</span>
+          <strong>Der Rahmen deiner Reise</strong>
+          <small>Ein paar Eckdaten genügen. Studio macht daraus deine Reiseplanung.</small>
+
+          <div class="planning-form">
+            <div class="planning-field-row">
+              <label>
+                <span>Wann geht es los?</span>
+                <input type="date" bind:value={planningStartDate} />
+              </label>
+              <label>
+                <span>Wann kommst du zurück?</span>
+                <input type="date" bind:value={planningEndDate} />
+              </label>
+            </div>
+            <div class="planning-duration-line">
+              <span>Dauer</span>
+              <strong>{journeyDurationLabel(planningStartDate, planningEndDate)}</strong>
+            </div>
+
+            <div class="planning-field-row">
+              <label>
+                <span>Wo beginnt deine Reise?</span>
+                <input bind:value={planningDeparturePlace} placeholder="Zum Beispiel: Kiel" />
+              </label>
+              <label>
+                <span>Wo endet sie?</span>
+                <input bind:value={planningReturnPlace} placeholder="Zum Beispiel: Kiel" />
+              </label>
+            </div>
+
+            <label>
+              <span>Wie reist du?</span>
+              <input bind:value={planningTransport} placeholder="Zum Beispiel: Schiff, Bahn oder Auto" />
+            </label>
+
+            <label>
+              <span>Wie verläuft deine Route?</span>
+              <textarea rows="3" bind:value={planningRouteSummary} placeholder="Kiel → Bergen → Geiranger → Ålesund → Haugesund → Kiel"></textarea>
+            </label>
+
+            <label>
+              <span>Was ist dir auf dieser Reise wichtig?</span>
+              <input bind:value={planningTravelFocus} placeholder="Fotografie · Entdecken · Erinnerungen" />
+            </label>
+          </div>
+
+          <button class="planning-save-button" on:click={saveJourneyPlanning} disabled={planningSaveState === 'saving'}>
+            {planningSaveState === 'saving' ? 'Reiseplanung wird gesichert …' : 'Reiseplanung sichern'}
+          </button>
+          {#if planningSaveState === 'saved'}<small class="planning-save-state">Reiseplanung gesichert.</small>{/if}
+          {#if planningSaveState === 'error'}<small class="planning-save-state planning-save-error">Reiseplanung konnte nicht gesichert werden.</small>{/if}
+        </section>
+      {/if}
 
       {#if editorialWorld}
         <section class="inspector-card world-inspector-card">

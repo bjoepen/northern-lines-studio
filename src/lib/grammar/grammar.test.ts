@@ -5,8 +5,22 @@ import { availableGrammars, evaluateGrammar, grammarForPage, requireGrammar } fr
 const destination: StudioPage = { id: 'bergen', order: 10, type: 'destination', role: 'destination', title: 'Bergen', content: 'content/pages/010-bergen.md', layout: 'destination-standard', components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'souvenirs', 'qr'] };
 
 describe('editorial grammar library', () => {
-  it('ships the nine Fjord reference grammars', () => {
-    expect(availableGrammars().map((grammar) => grammar.id)).toEqual(['cover', 'welcome', 'contents', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']);
+  it('ships the ten Fjord reference grammars', () => {
+    expect(availableGrammars().map((grammar) => grammar.id)).toEqual(['cover', 'welcome', 'contents', 'planning', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']);
+  });
+
+  it('resolves Reiseplanung to the Journey Planning grammar', () => {
+    const planning: StudioPage = {
+      id: 'planning',
+      order: 4,
+      type: 'planning',
+      role: 'journey_planning',
+      title: 'Reiseplanung',
+      content: 'content/pages/004-planning.md',
+      layout: 'planning',
+      components: ['title', 'introduction']
+    };
+    expect(grammarForPage(planning)?.id).toBe('planning');
   });
 
   it('resolves a destination page to the Destination grammar', () => {

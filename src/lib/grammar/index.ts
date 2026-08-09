@@ -26,6 +26,7 @@ export function grammarIdForPage(page: StudioPage | null): PageGrammarId | null 
     case 'cover':
     case 'welcome':
     case 'contents':
+    case 'planning':
     case 'destination':
     case 'workflow':
     case 'notes':

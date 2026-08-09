@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.6.0";
+const CURRENT_FORMAT_VERSION: &str = "0.7.0";
+const BUILD_018_FORMAT_VERSION: &str = "0.6.0";
 const BUILD_017_FORMAT_VERSION: &str = "0.5.0";
 const BUILD_009_FORMAT_VERSION: &str = "0.4.0";
 const BUILD_004_FORMAT_VERSION: &str = "0.3.0";
@@ -55,6 +56,16 @@ struct Journey {
     start_date: Option<String>,
     #[serde(default)]
     end_date: Option<String>,
+    #[serde(default)]
+    departure_place: Option<String>,
+    #[serde(default)]
+    return_place: Option<String>,
+    #[serde(default)]
+    transport: Option<String>,
+    #[serde(default)]
+    route_summary: Option<String>,
+    #[serde(default)]
+    travel_focus: Vec<String>,
     #[serde(default)]
     stages: Vec<JourneyStage>,
 }
@@ -240,6 +251,11 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
         journey_type: "journey".into(),
         start_date: None,
         end_date: None,
+        departure_place: None,
+        return_place: None,
+        transport: None,
+        route_summary: None,
+        travel_focus: Vec::new(),
         stages,
     }
 }
@@ -247,6 +263,12 @@ fn infer_legacy_journey(project: &StudioProject) -> Journey {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_018_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_018_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+        }
         BUILD_017_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_017_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -382,6 +404,11 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         .journey
         .as_ref()
         .ok_or_else(|| "Das Projekt besitzt kein Journey-Modell.".to_string())?;
+    if let (Some(start), Some(end)) = (&journey.start_date, &journey.end_date) {
+        if !start.trim().is_empty() && !end.trim().is_empty() && start > end {
+            return Err("Das Ende deiner Reise liegt vor ihrem Beginn.".into());
+        }
+    }
     if journey.id.trim().is_empty() || journey.title.trim().is_empty() || journey.journey_type.trim().is_empty() {
         return Err("Journey besitzt keine gültige ID, keinen Titel oder keinen Typ.".into());
     }
@@ -503,7 +530,19 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
         format: EXPECTED_FORMAT.into(), format_version: CURRENT_FORMAT_VERSION.into(),
         project_id: slugify(title), title: title.into(), edition: Some("1.0".into()), language,
         editorial_world_id: Some(editorial_world_id), legacy_editorial_world: None,
-        journey: Some(Journey { id: format!("{}-journey", slugify(title)), title: title.into(), journey_type: "travel".into(), start_date: None, end_date: None, stages: Vec::new() }),
+        journey: Some(Journey {
+        id: format!("{}-journey", slugify(title)),
+        title: title.into(),
+        journey_type: "travel".into(),
+        start_date: None,
+        end_date: None,
+        departure_place: None,
+        return_place: None,
+        transport: None,
+        route_summary: None,
+        travel_focus: Vec::new(),
+        stages: Vec::new()
+    }),
         document: DocumentSettings { page_format: "A5".into(), orientation: "portrait".into() },
         page_manifest: pages, project_path: folder.to_string_lossy().into_owned(), migrated_from_version: None,
     };
@@ -583,6 +622,53 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
     Ok(project_session(project, project_path))
 }
 
+
+fn optional_text(value: String) -> Option<String> {
+    let value = value.trim().to_string();
+    (!value.is_empty()).then_some(value)
+}
+
+#[tauri::command]
+fn update_journey_planning(
+    path: String,
+    start_date: String,
+    end_date: String,
+    departure_place: String,
+    return_place: String,
+    transport: String,
+    route_summary: String,
+    travel_focus: Vec<String>,
+) -> Result<ProjectSession, String> {
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+
+    if !start_date.trim().is_empty() && !end_date.trim().is_empty() && start_date > end_date {
+        return Err("Das Ende deiner Reise liegt vor ihrem Beginn.".into());
+    }
+
+    let journey = project
+        .journey
+        .as_mut()
+        .ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+
+    journey.start_date = optional_text(start_date);
+    journey.end_date = optional_text(end_date);
+    journey.departure_place = optional_text(departure_place);
+    journey.return_place = optional_text(return_place);
+    journey.transport = optional_text(transport);
+    journey.route_summary = optional_text(route_summary);
+    journey.travel_focus = travel_focus
+        .into_iter()
+        .map(|entry| entry.trim().to_string())
+        .filter(|entry| !entry.is_empty())
+        .collect();
+
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
 
 #[tauri::command]
 fn move_journey_place(path: String, stage_id: String, direction: String) -> Result<ProjectSession, String> {
@@ -682,6 +768,7 @@ pub fn run() {
             create_nls_project,
             save_authoring_component,
             add_journey_place,
+            update_journey_planning,
             move_journey_place,
             update_journey_place,
             take_pending_open_path
@@ -728,6 +815,8 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_018_FORMAT_VERSION
+                || version == BUILD_017_FORMAT_VERSION
                 || version == BUILD_009_FORMAT_VERSION
                 || version == BUILD_004_FORMAT_VERSION
             {
@@ -736,6 +825,8 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_018_FORMAT_VERSION
+                || version == BUILD_017_FORMAT_VERSION
                 || version == BUILD_009_FORMAT_VERSION
                 || version == BUILD_004_FORMAT_VERSION
             {
@@ -758,6 +849,11 @@ mod tests {
                     journey_type: "cruise".into(),
                     start_date: None,
                     end_date: None,
+                    departure_place: None,
+                    return_place: None,
+                    transport: None,
+                    route_summary: None,
+                    travel_focus: Vec::new(),
                     stages: vec![JourneyStage {
                         id: "bergen".into(),
                         kind: "destination".into(),
@@ -850,6 +946,35 @@ mod tests {
     }
 
     #[test]
+    fn stores_structured_journey_planning() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Planung Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        ).expect("new journey");
+
+        let updated = update_journey_planning(
+            created.project_path.clone(),
+            "2026-07-26".into(),
+            "2026-08-02".into(),
+            "Kiel".into(),
+            "Kiel".into(),
+            "Schiff".into(),
+            "Kiel → Bergen → Geiranger → Ålesund → Haugesund → Kiel".into(),
+            vec!["Fotografie".into(), "Entdecken".into(), "Erinnerungen".into()],
+        ).expect("planning");
+
+        let journey = updated.project.journey.expect("journey");
+        assert_eq!(journey.start_date.as_deref(), Some("2026-07-26"));
+        assert_eq!(journey.end_date.as_deref(), Some("2026-08-02"));
+        assert_eq!(journey.departure_place.as_deref(), Some("Kiel"));
+        assert_eq!(journey.transport.as_deref(), Some("Schiff"));
+        assert_eq!(journey.travel_focus.len(), 3);
+    }
+
+    #[test]
     fn reorders_and_updates_journey_places() {
         let temp = tempfile::tempdir().expect("tempdir");
 
@@ -936,6 +1061,17 @@ mod tests {
         );
 
         assert!(validate_project(&updated.project).is_ok());
+    }
+
+    #[test]
+    fn migrates_build_018_journey_to_planning_schema() {
+        let migrated = migrate_project(sample_project(BUILD_018_FORMAT_VERSION)).expect("migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_018_FORMAT_VERSION));
+        let journey = migrated.journey.expect("journey");
+        assert!(journey.departure_place.is_none());
+        assert!(journey.return_place.is_none());
+        assert!(journey.travel_focus.is_empty());
     }
 
     #[test]

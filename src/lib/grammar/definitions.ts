@@ -8,6 +8,7 @@ export const grammarDefinitions: readonly PageGrammarDefinition[] = [
   { id: 'cover', name: 'Cover', purpose: 'Eröffnet die Editorial World und setzt die emotionale Erwartung der Reise.', story: [required('hero', 'Hero'), required('title', 'Titel'), optional('subtitle', 'Unterzeile')], editorialFrame: [] },
   { id: 'welcome', name: 'Welcome', purpose: 'Begrüßt den Leser und öffnet den erzählerischen Raum des Travelbooks.', story: [required('hero', 'Hero'), required('title', 'Titel'), required('introduction', 'Willkommenstext'), optional('quote', 'Zitat')], editorialFrame: frame },
   { id: 'contents', name: 'Contents', purpose: 'Gibt Orientierung, ohne den ruhigen Editorial Rhythm zu verlassen.', story: [required('title', 'Titel'), required('contents', 'Inhaltsübersicht')], editorialFrame: frame },
+  { id: 'planning', name: 'Journey Planning', purpose: 'Gibt der Reise ihren zeitlichen und praktischen Rahmen, bevor die Route beginnt.', story: [required('title', 'Titel'), optional('introduction', 'Einleitung')], editorialFrame: frame },
   {
     id: 'destination', name: 'Destination', purpose: 'Verbindet Atmosphäre, Ortswissen, Fotografie und praktische Reisebegleitung.',
     story: [required('hero', 'Hero'), required('title', 'Titel'), required('introduction', 'Einleitung'), required('history', 'Geschichte & Hintergründe'), required('photography', 'Fotografie & Erleben'), required('knowledge', 'Northern Lines Wissen'), required('souvenirs', 'Mitbringsel & Souvenirs'), optional('qr', 'QR-Verweis')], editorialFrame: frame
