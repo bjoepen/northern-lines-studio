@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
+  import { listen } from '@tauri-apps/api/event';
   import { open } from '@tauri-apps/plugin-dialog';
   import type { JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
@@ -21,6 +22,7 @@
     | { kind: 'open-travel' }
     | { kind: 'close-travel' }
     | { kind: 'begin-travel' }
+    | { kind: 'open-travel-path'; path: string }
     | { kind: 'move-place'; stageId: string; direction: 'earlier' | 'later' }
     | { kind: 'edit-place'; stageId: string };
 
@@ -243,6 +245,43 @@
     }
   }
 
+  async function openTravelPath(path: string) {
+    if (project?.projectPath === path) return;
+
+    projectMenuOpen = false;
+    errorMessage = '';
+    isLoading = true;
+
+    try {
+      const loadedProject = await invoke<StudioProject>('load_nls_project', { path });
+      project = {
+        ...loadedProject,
+        projectPath: path
+      };
+      requireEditorialWorld(project.editorialWorldId ?? '');
+      selectedPage = project.pageManifest[0] ?? null;
+      activeAuthoringComponent = null;
+      authoringDraft = '';
+      authoringStatus = 'empty';
+      authoringSaveState = 'idle';
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function requestOpenTravelPath(path: string) {
+    if (!path || project?.projectPath === path) return;
+
+    if (authoringDirty) {
+      pendingAction = { kind: 'open-travel-path', path };
+      return;
+    }
+
+    void openTravelPath(path);
+  }
+
   async function openTravelNow() {
     projectMenuOpen = false;
     errorMessage = '';
@@ -254,24 +293,7 @@
 
     if (!selected || Array.isArray(selected)) return;
 
-    isLoading = true;
-    try {
-      const loadedProject = await invoke<StudioProject>('load_nls_project', { path: selected });
-      project = {
-        ...loadedProject,
-        projectPath: selected
-      };
-      requireEditorialWorld(project.editorialWorldId ?? '');
-      selectedPage = project.pageManifest[0] ?? null;
-      activeAuthoringComponent = null;
-      authoringSaveState = 'idle';
-    } catch (error) {
-      project = null;
-      selectedPage = null;
-      errorMessage = String(error);
-    } finally {
-      isLoading = false;
-    }
+    await openTravelPath(selected);
   }
 
   function requestOpenTravel() {
@@ -384,6 +406,10 @@
       closeTravelNow();
       return;
     }
+    if (action.kind === 'open-travel-path') {
+      await openTravelPath(action.path);
+      return;
+    }
     if (action.kind === 'move-place') {
       await movePlaceNow(action.stageId, action.direction);
       return;
@@ -445,6 +471,27 @@
     observer.observe(previewStage);
     updatePreviewScale();
     return () => observer.disconnect();
+  });
+
+  onMount(() => {
+    let unlistenOpen: (() => void) | undefined;
+    let disposed = false;
+
+    void (async () => {
+      unlistenOpen = await listen<string>('open-nls', (event) => {
+        requestOpenTravelPath(event.payload);
+      });
+
+      const pendingPath = await invoke<string | null>('take_pending_open_path');
+      if (!disposed && pendingPath) {
+        requestOpenTravelPath(pendingPath);
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      unlistenOpen?.();
+    };
   });
 
   $: preview = previewFor(selectedPage);
