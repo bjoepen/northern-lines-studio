@@ -9,6 +9,7 @@
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
+  import { layoutSystemForWorld } from './lib/layout';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
@@ -497,6 +498,7 @@
   $: preview = previewFor(selectedPage);
   $: sections = groupPages(project?.pageManifest ?? [], project?.journey?.stages.map((stage) => stage.id) ?? []);
   $: editorialWorld = editorialWorldFor(project);
+  $: editorialLayout = layoutSystemForWorld(project?.editorialWorldId);
   $: statusText = projectStatus(project);
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -646,16 +648,26 @@
             <article
               class="a5-page"
               class:cover-page={selectedPage?.type === 'cover'}
-              style={`transform:scale(${previewScale})`}
+              class:fjord-page={editorialWorld?.id === 'fjord'}
+              class:destination-page={selectedPage?.type === 'destination'}
+              style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'}`}
               in:fade={{ duration: 190 }}
             >
+              {#if editorialWorld?.id === 'fjord'}
+                <div class="fjord-page-marker" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              {/if}
               <div class="page-rule"></div>
               <p class="eyebrow">{preview.eyebrow}</p>
               <h1>{preview.heading}</h1>
               <p class="preview-body">{preview.body}</p>
-              <footer>
-                <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-                <span>{selectedPage ? visiblePageNumber(selectedPage) : '–'}</span>
+              <footer class="editorial-footer">
+                <span class="footer-anchor">{editorialLayout?.footer.anchor ?? editorialWorld?.name ?? 'Northern Lines Studio'}</span>
+                <span class="footer-world">{editorialLayout?.footer.worldLabel ?? editorialWorld?.name ?? ''}</span>
+                <span class="footer-page-number">{selectedPage ? visiblePageNumber(selectedPage) : '–'}</span>
               </footer>
             </article>
           {/key}
@@ -679,8 +691,24 @@
             <strong>{editorialWorld.companionName}</strong>
             <span>Design Language</span>
             <strong>{editorialWorld.designLanguage.join(' · ')}</strong>
+            <span>Layout Language</span>
+            <strong>{editorialWorld.layoutSystemName}</strong>
             <span>Grammars</span>
             <strong>{editorialWorld.pageGrammars.length} verfügbar</strong>
+          </div>
+        </section>
+      {/if}
+
+      {#if editorialLayout}
+        <section class="inspector-card layout-language-card" aria-label="Layout Language">
+          <span class="inspector-label">Layout Language</span>
+          <strong>{editorialLayout.name}</strong>
+          <small>Wenige starke Layouts. Viele persönliche Geschichten.</small>
+          <div class="layout-language-facts">
+            <span>Wiederkehrender Anker</span>
+            <strong>{editorialLayout.footer.anchor}</strong>
+            <span>Ortsseiten</span>
+            <strong>{editorialLayout.destinationLayouts.map((layout) => layout.label).join(' · ')}</strong>
           </div>
         </section>
       {/if}

@@ -195,3 +195,12 @@ Ab Build 016 ist `.nls` nicht nur ein Projektformat, sondern ein Reisedokument:
 Auf macOS kann eine Reise direkt aus dem Finder geöffnet werden.
 
 > Der Reisende öffnet kein Projekt. Er öffnet seine Reise.
+
+
+## Editorial World Layout Foundation
+
+Ab Build 017 besitzt die Fjord Reference World eine eigene visuelle Layout Language.
+Wiederkehrende Elemente wie der Northern-Lines-Footer gehören zur Editorial World
+und nicht zu einzelnen frei platzierten Seitenobjekten.
+
+> Wenige starke Layouts. Viele persönliche Geschichten.

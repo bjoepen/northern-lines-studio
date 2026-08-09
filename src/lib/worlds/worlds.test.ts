@@ -16,6 +16,10 @@ describe('editorial world library', () => {
     expect(requireCompanion(world.companionId).name).toBe('Papageientaucher');
   });
 
+  it('binds Fjord to its editorial layout language', () => {
+    expect(requireEditorialWorld('fjord').layoutSystemId).toBe('fjord-layout');
+  });
+
   it('contains the Fjord reference grammars', () => {
     expect(requireEditorialWorld('fjord').pageGrammars).toContain('destination');
     expect(requireEditorialWorld('fjord').pageGrammars).toContain('closing');

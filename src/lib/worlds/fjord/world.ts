@@ -8,6 +8,7 @@ export const fjordWorld: EditorialWorldDefinition = {
   character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],
   designLanguage: ['Northern', 'Calm', 'Image-led'],
   companionId: 'fjord-puffin',
+  layoutSystemId: 'fjord-layout',
   pageGrammars: [
     'cover',
     'welcome',
