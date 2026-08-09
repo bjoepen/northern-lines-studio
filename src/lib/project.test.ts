@@ -25,6 +25,7 @@ const project: StudioProject = {
     type: 'cruise',
     stages: [{ id: 'bergen', kind: 'destination', title: 'Bergen', country: 'Norway' }]
   },
+  destinations: [],
   document: { pageFormat: 'A5', orientation: 'portrait' },
   pageManifest: [destinationPage],
   projectPath: '/tmp/sample.nls'

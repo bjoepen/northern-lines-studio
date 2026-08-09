@@ -19,19 +19,19 @@ export const fjordLayoutSystem: EditorialLayoutSystem = {
     {
       id: 'destination-hero-banner',
       label: 'Weite',
-      description: 'Das Hero-Bild öffnet die Seite als ruhiges, breites Fenster.',
+      description: 'Der Ort öffnet sich über ein ruhiges Panorama.',
       emphasis: 'wide'
     },
     {
       id: 'destination-hero-left',
       label: 'Bild links',
-      description: 'Die Fotografie eröffnet den Ort, die Geschichte folgt.',
+      description: 'Das Bild führt in den Ort.',
       emphasis: 'image-first'
     },
     {
       id: 'destination-hero-right',
       label: 'Bild rechts',
-      description: 'Die Geschichte eröffnet den Ort, die Fotografie begleitet.',
+      description: 'Die Geschichte führt, das Bild begleitet.',
       emphasis: 'story-first'
     }
   ],
