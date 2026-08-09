@@ -18,9 +18,24 @@ Journey Planning Consistency Gate: PASS
 Destination Profile Consistency Gate: PASS
 Layout Resilience Consistency Gate: PASS
 Destination Imagery Consistency Gate: PASS
+Travel Opening Consistency Gate: PASS
 ```
 
-## Real-world test – Bergen
+## Regression validation – Reisen öffnen
+
+Die folgenden Fälle sind für Build 022 Final verbindlich:
+
+1. **Studio geschlossen → `.nls` im Finder doppelklicken** → Studio startet und die Reise öffnet sich.
+2. **Studio geöffnet → `.nls` im Finder doppelklicken** → die ausgewählte Reise wechselt/öffnet sich in der laufenden App.
+3. **Studio geöffnet → Reise innerhalb von Studio öffnen** → **Reise öffnen …** wählen, `.nls` auswählen, Reise öffnet sich.
+4. **Build-019-Datei** → öffnen → Migration auf das aktuelle Projektformat → Reise öffnet sich.
+5. **Build-020-Datei** → öffnen → bestehende Migrations-/Normalisierungskette wird korrekt ausgeführt; keine Open-Flow-Sonderlogik.
+6. Nach dem Öffnen sind **Route, Destination Profiles, Layoutvarianten und Hero-Referenzen** korrekt vorhanden.
+7. Projekt A mit ungespeicherten Ortsprofil-Änderungen → Reise B über **Reise öffnen …** wählen → erwartete Auswahl **Verwerfen · Abbrechen · Speichern** bleibt intakt.
+
+Wichtig: UTType, Finder-Integration und `.nls`-Registrierung werden für diesen Fix nicht verändert.
+
+## Real-world test – Bergen imagery
 
 Prepare two source images:
 

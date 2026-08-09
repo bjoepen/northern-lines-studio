@@ -271,3 +271,7 @@ Gestaltungsmöglichkeit abzubilden.
 
 **Northern Lines Studio**
 *Deine Reise. Deine Geschichten. Dein Fieldbook.*
+
+### Build 022 Final – Open-Flow Regression geschlossen
+
+Der interne Befehl **Reise öffnen …** verwendet wieder den `.nls`-Dokument-/Package-Pfad und damit dieselbe gemeinsame Ladepipeline wie der macOS/Finder-Open-Flow. Finder-Integration, `.nls`-Registrierung und die Destination-Image-Composition bleiben unverändert.

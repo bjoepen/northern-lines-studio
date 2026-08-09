@@ -33,3 +33,11 @@
 Build 022 Final wurde gegen `docs/PRODUCT-DNA.md` validiert. Neu verbindlich:
 
 > **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**
+
+## Regression fix – Reise innerhalb von Studio öffnen
+
+- interner **Reise öffnen …**-Flow wählt `.nls` wieder als Northern-Lines-Dokument/Package statt als beliebiges Verzeichnis
+- File Dialog liefert damit denselben `.nls`-Package-Pfadvertrag, den auch der funktionierende macOS/Finder-Open-Flow verwendet
+- beide Wege laufen weiterhin über den gemeinsamen `load_nls_project`-Command und damit über dieselbe read/migrate/validate-Pipeline
+- Finder-/UTType-Integration und `.nls`-Registrierung bleiben unverändert
+- Hero-/Destination-Image-Composition aus Build 022 bleibt unverändert

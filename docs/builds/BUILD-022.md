@@ -79,3 +79,15 @@ Model
 → Companion Invariance
 → Tests
 ```
+
+## Final regression fix – interner Open-Flow
+
+Nach der Image-Composition-Finalisierung wurde eine Regression im internen **Reise öffnen …**-Flow gefunden.
+Der File Dialog war als Directory-Picker konfiguriert, obwohl `.nls` auf macOS als Package/Dokument behandelt wird.
+
+Der Fix ändert ausschließlich die Auswahlsemantik des internen Dialogs:
+
+`Reise öffnen … → .nls Package → load_nls_project → read/migrate/validate → ProjectSession → Frontend State → Page Selection`
+
+Der Finder-Open-Flow bleibt unverändert und trifft weiterhin früh auf dieselbe gemeinsame Ladepipeline.
+UTType, Finder-Integration, `.nls`-Registrierung, Destination Imagery und die Layout Grammar werden nicht verändert.
