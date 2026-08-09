@@ -10,6 +10,7 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { layoutSystemForWorld } from './lib/layout';
+  import { destinationContentCapacity } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
   import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
@@ -26,7 +27,9 @@
   } from './lib/journey-planning';
   import {
     destinationDraft,
-    destinationForPage
+    destinationForPage,
+    destinationIsDirty,
+    formatTravelTime
   } from './lib/destinations';
 
   type PendingAction =
@@ -98,7 +101,7 @@
 
   function requestBeginTravel() {
     projectMenuOpen = false;
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'begin-travel' };
       return;
     }
@@ -211,7 +214,7 @@
   }
 
   function requestMovePlace(stageId: string, direction: 'earlier' | 'later') {
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'move-place', stageId, direction };
       return;
     }
@@ -228,7 +231,7 @@
   }
 
   function requestPlaceEdit(stage: JourneyStage) {
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'edit-place', stageId: stage.id };
       return;
     }
@@ -357,11 +360,11 @@
     destinationPracticalInfo = destinationPracticalInfo.map((entry) => entry.id === id ? { ...entry, ...patch } : entry);
   }
 
-  async function saveDestinationProfile() {
-    if (!project || !selectedPage?.journeyStage || selectedPage.type !== 'destination') return;
+  async function saveDestinationProfile(): Promise<boolean> {
+    if (!project || !selectedPage?.journeyStage || selectedPage.type !== 'destination') return false;
     if (!destinationName.trim()) {
       errorMessage = 'Gib dem Ort zuerst einen Namen.';
-      return;
+      return false;
     }
     destinationSaveState = 'saving';
     errorMessage = '';
@@ -386,9 +389,11 @@
       selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
       syncDestinationDraft();
       destinationSaveState = 'saved';
+      return true;
     } catch (error) {
       errorMessage = String(error);
       destinationSaveState = 'error';
+      return false;
     }
   }
 
@@ -452,7 +457,7 @@
   function requestOpenTravelPath(path: string) {
     if (!path || project?.projectPath === path) return;
 
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'open-travel-path', path };
       return;
     }
@@ -476,7 +481,7 @@
 
   function requestOpenTravel() {
     projectMenuOpen = false;
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'open-travel' };
       return;
     }
@@ -497,7 +502,7 @@
 
   function requestCloseTravel() {
     projectMenuOpen = false;
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'close-travel' };
       return;
     }
@@ -516,7 +521,7 @@
 
   function requestPageSelection(page: StudioPage) {
     if (selectedPage?.id === page.id) return;
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'select-page', pageId: page.id };
       return;
     }
@@ -525,7 +530,7 @@
 
   function editStoryComponent(componentId: EditorialComponentId) {
     if (activeAuthoringComponent === componentId) return;
-    if (authoringDirty) {
+    if (hasUnsavedChanges) {
       pendingAction = { kind: 'select-component', componentId };
       return;
     }
@@ -565,13 +570,36 @@
     }
   }
 
+  function discardActiveUnsavedChanges() {
+    if (destinationDirty) syncDestinationDraft();
+    if (authoringDirty && activeAuthoring) {
+      authoringDraft = activeAuthoring.content;
+      authoringStatus = activeAuthoring.status;
+      authoringSaveState = 'idle';
+    }
+  }
+
+  async function saveActiveUnsavedChanges(): Promise<boolean> {
+    if (destinationDirty) {
+      const saved = await saveDestinationProfile();
+      if (!saved) return false;
+    }
+    if (authoringDirty) {
+      const saved = await saveAuthoring();
+      if (!saved) return false;
+    }
+    return true;
+  }
+
   async function continuePendingAction(saveFirst: boolean) {
     const action = pendingAction;
     if (!action) return;
 
     if (saveFirst) {
-      const saved = await saveAuthoring();
+      const saved = await saveActiveUnsavedChanges();
       if (!saved) return;
+    } else {
+      discardActiveUnsavedChanges();
     }
 
     pendingAction = null;
@@ -680,6 +708,14 @@
   $: sections = groupPages(project?.pageManifest ?? [], project?.journey?.stages.map((stage) => stage.id) ?? []);
   $: editorialWorld = editorialWorldFor(project);
   $: editorialLayout = layoutSystemForWorld(project?.editorialWorldId);
+  $: destinationCapacity = destinationContentCapacity({
+    name: destinationName,
+    subtitle: destinationSubtitle,
+    introduction: destinationIntroduction,
+    reasons: destinationReasons,
+    highlights: destinationHighlights,
+    practicalInfo: destinationPracticalInfo
+  });
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
@@ -699,6 +735,20 @@
   $: authoringProgress = authoringCompletion(selectedPage);
   $: authoredCount = authoredComponentCount(selectedPage);
   $: authoringDirty = authoringIsDirty(activeAuthoring, authoringDraft, authoringStatus);
+  $: destinationDirty = selectedPage?.type === 'destination' && destinationIsDirty(selectedDestination, {
+    name: destinationName,
+    subtitle: destinationSubtitle,
+    introduction: destinationIntroduction,
+    arrival: destinationArrival,
+    departure: destinationDeparture,
+    timezone: destinationTimezone,
+    reasons: destinationReasons,
+    highlights: destinationHighlights,
+    practicalInfo: destinationPracticalInfo,
+    layoutVariant: destinationLayoutVariant
+  }, selectedPage?.title ?? '');
+  $: hasUnsavedChanges = authoringDirty || destinationDirty;
+  $: unsavedDialogLabel = destinationDirty ? (destinationName || selectedPage?.title || 'Ortsprofil') : (activeAuthoring?.label ?? 'Story');
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
   $: selectedJourneyWorld = journeyWorlds.find((world) => world.id === newJourneyWorldId) ?? journeyWorlds[0] ?? null;
@@ -844,7 +894,7 @@
               in:fade={{ duration: 190 }}
             >
               {#if selectedPage?.type === 'destination'}
-                <div class={`destination-preview ${destinationLayoutVariant}`}>
+                <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity}`}>
                   <div class="destination-story">
                     <div class="page-rule"></div>
                     <p class="eyebrow">Reiseziel</p>
@@ -853,15 +903,15 @@
                     <p class="preview-body">{destinationIntroduction || 'Erzähle, was diesen Ort für deine Reise besonders macht.'}</p>
 
                     <div class="destination-facts-preview">
-                      <div><span>Ankunft</span><strong>{destinationArrival || 'offen'}</strong></div>
-                      <div><span>Abfahrt</span><strong>{destinationDeparture || 'offen'}</strong></div>
+                      <div><span>Ankunft</span><strong>{formatTravelTime(destinationArrival)}</strong></div>
+                      <div><span>Abfahrt</span><strong>{formatTravelTime(destinationDeparture)}</strong></div>
                       <div><span>Zeitzone</span><strong>{destinationTimezone || 'offen'}</strong></div>
                     </div>
                   </div>
 
                   <div class="destination-hero-placeholder" aria-label="Bild"></div>
 
-                  <div class="destination-modules-preview">
+                  <div class:destination-modules-three={destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).length > 0} class="destination-modules-preview">
                     <section>
                       <span>Warum dieser Ort?</span>
                       {#if destinationReasons.length}
@@ -1031,8 +1081,8 @@
 
             <div class="destination-section-title destination-quiet-section"><span>Reise vor Ort</span><strong>Für deinen Aufenthalt</strong></div>
             <div class="planning-field-row">
-              <label><span>Ankunft</span><input bind:value={destinationArrival} placeholder="08:00 Uhr" /></label>
-              <label><span>Abfahrt</span><input bind:value={destinationDeparture} placeholder="17:00 Uhr" /></label>
+              <label><span>Ankunft</span><div class="travel-time-input"><input bind:value={destinationArrival} placeholder="08:00" /><span>Uhr</span></div></label>
+              <label><span>Abfahrt</span><div class="travel-time-input"><input bind:value={destinationDeparture} placeholder="17:00" /><span>Uhr</span></div></label>
             </div>
             <label><span>Zeitzone</span><input bind:value={destinationTimezone} placeholder="MEZ / MESZ" /></label>
 
@@ -1334,12 +1384,12 @@
         on:keydown={handleSaveDialogKeydown}
       >
         <span class="inspector-label">Deine Geschichte</span>
-        <strong id="save-dialog-title">Änderungen an „{activeAuthoring?.label ?? 'Story'}“ sichern?</strong>
+        <strong id="save-dialog-title">Änderungen an „{unsavedDialogLabel}“ speichern?</strong>
         <p id="save-dialog-description">Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden.</p>
         <div class="save-dialog-actions">
           <button class="dialog-secondary" on:click={() => continuePendingAction(false)}>Verwerfen</button>
           <button class="dialog-secondary" on:click={cancelPendingAction}>Abbrechen</button>
-          <button bind:this={saveDialogPrimary} class="dialog-primary" on:click={() => continuePendingAction(true)}>Sichern</button>
+          <button bind:this={saveDialogPrimary} class="dialog-primary" on:click={() => continuePendingAction(true)}>Speichern</button>
         </div>
       </div>
     </div>

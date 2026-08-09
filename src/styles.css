@@ -715,7 +715,7 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview { position: relative; display: grid; gap: 12px; min-height: 462px; }
 .destination-story { min-width: 0; }
 .destination-story h1 { margin-top: 7px; }
-.destination-subtitle { margin: -4px 0 9px; color: var(--world-accent); font: italic 16px/1.25 Georgia, "Times New Roman", serif; }
+.destination-subtitle { margin: 8px 0 11px; color: var(--world-accent); font: italic 16px/1.28 Georgia, "Times New Roman", serif; }
 .destination-hero-placeholder { min-height: 150px; border-radius: 2px; background:
   radial-gradient(circle at 18% 45%, rgba(255,255,255,.62), transparent 22%),
   radial-gradient(circle at 76% 28%, rgba(255,255,255,.48), transparent 18%),
@@ -752,3 +752,112 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview.destination-hero-right .destination-hero-placeholder { grid-column: 2; grid-row: 1; min-height: 245px; }
 .destination-preview.destination-hero-left .destination-modules-preview,
 .destination-preview.destination-hero-right .destination-modules-preview { grid-column: 1 / -1; grid-row: 2; }
+
+/* Build 021 · Layout Resilience & Content Capacity Foundation
+   A5 preview = 420 × 594 px. 17 mm binding safety on a 148 mm page is ~48.2 px.
+   The visible preview keeps 52 px on the binding side, so the safe area is never violated. */
+.a5-page.destination-page {
+  --binding-safe-left: 48.25px;
+  --companion-safe-width: 78px;
+  --companion-safe-height: 76px;
+  padding-top: 40px;
+  padding-left: max(52px, var(--binding-safe-left));
+}
+
+/* The destination title is a protected editorial anchor. The subtitle follows;
+   it never uses negative spacing to intrude into the place name. */
+.destination-story h1 {
+  margin-top: 7px;
+  margin-bottom: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.destination-subtitle {
+  margin: 8px 0 11px;
+  color: var(--world-accent);
+  font: italic 16px/1.28 Georgia, "Times New Roman", serif;
+}
+
+/* A compact semantic time input: the traveller enters only the time; Travel
+   Language supplies the unit without persisting it as layout copy. */
+.travel-time-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid #d8e2e5;
+  border-radius: 7px;
+  background: #fff;
+  overflow: hidden;
+}
+.destination-form .travel-time-input input {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-width: 0;
+}
+.travel-time-input > span {
+  padding: 0 8px 0 4px;
+  color: #7b8a90;
+  font-size: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.travel-time-input:focus-within {
+  border-color: #9eb8c2;
+  box-shadow: 0 0 0 2px rgba(105,145,160,.09);
+}
+
+/* Destination content ends before the companion threshold. This reserved
+   padding is part of the preview grammar, not persisted geometry. */
+.destination-preview {
+  min-height: 0;
+  padding-bottom: var(--companion-safe-height);
+}
+
+/* Weite uses more of the upper A5 composition while staying deliberately
+   shallow. Exact Publisher geometry remains authoritative and is not stored. */
+.destination-preview.destination-hero-banner {
+  gap: 10px;
+}
+.destination-preview.destination-hero-banner .destination-hero-placeholder {
+  min-height: 66px;
+  height: 66px;
+  margin-top: -3px;
+  margin-bottom: 1px;
+}
+
+/* The editorial grammar may compose three peer modules when the content calls
+   for it. This is not a fourth layout variant and exposes no free grid control. */
+.destination-modules-preview.destination-modules-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+.destination-modules-preview.destination-modules-three .destination-practical-preview {
+  grid-column: auto;
+}
+.destination-modules-preview.destination-modules-three .destination-practical-preview div {
+  grid-template-columns: 1fr;
+}
+.destination-modules-preview.destination-modules-three section {
+  min-width: 0;
+}
+
+/* Binding and companion are protected anchors. The companion begins only after
+   the 17 mm binding safety and remains stable across all Destination layouts. */
+.a5-page.destination-page .companion-zone-bottom-left {
+  left: max(52px, var(--binding-safe-left));
+  bottom: 51px;
+  width: var(--companion-safe-width);
+  height: var(--companion-safe-height);
+}
+
+/* Capacity states are intentionally non-destructive. They may guide later
+   Publisher/content-fit work, but never shrink type or hide content in Studio. */
+.destination-preview.capacity-comfortable {
+  --content-fit-state: 0;
+}
+.destination-preview.capacity-tight,
+.destination-preview.capacity-overflow {
+  --content-fit-state: 1;
+}

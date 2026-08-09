@@ -1,40 +1,39 @@
-# Build 020 Drop-in Manifest
+# Build 021 Final – Drop-in Manifest
 
-- Added files: 12
-- Changed files: 13
-- Deleted files: 0
+Baseline: Build 020 Final
+Neue Dateien: 12
+Geänderte Dateien: 14
+Gelöschte Dateien: 0
 
-## Added
+## Neue Dateien
+- `BUILD-021-SHA256SUMS.txt`
+- `docs/PRODUCT-DNA.md`
+- `docs/adr/ADR-019-PROTECTED-EDITORIAL-ZONES-AND-CONTENT-CAPACITY.md`
+- `docs/builds/BUILD-021-DELIVERY-NOTES.md`
+- `docs/builds/BUILD-021-RELEASE-NOTES.md`
+- `docs/builds/BUILD-021.md`
+- `docs/ecr/ECR-021-LAYOUT-RESILIENCE-CONTENT-CAPACITY.md`
+- `docs/git/BUILD-021-GIT-WORKFLOW.md`
+- `docs/validation/BUILD-021-VALIDATION.md`
+- `scripts/check-layout-resilience-consistency.mjs`
+- `src/lib/layout/capacity.test.ts`
+- `src/lib/layout/capacity.ts`
 
-- `BUILD-020-SHA256SUMS.txt`
-- `docs/adr/ADR-018-PUBLISHER-OWNED-LAYOUT-GRAMMAR.md`
-- `docs/builds/BUILD-020-DELIVERY-NOTES.md`
-- `docs/builds/BUILD-020-RELEASE-NOTES.md`
-- `docs/builds/BUILD-020.md`
-- `docs/ecr/ECR-020-DESTINATION-PROFILE-LAYOUT-VARIANTS.md`
-- `docs/git/BUILD-020-GIT-WORKFLOW.md`
-- `docs/validation/BUILD-020-VALIDATION.md`
-- `scripts/check-destination-profile-consistency.mjs`
-- `scripts/publisher-integration-spike.mjs`
-- `src/lib/destinations/destinations.test.ts`
-- `src/lib/destinations/index.ts`
-
-## Changed
-
+## Geänderte Dateien
+- `APPLY-DROPIN.md`
 - `README.md`
 - `SHA256SUMS.txt`
+- `docs/ARCHITECTURE.md`
+- `docs/VISION.md`
 - `docs/project-format.md`
 - `package.json`
 - `src-tauri/Cargo.lock`
 - `src-tauri/Cargo.toml`
-- `src-tauri/src/lib.rs`
 - `src-tauri/tauri.conf.json`
 - `src/App.svelte`
-- `src/lib/project.test.ts`
-- `src/lib/project.ts`
-- `src/lib/workspace.test.ts`
+- `src/lib/destinations/destinations.test.ts`
+- `src/lib/destinations/index.ts`
 - `src/styles.css`
 
-## Deleted
-
-- None
+## Gelöschte Dateien
+- keine

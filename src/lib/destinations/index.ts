@@ -32,8 +32,8 @@ export function destinationDraft(destination: Destination | null, fallbackName =
     name: destination?.name ?? fallbackName,
     subtitle: destination?.subtitle ?? '',
     introduction: destination?.introduction ?? '',
-    arrival: destination?.journeyContext?.arrival ?? '',
-    departure: destination?.journeyContext?.departure ?? '',
+    arrival: normalizeTravelTimeInput(destination?.journeyContext?.arrival),
+    departure: normalizeTravelTimeInput(destination?.journeyContext?.departure),
     timezone: destination?.journeyContext?.timezone ?? '',
     reasons: [...(destination?.reasons ?? [])],
     highlights: (destination?.highlights ?? []).map((entry) => ({ ...entry })),
@@ -42,12 +42,32 @@ export function destinationDraft(destination: Destination | null, fallbackName =
   };
 }
 
+
+export function destinationIsDirty(destination: Destination | null, draft: DestinationDraft, fallbackName = ''): boolean {
+  const persisted = destinationDraft(destination, fallbackName);
+  return JSON.stringify(persisted) !== JSON.stringify({
+    ...draft,
+    arrival: normalizeTravelTimeInput(draft.arrival),
+    departure: normalizeTravelTimeInput(draft.departure)
+  });
+}
+
 export function destinationLayoutLabel(layout: DestinationLayoutVariantId): string {
   switch (layout) {
     case 'destination-hero-banner': return 'Weite';
     case 'destination-hero-left': return 'Bild links';
     case 'destination-hero-right': return 'Bild rechts';
   }
+}
+
+export function normalizeTravelTimeInput(value?: string): string {
+  return value?.trim().replace(/\s+Uhr$/i, '') ?? '';
+}
+
+export function formatTravelTime(value?: string): string {
+  const normalized = normalizeTravelTimeInput(value);
+  if (!normalized) return 'offen';
+  return /^\d{1,2}:\d{2}$/.test(normalized) ? `${normalized} Uhr` : normalized;
 }
 
 export function destinationDurationLabel(arrival?: string, departure?: string): string {

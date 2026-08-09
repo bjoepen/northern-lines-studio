@@ -103,3 +103,12 @@ When a 0.7.0 project is opened:
 6. missing subtitles, reasons, highlights and practical information remain empty.
 
 Migration must not invent editorial content.
+
+
+## Build 021 – Layout resilience without schema expansion
+
+Build 021 keeps `.nls` at **0.8.0**. Binding safety, title/companion/footer safe areas and content-capacity states are preview/publishing concerns and are **not persisted** as coordinates or layout metadata.
+
+Arrival and departure remain semantic string values. Studio normalises a trailing German `Uhr` in the editing draft and adds `Uhr` when rendering clock-like values such as `08:00`. No schema migration is required.
+
+Future optional content such as Souvenirs, country-specific guidance, Northern Lines Wissen or Photography must receive dedicated semantic fields in a later approved build; existing fields must not be repurposed.

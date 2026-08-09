@@ -1,3 +1,5 @@
+> **Dauerhafte Produktreferenz:** Diese Vision wird gemeinsam mit `PRODUCT-DNA.md` gelesen. Die Produkt-DNA konkretisiert die verbindlichen UX-, Travel-Language- und Layoutprinzipien für alle folgenden Builds.
+
 # Vision
 
 ## Northern Lines Studio

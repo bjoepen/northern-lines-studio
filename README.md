@@ -1,7 +1,7 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 020 – Final · Ortsprofil & Seitenwirkung
-**Studio:** 0.20.0
+**Aktueller Stand:** Build 021 – Layout Resilience & Content Capacity Foundation
+**Studio:** 0.21.0
 **Projektformat:** `.nls` 0.8.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
@@ -22,6 +22,17 @@ im Hintergrund:
 - **Deine Route** statt Manifest-Reihenfolge
 - **Deine Geschichte** statt Textblock-Editor
 - `.nls` im Finder doppelklicken statt Projektordner auswählen
+
+## Verbindliche Referenzen
+
+Northern Lines Studio wird durch vier dauerhafte Referenzen geführt:
+
+- `README.md` – aktueller Produkt- und Build-Stand
+- `docs/VISION.md` – langfristiges Zielbild
+- `docs/ARCHITECTURE.md` – technische Verantwortungsgrenzen
+- `docs/PRODUCT-DNA.md` – verbindliche Produkt-, UX-, Travel-Language- und Layoutprinzipien
+
+Die **Produkt-DNA** ist ab Build 021 keine Retrospektive am Rand, sondern eine dauerhafte Referenz. Neue Builds müssen ihre UX- und Produktentscheidungen dagegen prüfen.
 
 ## Architektur
 
@@ -96,6 +107,22 @@ Die Route referenziert intern weiterhin stabile `destinationId`-Werte. Ein Wechs
 
 Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner. Footer, Seitenzahl und Reisebegleiter bleiben beim Wechsel stabil. Northern Lines Publisher bleibt die authoritative Publishing Engine; Studio zeigt eine schnelle, glaubwürdige redaktionelle Vorschau.
 
+## Layout Resilience & Content Capacity
+
+Build 021 macht die vorhandenen Ortsseiten belastbarer, ohne neue Produktfunktionen oder neue `.nls`-Felder einzuführen. Die A5-Komposition kennt jetzt geschützte redaktionelle Zonen:
+
+- **17 mm Bindungsraum** links
+- geschützte Titelhierarchie
+- geschützter Raum für den Fjord-Reisebegleiter
+- stabiler Northern-Lines-Footer und Seitenzahl
+- 1-, 2- oder 3-spaltige Modulgruppen je nach Kontext
+
+**Weite** bleibt breit, flach und ruhig, nutzt den oberen Seitenraum aber effizienter. Wenn ein Ort mehr Inhalt trägt, darf Studio intern `comfortable`, `tight` oder `overflow` erkennen. Diese Zustände verändern weder Inhalte noch Typografie und werden nicht als technische Sprache in die Reiseoberfläche getragen.
+
+Für Ankunft und Abfahrt tippt der Reisende nur die Uhrzeit, zum Beispiel `08:00`; Studio zeigt daraus automatisch **08:00 Uhr**.
+
+> **Der Begleiter ist unantastbar – und sein Raum ebenfalls.**
+
 ## Reisewelten
 
 Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Die aktuelle Reisewelt ist **Fjord**.
@@ -149,7 +176,7 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 020 aktualisiert das Format auf **0.8.0**. Projekte im bisherigen Format 0.7.0 sowie
+Build 020 aktualisierte das Format auf **0.8.0**; Build 021 behält dieses Format bewusst bei. Projekte im bisherigen Format 0.7.0 sowie
 die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
 Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
 redaktionelle Inhalte werden dabei bewusst nicht erfunden.
@@ -186,6 +213,7 @@ TypeScript Model
 → Inspector
 → Preview
 → Layout Variants (für Destinations)
+→ Layout Resilience / Content Capacity
 → Tests
 ```
 
@@ -220,6 +248,8 @@ Gestaltungsmöglichkeit abzubilden.
 - **017** Editorial World Layout Foundation
 - **018** Companion Layout Foundation + Reiseplanung
 - **019** Journey Planning Foundation – strukturierte Reisedaten
+- **020** Destination Profile & Layout Variants Foundation – Ortsprofil und Seitenwirkung
+- **021** Layout Resilience & Content Capacity Foundation – geschützte A5-Zonen und belastbare Inhaltskomposition
 
 ---
 

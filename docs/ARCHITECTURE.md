@@ -1,3 +1,5 @@
+> **Dauerhafte Produktreferenz:** Technische Entscheidungen werden zusätzlich gegen `PRODUCT-DNA.md` geprüft. Architektur darf komplex werden; die Produktoberfläche bleibt ruhig, redaktionell und in Travel Language.
+
 # Architektur
 
 ## Status
