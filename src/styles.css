@@ -984,5 +984,70 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   background: linear-gradient(145deg, #e1ecee, #9fbcc5);
 }
 .image-geometry-miniature.image-role-wide i { width: 134px; height: 32px; }
-.image-geometry-miniature.image-role-left i,
-.image-geometry-miniature.image-role-right i { width: 28px; height: 42px; }
+.image-geometry-miniature.image-role-portrait i { width: 28px; height: 42px; }
+
+/* Build 022 Final · Image Composition Fix
+   Fjord Destination Pages keep a neutral-white paper surface. Photography is
+   the atmospheric colour source; image roles are composed into the page, not
+   placed inside coloured media cards. */
+.a5-page.fjord-page.destination-page {
+  background: #fffdfa;
+}
+
+/* A real destination image owns its intrinsic geometry inside the allowed
+   Editorial Grammar. No crop, fixed media-card height or coloured backdrop is
+   introduced in Studio. Empty states keep the quiet placeholder only until an
+   image is selected. */
+.destination-hero-placeholder.destination-image-present {
+  min-height: 0;
+  height: auto;
+  overflow: visible;
+  align-items: flex-start;
+  justify-content: stretch;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+}
+.destination-hero-placeholder.destination-image-present .destination-hero-image {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Weite is an atmospheric panorama zone on the paper surface. Its height is
+   derived from the prepared image ratio rather than a fixed banner box. */
+.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
+  min-height: 0;
+  height: auto;
+  margin: -3px -4px 4px;
+}
+
+/* Bild links / Bild rechts share the same portrait image role. The image column
+   remains grammar-controlled while its vertical extent follows the source
+   geometry, so the illustration feels composed rather than card-mounted. */
+.destination-preview.destination-hero-left .destination-hero-placeholder.destination-image-present,
+.destination-preview.destination-hero-right .destination-hero-placeholder.destination-image-present {
+  min-height: 0;
+  height: auto;
+  margin: 0;
+}
+
+/* Editorial modules are not automatically cards. Peer information is grouped
+   by rhythm and dividers; a subtle practical-info tint is a deliberate accent,
+   not a general Card UI system. */
+.destination-modules-preview section {
+  padding: 8px 6px 4px;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+.destination-modules-preview .destination-practical-preview {
+  padding: 8px 8px 6px;
+  border-top-color: color-mix(in srgb, var(--world-accent) 32%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--world-accent) 5%, transparent);
+}

@@ -71,7 +71,10 @@ export interface DestinationPracticalInfo {
 
 export interface DestinationImages {
   wide?: string;
+  portrait?: string;
+  /** Compatibility only for pre-final Build 022 projects. */
   left?: string;
+  /** Compatibility only for pre-final Build 022 projects. */
   right?: string;
 }
 

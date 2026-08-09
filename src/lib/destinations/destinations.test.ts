@@ -14,7 +14,7 @@ const project: StudioProject = {
   },
   destinations: [{
     id: 'destination-bergen', name: 'Bergen', subtitle: 'Tor zu den Fjorden', reasons: ['Bryggen'],
-    highlights: [], practicalInfo: [], images: { wide: 'assets/destinations/destination-bergen/wide.jpg' }, editorial: { layoutVariant: 'destination-hero-banner' }
+    highlights: [], practicalInfo: [], images: { wide: 'assets/destinations/destination-bergen/wide.jpg', portrait: 'assets/destinations/destination-bergen/portrait.jpg' }, editorial: { layoutVariant: 'destination-hero-banner' }
   }],
   document: { pageFormat: 'A5', orientation: 'portrait' },
   pageManifest: [{ id: 'page-bergen', order: 5, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-hero-banner', journeyStage: 'bergen' }],
@@ -38,11 +38,12 @@ describe('destination profiles', () => {
 
   it('maps each page effect to its semantic image role', () => {
     expect(destinationImageRole('destination-hero-banner')).toBe('wide');
-    expect(destinationImageRole('destination-hero-left')).toBe('left');
-    expect(destinationImageRole('destination-hero-right')).toBe('right');
+    expect(destinationImageRole('destination-hero-left')).toBe('portrait');
+    expect(destinationImageRole('destination-hero-right')).toBe('portrait');
     expect(destinationImagePath(project.destinations[0], 'wide')).toContain('/wide.jpg');
-    expect(destinationImageGeometry('wide').ratio).toBe('ca. 4:1');
-    expect(destinationImageGeometry('left').ratio).toBe('ca. 2:3');
+    expect(destinationImagePath(project.destinations[0], 'portrait')).toContain('/portrait.jpg');
+    expect(destinationImageGeometry('wide').ratio).toBe('ca. 3:1–4:1');
+    expect(destinationImageGeometry('portrait').ratio).toBe('ca. 2:3');
   });
   it('detects unsaved destination changes across nested editorial fields', () => {
     const clean = destinationDraft(project.destinations[0]);

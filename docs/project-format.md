@@ -64,8 +64,7 @@ Build 020 introduces top-level `destinations`:
   ],
   "images": {
     "wide": "assets/destinations/destination-bergen/wide.jpg",
-    "left": "assets/destinations/destination-bergen/left.jpg",
-    "right": "assets/destinations/destination-bergen/right.jpg"
+    "portrait": "assets/destinations/destination-bergen/portrait.jpg"
   },
   "editorial": {
     "layoutVariant": "destination-hero-banner"
@@ -121,15 +120,16 @@ Future optional content such as Souvenirs, country-specific guidance, Northern L
 
 ## Build 022 – Destination imagery / format 0.9.0
 
-Build 022 adds an optional `images` object to each Destination Profile. The three values are semantic image roles for the existing page effects, not free geometry:
+Build 022 adds an optional `images` object to each Destination Profile. The final Build-022 grammar uses two semantic image roles for the three existing page effects:
 
 ```json
 "images": {
   "wide": "assets/destinations/destination-bergen/wide.jpg",
-  "left": "assets/destinations/destination-bergen/left.jpg",
-  "right": "assets/destinations/destination-bergen/right.jpg"
+  "portrait": "assets/destinations/destination-bergen/portrait.jpg"
 }
 ```
+
+`wide` serves **Weite**. `portrait` is shared by **Bild links** and **Bild rechts**. Pre-final Build-022 projects containing `left` or `right` may be read as compatibility fallbacks; new writes use `portrait`.
 
 Rules:
 
@@ -137,6 +137,7 @@ Rules:
 - JPEG and PNG are supported in Build 022;
 - Studio copies selected files into the `.nls` package;
 - final crop coordinates are not persisted;
+- image box dimensions are not persisted; Studio Preview may derive visible height from the prepared source ratio inside the Layout Grammar;
 - there is no Asset ID, crop, focal point or free x/y position in the 0.9.0 schema.
 
 ### Migration 0.8.0 → 0.9.0
@@ -146,3 +147,10 @@ Opening a 0.8.0 project adds an empty image-role structure through serde default
 ### Physical layout rule
 
 The technical minimum binding zone is **15 mm** from the left page edge. It is a publishing/layout constraint and is not stored as per-page geometry. The Fjord Companion keeps its Editorial-World position independently of this content inset.
+
+
+### Fjord Destination surface and image composition
+
+For Fjord Destination Pages, `.nls` does not store a page background choice. The Editorial World defines a white / neutral-white page surface for **Weite**, **Bild links** and **Bild rechts**.
+
+Selected imagery is composed directly on that surface. Coloured image-card backgrounds and arbitrary image-box geometry are not project data. Information modules are likewise not automatically persisted or rendered as cards; selective tinted editorial accents remain a grammar concern.

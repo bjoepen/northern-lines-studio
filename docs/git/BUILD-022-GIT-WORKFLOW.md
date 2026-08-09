@@ -1,15 +1,13 @@
-# Build 022 – Git Workflow
+# Build 022 Final – Git Workflow
 
 ## Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git switch main
-git pull --ff-only
-git switch -c feature/destination-imagery-foundation
+git switch -c fix/build-022-image-composition
 ```
 
-## After applying the Drop-in
+## After applying the Fix Drop-in
 
 ```bash
 git status
@@ -26,8 +24,8 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 ```bash
 git add -A
-git commit -m "feat(studio): add destination imagery foundation"
-git push -u origin feature/destination-imagery-foundation
+git commit -m "fix(studio): finalize build 022 image composition"
+git push -u origin fix/build-022-image-composition
 ```
 
 After review and real-world validation, merge back to `main` according to the normal repository workflow.

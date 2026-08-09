@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 022 – Destination Imagery Foundation
+**Aktueller Stand:** Build 022 Final – Destination Imagery Foundation / Image Composition Fix
 **Studio:** 0.22.0
 **Projektformat:** `.nls` 0.9.0
 
@@ -126,13 +126,16 @@ Für Ankunft und Abfahrt tippt der Reisende nur die Uhrzeit, zum Beispiel `08:00
 
 ## Destination Imagery Foundation
 
-Build 022 gibt Reisezielen erstmals echte Ortsbilder, ohne Studio in eine Bildverwaltung zu verwandeln. Für die drei Seitenwirkungen werden bewusst passende Bildrollen verwendet:
+Build 022 gibt Reisezielen erstmals echte Ortsbilder, ohne Studio in eine Bildverwaltung zu verwandeln. Die finalisierte Fjord-Grammar benötigt dafür nur zwei Bildrollen:
 
-- **Weite** – breites, flaches Panorama, empfohlen ca. **4:1 / 2400 × 600 px**
-- **Bild links** – hochformatiges Leitbild, empfohlen ca. **2:3 / 1500 × 2250 px**
-- **Bild rechts** – hochformatiges Leitbild, empfohlen ca. **2:3 / 1500 × 2250 px**
+- **Weite** – breites Panorama; Richtwert etwa **3:1–4:1**, mindestens **2400 px** breit
+- **Bild links / Bild rechts** – gemeinsames hochformatiges Leitbild, Richtwert **2:3 / 1500 × 2250 px**
 
-Studio zeigt neben **Bild auswählen …** eine kleine Hilfe mit der empfohlenen Geometrie. Es gibt in Build 022 bewusst **keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung**. Gewählte Bilder werden innerhalb des `.nls`-Packages unter `assets/destinations/` abgelegt; sichtbare Dateipfade oder Asset-IDs gehören nicht zur Reisenden-UX.
+Studio zeigt neben **Bild auswählen …** eine kleine Hilfe mit der empfohlenen Geometrie. Die Bildhöhe der Preview darf innerhalb der Layout Grammar aus dem vorbereiteten Seitenverhältnis folgen; es gibt weiterhin bewusst **keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung**. Gewählte Bilder werden innerhalb des `.nls`-Packages unter `assets/destinations/` abgelegt; sichtbare Dateipfade oder Asset-IDs gehören nicht zur Reisenden-UX.
+
+Für Fjord gilt auf Destination Pages verbindlich eine **weiße / neutral-weiße Grundfläche**. Echte Bilder werden direkt in diese Seite komponiert und nicht auf farbige Medienboxen montiert. Informationsmodule werden ebenfalls nicht automatisch zu Cards; sanft eingefärbte Flächen bleiben gezielte redaktionelle Akzente.
+
+> **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**
 
 Die Binding Safe Area beträgt ab Build 022 **15 mm technische Mindestzone**. Der Papageientaucher bleibt davon unabhängig an seiner bewährten Editorial-World-Position: **Der Begleiter ist unantastbar – und sein Zuhause ebenfalls.**
 

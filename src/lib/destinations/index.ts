@@ -6,7 +6,7 @@ export const DESTINATION_LAYOUT_VARIANTS: readonly DestinationLayoutVariantId[] 
   'destination-hero-right'
 ];
 
-export type DestinationImageRole = 'wide' | 'left' | 'right';
+export type DestinationImageRole = 'wide' | 'portrait';
 
 export interface DestinationDraft {
   name: string;
@@ -62,28 +62,23 @@ export function destinationLayoutLabel(layout: DestinationLayoutVariantId): stri
 }
 
 export function destinationImageRole(layout: DestinationLayoutVariantId): DestinationImageRole {
-  switch (layout) {
-    case 'destination-hero-banner': return 'wide';
-    case 'destination-hero-left': return 'left';
-    case 'destination-hero-right': return 'right';
-  }
+  return layout === 'destination-hero-banner' ? 'wide' : 'portrait';
 }
 
 export function destinationImageRoleLabel(role: DestinationImageRole): string {
-  switch (role) {
-    case 'wide': return 'Weite';
-    case 'left': return 'Bild links';
-    case 'right': return 'Bild rechts';
-  }
+  return role === 'wide' ? 'Weite' : 'Bild links / Bild rechts';
 }
 
 export function destinationImagePath(destination: Destination | null, role: DestinationImageRole): string {
-  return destination?.images?.[role] ?? '';
+  if (!destination?.images) return '';
+  if (role === 'wide') return destination.images.wide ?? '';
+  // Compatibility for the pre-final Build 022 imagery schema.
+  return destination.images.portrait ?? destination.images.left ?? destination.images.right ?? '';
 }
 
 export function destinationImageGeometry(role: DestinationImageRole): { ratio: string; pixels: string; millimetres: string } {
   if (role === 'wide') {
-    return { ratio: 'ca. 4:1', pixels: '2400 × 600 px', millimetres: 'ca. 118–122 × 26–32 mm' };
+    return { ratio: 'ca. 3:1–4:1', pixels: 'mind. 2400 px breit', millimetres: 'ca. 118–122 mm breit · Höhe folgt dem Motiv' };
   }
   return { ratio: 'ca. 2:3', pixels: '1500 × 2250 px', millimetres: 'ca. 48–56 × 78–92 mm' };
 }
