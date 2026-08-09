@@ -3,10 +3,10 @@
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
-  import type { StudioPage, StudioProject } from './lib/project';
+  import type { JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
-  import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './lib/workspace';
+  import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
@@ -20,7 +20,9 @@
     | { kind: 'select-component'; componentId: EditorialComponentId }
     | { kind: 'open-travel' }
     | { kind: 'close-travel' }
-    | { kind: 'begin-travel' };
+    | { kind: 'begin-travel' }
+    | { kind: 'move-place'; stageId: string; direction: 'earlier' | 'later' }
+    | { kind: 'edit-place'; stageId: string };
 
   let project: StudioProject | null = null;
   let selectedPage: StudioPage | null = null;
@@ -44,6 +46,11 @@
   let newPlaceTitle = '';
   let newPlaceCountry = '';
   let placeTitleInput: HTMLInputElement | null = null;
+  let placeEditOpen = false;
+  let editPlaceStageId = '';
+  let editPlaceTitle = '';
+  let editPlaceCountry = '';
+  let editPlaceTitleInput: HTMLInputElement | null = null;
   const journeyWorlds = availableEditorialWorlds();
 
   async function showJourneyBeginning() {
@@ -132,6 +139,108 @@
 
   function handlePlaceBeginningKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') { event.preventDefault(); cancelPlaceBeginning(); }
+  }
+
+  function routePosition(stageId: string): number {
+    return (project?.journey?.stages.findIndex((stage) => stage.id === stageId) ?? -1) + 1;
+  }
+
+  function visiblePageNumber(page: StudioPage): number {
+    if (!project) return page.order;
+    return travelbookPageNumber(
+      project.pageManifest,
+      page.id,
+      project.journey?.stages.map((stage) => stage.id) ?? []
+    ) ?? page.order;
+  }
+
+  async function movePlaceNow(stageId: string, direction: 'earlier' | 'later') {
+    if (!project) return;
+    isLoading = true;
+    errorMessage = '';
+    try {
+      const selectedPageId = selectedPage?.id ?? null;
+      project = await invoke<StudioProject>('move_journey_place', {
+        path: project.projectPath,
+        stageId,
+        direction
+      });
+      if (selectedPageId) {
+        selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      }
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function requestMovePlace(stageId: string, direction: 'earlier' | 'later') {
+    if (authoringDirty) {
+      pendingAction = { kind: 'move-place', stageId, direction };
+      return;
+    }
+    void movePlaceNow(stageId, direction);
+  }
+
+  async function showPlaceEdit(stage: JourneyStage) {
+    editPlaceStageId = stage.id;
+    editPlaceTitle = stage.title;
+    editPlaceCountry = stage.country ?? '';
+    placeEditOpen = true;
+    await tick();
+    editPlaceTitleInput?.focus();
+  }
+
+  function requestPlaceEdit(stage: JourneyStage) {
+    if (authoringDirty) {
+      pendingAction = { kind: 'edit-place', stageId: stage.id };
+      return;
+    }
+    void showPlaceEdit(stage);
+  }
+
+  function cancelPlaceEdit() {
+    placeEditOpen = false;
+    editPlaceStageId = '';
+  }
+
+  async function savePlaceEdit() {
+    if (!project || !editPlaceStageId) return;
+    const title = editPlaceTitle.trim();
+    if (!title) {
+      errorMessage = 'Gib dem Ort zuerst einen Namen.';
+      editPlaceTitleInput?.focus();
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = '';
+    try {
+      const selectedPageId = selectedPage?.id ?? null;
+      project = await invoke<StudioProject>('update_journey_place', {
+        path: project.projectPath,
+        stageId: editPlaceStageId,
+        title,
+        country: editPlaceCountry
+      });
+      if (selectedPageId) {
+        selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      }
+      placeEditOpen = false;
+      editPlaceStageId = '';
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function handlePlaceEditKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelPlaceEdit();
+    }
   }
 
   async function openTravelNow() {
@@ -275,6 +384,15 @@
       closeTravelNow();
       return;
     }
+    if (action.kind === 'move-place') {
+      await movePlaceNow(action.stageId, action.direction);
+      return;
+    }
+    if (action.kind === 'edit-place' && project) {
+      const stage = project.journey.stages.find((entry) => entry.id === action.stageId);
+      if (stage) await showPlaceEdit(stage);
+      return;
+    }
     if (action.kind === 'select-component') {
       activeAuthoringComponent = action.componentId;
       const component = storyStructure?.story.find((entry) => entry.type === action.componentId);
@@ -330,10 +448,12 @@
   });
 
   $: preview = previewFor(selectedPage);
-  $: sections = groupPages(project?.pageManifest ?? []);
+  $: sections = groupPages(project?.pageManifest ?? [], project?.journey?.stages.map((stage) => stage.id) ?? []);
   $: editorialWorld = editorialWorldFor(project);
   $: statusText = projectStatus(project);
   $: journeyStage = journeyStageFor(project, selectedPage);
+  $: journeyRouteCount = project?.journey?.stages.length ?? 0;
+  $: journeyRoutePosition = journeyStage ? routePosition(journeyStage.id) : 0;
   $: editorialGrammar = grammarForPage(selectedPage);
   $: grammarEvaluation = evaluateGrammar(selectedPage, editorialGrammar);
   $: storyStructure = buildStoryStructure(selectedPage, editorialGrammar);
@@ -439,7 +559,7 @@
                   class:active={selectedPage?.id === page.id}
                   on:click={() => requestPageSelection(page)}
                 >
-                  <span class="page-order">{String(page.order).padStart(2, '0')}</span>
+                  <span class="page-order">{String(visiblePageNumber(page)).padStart(2, '0')}</span>
                   <span>
                     <strong>{page.title}</strong>
                     <small>{pageRoleLabel(page.role)}</small>
@@ -488,7 +608,7 @@
               <p class="preview-body">{preview.body}</p>
               <footer>
                 <span>{editorialWorld?.name ?? 'Northern Lines Studio'}</span>
-                <span>{selectedPage?.order ?? '–'}</span>
+                <span>{selectedPage ? visiblePageNumber(selectedPage) : '–'}</span>
               </footer>
             </article>
           {/key}
@@ -645,6 +765,25 @@
         </section>
       {/if}
 
+      {#if journeyStage}
+        <section class="inspector-card route-card" aria-label="Deine Route">
+          <span class="inspector-label">Deine Route</span>
+          <strong>{journeyStage.title}</strong>
+          <small>{journeyStage.country ?? 'Teil deiner Reise'} · {journeyRoutePosition} von {journeyRouteCount}</small>
+          <div class="route-actions">
+            <button
+              on:click={() => requestMovePlace(journeyStage.id, 'earlier')}
+              disabled={isLoading || journeyRoutePosition <= 1}
+            >Früher in der Reise</button>
+            <button
+              on:click={() => requestMovePlace(journeyStage.id, 'later')}
+              disabled={isLoading || journeyRoutePosition >= journeyRouteCount}
+            >Später in der Reise</button>
+          </div>
+          <button class="route-edit-button" on:click={() => requestPlaceEdit(journeyStage)}>Ort bearbeiten</button>
+        </section>
+      {/if}
+
       <dl>
         <dt>Seitentitel</dt><dd>{selectedPage?.title ?? '–'}</dd>
         <dt>Rolle</dt><dd>{pageRoleLabel(selectedPage?.role)}</dd>
@@ -702,6 +841,38 @@
         <div class="save-dialog-actions">
           <button class="dialog-secondary" on:click={cancelPlaceBeginning}>Abbrechen</button>
           <button class="dialog-primary" on:click={createPlace} disabled={isLoading || !newPlaceTitle.trim()}>{isLoading ? 'Ort entsteht …' : 'Ort hinzufügen'}</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if placeEditOpen}
+    <div class="save-dialog-backdrop">
+      <div
+        class="journey-begin-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="place-edit-title"
+        aria-describedby="place-edit-description"
+        tabindex="-1"
+        on:keydown={handlePlaceEditKeydown}
+      >
+        <span class="inspector-label">Ort bearbeiten</span>
+        <strong id="place-edit-title">Was möchtest du an diesem Ort ändern?</strong>
+        <p id="place-edit-description">Name und Region bleiben Teil derselben Etappe deiner Reise.</p>
+        <label class="journey-field">
+          <span>Name des Ortes</span>
+          <input bind:this={editPlaceTitleInput} bind:value={editPlaceTitle} />
+        </label>
+        <label class="journey-field">
+          <span>Land / Region</span>
+          <input bind:value={editPlaceCountry} placeholder="Zum Beispiel: Norwegen" />
+        </label>
+        <div class="save-dialog-actions">
+          <button class="dialog-secondary" on:click={cancelPlaceEdit}>Abbrechen</button>
+          <button class="dialog-primary" on:click={savePlaceEdit} disabled={isLoading || !editPlaceTitle.trim()}>
+            {isLoading ? 'Ort wird aktualisiert …' : 'Änderungen sichern'}
+          </button>
         </div>
       </div>
     </div>

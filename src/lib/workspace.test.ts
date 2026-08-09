@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioPage, StudioProject } from './project';
-import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus } from './workspace';
+import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './workspace';
 
 const pages: StudioPage[] = [
   { id: 'cover', order: 1, type: 'cover', role: 'front_matter', title: 'Cover', content: 'cover.md', layout: 'cover-standard' },
@@ -35,11 +35,29 @@ describe('workspace model', () => {
   it('groups pages by editorial role, not by technical page type', () => {
     expect(groupPages(pages).map((section) => section.label)).toEqual([
       'Buch',
-      'Reiseziele',
+      'Deine Route',
       'Reisebegleitung',
       'Fotografie',
       'Erinnerungen'
     ]);
+  });
+
+
+  it('derives Travelbook page numbers from the current journey route', () => {
+    const routePages: StudioPage[] = [
+      { id: 'cover', order: 1, type: 'cover', role: 'front_matter', title: 'Cover', content: 'cover.md', layout: 'cover-standard' },
+      { id: 'welcome', order: 2, type: 'welcome', role: 'front_matter', title: 'Willkommen', content: 'welcome.md', layout: 'welcome' },
+      { id: 'contents', order: 3, type: 'contents', role: 'front_matter', title: 'Inhalt', content: 'contents.md', layout: 'contents' },
+      { id: 'bergen', order: 4, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-standard', journeyStage: 'bergen' },
+      { id: 'geiranger', order: 5, type: 'destination', role: 'destination', title: 'Geiranger', content: 'geiranger.md', layout: 'destination-standard', journeyStage: 'geiranger' },
+      { id: 'alesund', order: 6, type: 'destination', role: 'destination', title: 'Ålesund', content: 'alesund.md', layout: 'destination-standard', journeyStage: 'alesund' },
+      { id: 'light', order: 10, type: 'knowledge', role: 'journey_knowledge', title: 'Licht', content: 'light.md', layout: 'light' }
+    ];
+
+    expect(travelbookPageNumber(routePages, 'alesund', ['bergen', 'geiranger', 'alesund'])).toBe(6);
+    expect(travelbookPageNumber(routePages, 'alesund', ['bergen', 'alesund', 'geiranger'])).toBe(5);
+    expect(travelbookPageNumber(routePages, 'geiranger', ['bergen', 'alesund', 'geiranger'])).toBe(6);
+    expect(travelbookPageNumber(routePages, 'light', ['bergen', 'alesund', 'geiranger'])).toBe(7);
   });
 
   it('exposes the Fjord reference world and companion', () => {

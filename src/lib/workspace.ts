@@ -41,8 +41,8 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   },
   destinations: {
     id: 'destinations',
-    label: 'Reiseziele',
-    description: 'Orte und Etappen'
+    label: 'Deine Route',
+    description: 'Orte in Reise-Reihenfolge'
   },
   journey: {
     id: 'journey',
@@ -61,8 +61,9 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   }
 };
 
-export function groupPages(pages: StudioPage[]): WorkspaceSection[] {
+export function groupPages(pages: StudioPage[], routeStageIds: readonly string[] = []): WorkspaceSection[] {
   const grouped = new Map<WorkspaceSectionId, StudioPage[]>();
+  const routeOrder = new Map(routeStageIds.map((id, index) => [id, index]));
 
   for (const page of pages) {
     const section = sectionForRole[page.role];
@@ -71,10 +72,34 @@ export function groupPages(pages: StudioPage[]): WorkspaceSection[] {
     grouped.set(section, current);
   }
 
+  const destinations = grouped.get('destinations');
+  if (destinations) {
+    destinations.sort((a, b) => {
+      const aRoute = a.journeyStage ? routeOrder.get(a.journeyStage) : undefined;
+      const bRoute = b.journeyStage ? routeOrder.get(b.journeyStage) : undefined;
+      if (aRoute !== undefined && bRoute !== undefined) return aRoute - bRoute;
+      if (aRoute !== undefined) return -1;
+      if (bRoute !== undefined) return 1;
+      return a.order - b.order;
+    });
+  }
+
   return (Object.keys(sectionMeta) as WorkspaceSectionId[])
     .map((id) => ({ ...sectionMeta[id], pages: grouped.get(id) ?? [] }))
     .filter((section) => section.pages.length > 0);
 }
+
+
+export function travelbookPageNumber(
+  pages: StudioPage[],
+  pageId: string,
+  routeStageIds: readonly string[] = []
+): number | null {
+  const orderedPages = groupPages(pages, routeStageIds).flatMap((section) => section.pages);
+  const index = orderedPages.findIndex((page) => page.id === pageId);
+  return index >= 0 ? index + 1 : null;
+}
+
 
 export function editorialWorldFor(project: StudioProject | null): EditorialWorldView | null {
   const world = loadEditorialWorld(project?.editorialWorldId);
