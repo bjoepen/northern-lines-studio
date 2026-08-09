@@ -8,5 +8,6 @@ export interface EditorialWorldDefinition {
   character: readonly string[];
   designLanguage: readonly string[];
   companionId: string;
+  layoutSystemId: string;
   pageGrammars: readonly PageGrammarId[];
 }

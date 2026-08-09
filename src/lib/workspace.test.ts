@@ -70,6 +70,8 @@ describe('workspace model', () => {
       referenceNumber: 1,
       character: ['calm', 'spacious', 'nordic', 'photographic', 'reflective'],
       designLanguage: ['Northern', 'Calm', 'Image-led'],
+      layoutSystemId: 'fjord-layout',
+      layoutSystemName: 'Fjord Layout Language',
       pageGrammars: ['cover', 'welcome', 'contents', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']
     });
   });

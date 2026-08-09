@@ -2,6 +2,7 @@ import type { PageRole, StudioPage, StudioProject } from './project';
 import { loadEditorialWorld } from './worlds';
 import { requireCompanion } from './companions';
 import type { EditorialWorldDefinition } from './worlds/types';
+import { layoutSystemForWorld } from './layout';
 
 export type WorkspaceSectionId = 'book' | 'destinations' | 'journey' | 'workflow' | 'memories';
 
@@ -22,6 +23,8 @@ export interface EditorialWorldView {
   character: readonly string[];
   designLanguage: readonly string[];
   pageGrammars: EditorialWorldDefinition['pageGrammars'];
+  layoutSystemId: string;
+  layoutSystemName: string;
 }
 
 const sectionForRole: Record<PageRole, WorkspaceSectionId> = {
@@ -106,6 +109,7 @@ export function editorialWorldFor(project: StudioProject | null): EditorialWorld
   if (!world) return null;
 
   const companion = requireCompanion(world.companionId);
+  const layoutSystem = layoutSystemForWorld(world.id);
 
   return {
     id: world.id,
@@ -116,7 +120,9 @@ export function editorialWorldFor(project: StudioProject | null): EditorialWorld
     referenceNumber: world.referenceNumber,
     character: world.character,
     designLanguage: world.designLanguage,
-    pageGrammars: world.pageGrammars
+    pageGrammars: world.pageGrammars,
+    layoutSystemId: world.layoutSystemId,
+    layoutSystemName: layoutSystem?.name ?? world.layoutSystemId
   };
 }
 
