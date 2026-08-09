@@ -1,7 +1,7 @@
 {
   "name": "northern-lines-studio",
   "private": true,
-  "version": "0.21.0",
+  "version": "0.22.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,10 +10,11 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "tauri": "tauri",
     "test": "vitest run",
-    "consistency": "node scripts/check-journey-planning-consistency.mjs && node scripts/check-destination-profile-consistency.mjs && node scripts/check-layout-resilience-consistency.mjs",
+    "consistency": "node scripts/check-journey-planning-consistency.mjs && node scripts/check-destination-profile-consistency.mjs && node scripts/check-layout-resilience-consistency.mjs && node scripts/check-destination-imagery-consistency.mjs",
     "consistency:journey": "node scripts/check-journey-planning-consistency.mjs",
     "consistency:destination": "node scripts/check-destination-profile-consistency.mjs",
-    "consistency:layout": "node scripts/check-layout-resilience-consistency.mjs"
+    "consistency:layout": "node scripts/check-layout-resilience-consistency.mjs",
+    "consistency:imagery": "node scripts/check-destination-imagery-consistency.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

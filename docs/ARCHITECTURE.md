@@ -108,3 +108,19 @@ Northern Lines Design Library
 ```
 
 Only Fjord is an active Editorial World in Build 009. Planned Companion concepts may exist without making additional Worlds available in Studio.
+
+## Build 022 – Destination imagery boundary
+
+Destination imagery is semantic project data, not free layout geometry.
+
+Studio owns:
+
+- selecting a prepared image for **Weite**, **Bild links** or **Bild rechts**;
+- copying supported JPEG/PNG files into the `.nls` package;
+- storing project-relative image-role paths;
+- fast non-destructive editorial preview;
+- contextual source-geometry guidance.
+
+Publisher remains responsible for authoritative image composition, final geometry, Content Fit, rendering and Preflight.
+
+Build 022 deliberately introduces no crop rectangle, focal point, x/y image position or generic Asset Manager. The 15 mm technical binding minimum protects relevant page content; Companion positioning remains an Editorial-World invariant and is not derived from the content inset.

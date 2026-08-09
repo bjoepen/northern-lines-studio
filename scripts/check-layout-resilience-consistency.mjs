@@ -17,7 +17,7 @@ const failures = [];
 const combined = Object.values(files).join('\n');
 
 for (const token of [
-  '--binding-safe-left: 48.25px',
+  '--binding-safe-left: 42.57px',
   '--companion-safe-width',
   '--companion-safe-height',
   'destination-modules-three',
@@ -42,8 +42,8 @@ if (files.styles.includes('.destination-subtitle { margin: -')) {
   failures.push('Subtitle must not use negative margin against the protected title zone');
 }
 
-if (!files.styles.includes('left: max(52px, var(--binding-safe-left))')) {
-  failures.push('Fjord companion must begin after the 17 mm binding-safe edge');
+if (!files.styles.includes('.a5-page.destination-page .companion-zone-bottom-left') || !files.styles.includes('left: 34px;')) {
+  failures.push('Fjord companion must keep its invariant Editorial-World home at 34 px');
 }
 
 if (!files.app.includes('placeholder="08:00"') || files.app.includes('placeholder="08:00 Uhr"')) {
@@ -74,4 +74,4 @@ if (failures.length) {
 }
 
 console.log('Layout Resilience Consistency Gate: PASS');
-console.log('Binding → Title → Companion → Footer → Capacity → Time Language → Unsaved Changes → Product DNA → Tests');
+console.log('15 mm Binding → Title → Companion Invariance → Footer → Capacity → Time Language → Unsaved Changes → Product DNA → Tests');

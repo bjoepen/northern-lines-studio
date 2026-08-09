@@ -6,6 +6,8 @@ export const DESTINATION_LAYOUT_VARIANTS: readonly DestinationLayoutVariantId[] 
   'destination-hero-right'
 ];
 
+export type DestinationImageRole = 'wide' | 'left' | 'right';
+
 export interface DestinationDraft {
   name: string;
   subtitle: string;
@@ -42,7 +44,6 @@ export function destinationDraft(destination: Destination | null, fallbackName =
   };
 }
 
-
 export function destinationIsDirty(destination: Destination | null, draft: DestinationDraft, fallbackName = ''): boolean {
   const persisted = destinationDraft(destination, fallbackName);
   return JSON.stringify(persisted) !== JSON.stringify({
@@ -58,6 +59,33 @@ export function destinationLayoutLabel(layout: DestinationLayoutVariantId): stri
     case 'destination-hero-left': return 'Bild links';
     case 'destination-hero-right': return 'Bild rechts';
   }
+}
+
+export function destinationImageRole(layout: DestinationLayoutVariantId): DestinationImageRole {
+  switch (layout) {
+    case 'destination-hero-banner': return 'wide';
+    case 'destination-hero-left': return 'left';
+    case 'destination-hero-right': return 'right';
+  }
+}
+
+export function destinationImageRoleLabel(role: DestinationImageRole): string {
+  switch (role) {
+    case 'wide': return 'Weite';
+    case 'left': return 'Bild links';
+    case 'right': return 'Bild rechts';
+  }
+}
+
+export function destinationImagePath(destination: Destination | null, role: DestinationImageRole): string {
+  return destination?.images?.[role] ?? '';
+}
+
+export function destinationImageGeometry(role: DestinationImageRole): { ratio: string; pixels: string; millimetres: string } {
+  if (role === 'wide') {
+    return { ratio: 'ca. 4:1', pixels: '2400 × 600 px', millimetres: 'ca. 118–122 × 26–32 mm' };
+  }
+  return { ratio: 'ca. 2:3', pixels: '1500 × 2250 px', millimetres: 'ca. 48–56 × 78–92 mm' };
 }
 
 export function normalizeTravelTimeInput(value?: string): string {

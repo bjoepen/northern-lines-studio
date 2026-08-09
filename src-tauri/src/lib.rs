@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.8.0";
+const CURRENT_FORMAT_VERSION: &str = "0.9.0";
+const BUILD_021_FORMAT_VERSION: &str = "0.8.0";
 const BUILD_019_FORMAT_VERSION: &str = "0.7.0";
 const BUILD_018_FORMAT_VERSION: &str = "0.6.0";
 const BUILD_017_FORMAT_VERSION: &str = "0.5.0";
@@ -106,6 +107,17 @@ struct DestinationPracticalInfo {
     text: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct DestinationImages {
+    #[serde(default)]
+    wide: Option<String>,
+    #[serde(default)]
+    left: Option<String>,
+    #[serde(default)]
+    right: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DestinationEditorial {
@@ -132,6 +144,8 @@ struct Destination {
     highlights: Vec<DestinationHighlight>,
     #[serde(default)]
     practical_info: Vec<DestinationPracticalInfo>,
+    #[serde(default)]
+    images: DestinationImages,
     #[serde(default = "default_destination_editorial")]
     editorial: DestinationEditorial,
 }
@@ -374,6 +388,7 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
             reasons: Vec::new(),
             highlights: Vec::new(),
             practical_info: Vec::new(),
+            images: DestinationImages::default(),
             editorial: DestinationEditorial { layout_variant },
         });
     }
@@ -388,6 +403,12 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_021_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_021_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+        }
         BUILD_019_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_019_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -571,6 +592,12 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         }
         if !matches!(destination.editorial.layout_variant.as_str(), "destination-hero-banner" | "destination-hero-left" | "destination-hero-right") {
             return Err(format!("Destination '{}' besitzt eine unbekannte Layout-Variante.", destination.name));
+        }
+        for image in [&destination.images.wide, &destination.images.left, &destination.images.right].into_iter().flatten() {
+            if !image.starts_with("assets/destinations/") {
+                return Err(format!("Destination '{}' besitzt einen ungültigen Bildpfad.", destination.name));
+            }
+            normalized_image_extension(Path::new(image))?;
         }
         let mut highlight_ids = HashSet::new();
         for highlight in &destination.highlights {
@@ -805,6 +832,7 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
         reasons: Vec::new(),
         highlights: Vec::new(),
         practical_info: Vec::new(),
+        images: DestinationImages::default(),
         editorial: default_destination_editorial(),
     });
     let destination_count = project.page_manifest.iter().filter(|page| page.page_type == "destination").count() as u32;
@@ -1038,6 +1066,125 @@ fn update_destination_profile(
     Ok(project_session(project, project_path))
 }
 
+
+fn validate_destination_image_role(role: &str) -> Result<(), String> {
+    if matches!(role, "wide" | "left" | "right") {
+        Ok(())
+    } else {
+        Err("Unbekannte Bildrolle für das Reiseziel.".into())
+    }
+}
+
+fn normalized_image_extension(path: &Path) -> Result<&'static str, String> {
+    match path.extension().and_then(|value| value.to_str()).map(|value| value.to_ascii_lowercase()) {
+        Some(extension) if extension == "jpg" || extension == "jpeg" => Ok("jpg"),
+        Some(extension) if extension == "png" => Ok("png"),
+        _ => Err("Für Ortsbilder werden in Build 022 JPEG oder PNG unterstützt.".into()),
+    }
+}
+
+fn destination_image_for_role(images: &DestinationImages, role: &str) -> Option<String> {
+    match role {
+        "wide" => images.wide.clone(),
+        "left" => images.left.clone(),
+        "right" => images.right.clone(),
+        _ => None,
+    }
+}
+
+fn set_destination_image_for_role(images: &mut DestinationImages, role: &str, value: Option<String>) {
+    match role {
+        "wide" => images.wide = value,
+        "left" => images.left = value,
+        "right" => images.right = value,
+        _ => {}
+    }
+}
+
+#[tauri::command]
+fn set_destination_image(path: String, stage_id: String, role: String, source_path: String) -> Result<ProjectSession, String> {
+    validate_destination_image_role(&role)?;
+    let project_path = Path::new(&path);
+    let source = Path::new(&source_path);
+    if !source.is_file() {
+        return Err("Das ausgewählte Bild konnte nicht gelesen werden.".into());
+    }
+    let extension = normalized_image_extension(source)?;
+    let mut project = read_project(project_path)?;
+    let destination_id = project
+        .journey
+        .as_ref()
+        .and_then(|journey| journey.stages.iter().find(|stage| stage.id == stage_id))
+        .and_then(|stage| stage.destination_id.clone())
+        .ok_or_else(|| "Der Ort besitzt noch keine Destination-Referenz.".to_string())?;
+
+    let destination = project.destinations.iter_mut().find(|entry| entry.id == destination_id)
+        .ok_or_else(|| format!("Ortsprofil '{destination_id}' wurde nicht gefunden."))?;
+
+    let folder = project_path.join("assets/destinations").join(&destination_id);
+    fs::create_dir_all(&folder).map_err(|error| format!("Der Bildordner konnte nicht angelegt werden: {error}"))?;
+    let relative = format!("assets/destinations/{destination_id}/{role}.{extension}");
+    let target = project_path.join(&relative);
+
+    if let Some(previous) = destination_image_for_role(&destination.images, &role) {
+        if previous != relative && previous.starts_with("assets/destinations/") {
+            let previous_path = project_path.join(previous);
+            if previous_path.exists() {
+                let _ = fs::remove_file(previous_path);
+            }
+        }
+    }
+
+    fs::copy(source, &target).map_err(|error| format!("Das Bild konnte nicht in die Reise übernommen werden: {error}"))?;
+    set_destination_image_for_role(&mut destination.images, &role, Some(relative));
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+#[tauri::command]
+fn remove_destination_image(path: String, stage_id: String, role: String) -> Result<ProjectSession, String> {
+    validate_destination_image_role(&role)?;
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let destination_id = project
+        .journey
+        .as_ref()
+        .and_then(|journey| journey.stages.iter().find(|stage| stage.id == stage_id))
+        .and_then(|stage| stage.destination_id.clone())
+        .ok_or_else(|| "Der Ort besitzt noch keine Destination-Referenz.".to_string())?;
+    let destination = project.destinations.iter_mut().find(|entry| entry.id == destination_id)
+        .ok_or_else(|| format!("Ortsprofil '{destination_id}' wurde nicht gefunden."))?;
+
+    if let Some(relative) = destination_image_for_role(&destination.images, &role) {
+        if relative.starts_with("assets/destinations/") {
+            let target = project_path.join(relative);
+            if target.exists() {
+                fs::remove_file(target).map_err(|error| format!("Das Bild konnte nicht entfernt werden: {error}"))?;
+            }
+        }
+    }
+    set_destination_image_for_role(&mut destination.images, &role, None);
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+#[tauri::command]
+fn read_image_preview(path: String) -> Result<Vec<u8>, String> {
+    let image_path = Path::new(&path);
+    normalized_image_extension(image_path)?;
+    let metadata = fs::metadata(image_path).map_err(|_| "Das Bild konnte für die Vorschau nicht gelesen werden.".to_string())?;
+    if metadata.len() > 40 * 1024 * 1024 {
+        return Err("Das ausgewählte Bild ist für die Studio-Vorschau zu groß.".into());
+    }
+    fs::read(image_path).map_err(|error| format!("Das Bild konnte für die Vorschau nicht gelesen werden: {error}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
@@ -1052,6 +1199,9 @@ pub fn run() {
             move_journey_place,
             update_journey_place,
             update_destination_profile,
+            set_destination_image,
+            remove_destination_image,
+            read_image_preview,
             take_pending_open_path
         ])
         .build(tauri::generate_context!())
@@ -1096,6 +1246,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
                 || version == BUILD_017_FORMAT_VERSION
@@ -1107,6 +1258,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
                 || version == BUILD_017_FORMAT_VERSION
@@ -1142,13 +1294,13 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
-                        destination_id: (version == CURRENT_FORMAT_VERSION).then(|| "destination-bergen".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
                 None
             },
-            destinations: if version == CURRENT_FORMAT_VERSION {
+            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
                 vec![Destination {
                     id: "destination-bergen".into(),
                     name: "Bergen".into(),
@@ -1158,6 +1310,7 @@ mod tests {
                     reasons: Vec::new(),
                     highlights: Vec::new(),
                     practical_info: Vec::new(),
+                    images: DestinationImages::default(),
                     editorial: default_destination_editorial(),
                 }]
             } else { Vec::new() },
@@ -1172,10 +1325,10 @@ mod tests {
                 role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
-                layout: if version == CURRENT_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
+                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
-                components: if version == CURRENT_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
+                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
                 authoring: BTreeMap::new(),
             }],
             project_path: String::new(),
@@ -1372,6 +1525,18 @@ mod tests {
     }
 
     #[test]
+    fn migrates_build_021_to_destination_imagery_schema() {
+        let migrated = migrate_project(sample_project(BUILD_021_FORMAT_VERSION)).expect("Build-021 migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_021_FORMAT_VERSION));
+        let destination = migrated.destinations.iter().find(|destination| destination.id == "destination-bergen").expect("destination profile");
+        assert!(destination.images.wide.is_none());
+        assert!(destination.images.left.is_none());
+        assert!(destination.images.right.is_none());
+        validate_project(&migrated).expect("migrated Build-021 destination must validate");
+    }
+
+    #[test]
     fn migrates_build_019_destinations_to_structured_profiles() {
         let mut build_019 = sample_project(BUILD_019_FORMAT_VERSION);
         build_019.page_manifest[0].authoring.insert("introduction".into(), AuthoringEntry {
@@ -1429,6 +1594,37 @@ mod tests {
         let page = updated.project.page_manifest.iter().find(|page| page.journey_stage.as_deref() == Some(stage.id.as_str())).expect("page");
         assert_eq!(page.layout, "destination-hero-right");
         validate_project(&updated.project).expect("updated destination must validate");
+    }
+
+    #[test]
+    fn stores_destination_images_inside_the_nls_project_by_role() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Imagery Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        ).expect("new journey");
+        let with_bergen = add_journey_place(created.project_path.clone(), "Bergen".into(), "Norwegen".into()).expect("bergen");
+        let stage = with_bergen.project.journey.as_ref().expect("journey").stages[0].clone();
+        let source = temp.path().join("bergen-wide.jpg");
+        fs::write(&source, b"test-image-bytes").expect("image fixture");
+
+        let updated = set_destination_image(
+            created.project_path.clone(),
+            stage.id.clone(),
+            "wide".into(),
+            source.to_string_lossy().into_owned(),
+        ).expect("store image");
+        let destination = updated.project.destinations.iter().find(|destination| destination.id == stage.destination_id.as_deref().unwrap()).expect("destination");
+        let destination_id = destination.id.clone();
+        let relative = destination.images.wide.as_deref().expect("wide image");
+        assert_eq!(relative, format!("assets/destinations/{}/wide.jpg", destination.id));
+        assert!(Path::new(&created.project_path).join(relative).exists());
+
+        let removed = remove_destination_image(created.project_path.clone(), stage.id, "wide".into()).expect("remove image");
+        let destination = removed.project.destinations.iter().find(|destination| destination.id == destination_id).expect("destination");
+        assert!(destination.images.wide.is_none());
     }
 
     #[test]

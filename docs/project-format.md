@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.8.0
+**Current format:** `.nls` 0.9.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -62,6 +62,11 @@ Build 020 introduces top-level `destinations`:
       "text": "Viele Highlights liegen dicht beieinander."
     }
   ],
+  "images": {
+    "wide": "assets/destinations/destination-bergen/wide.jpg",
+    "left": "assets/destinations/destination-bergen/left.jpg",
+    "right": "assets/destinations/destination-bergen/right.jpg"
+  },
   "editorial": {
     "layoutVariant": "destination-hero-banner"
   }
@@ -70,7 +75,7 @@ Build 020 introduces top-level `destinations`:
 
 ## Destination layout values
 
-Only three semantic values are valid in 0.8.0:
+Only three semantic layout values are valid in 0.9.0:
 
 - `destination-hero-banner`
 - `destination-hero-left`
@@ -112,3 +117,32 @@ Build 021 keeps `.nls` at **0.8.0**. Binding safety, title/companion/footer safe
 Arrival and departure remain semantic string values. Studio normalises a trailing German `Uhr` in the editing draft and adds `Uhr` when rendering clock-like values such as `08:00`. No schema migration is required.
 
 Future optional content such as Souvenirs, country-specific guidance, Northern Lines Wissen or Photography must receive dedicated semantic fields in a later approved build; existing fields must not be repurposed.
+
+
+## Build 022 – Destination imagery / format 0.9.0
+
+Build 022 adds an optional `images` object to each Destination Profile. The three values are semantic image roles for the existing page effects, not free geometry:
+
+```json
+"images": {
+  "wide": "assets/destinations/destination-bergen/wide.jpg",
+  "left": "assets/destinations/destination-bergen/left.jpg",
+  "right": "assets/destinations/destination-bergen/right.jpg"
+}
+```
+
+Rules:
+
+- paths are project-relative and live below `assets/destinations/`;
+- JPEG and PNG are supported in Build 022;
+- Studio copies selected files into the `.nls` package;
+- final crop coordinates are not persisted;
+- there is no Asset ID, crop, focal point or free x/y position in the 0.9.0 schema.
+
+### Migration 0.8.0 → 0.9.0
+
+Opening a 0.8.0 project adds an empty image-role structure through serde defaults. Existing Journey, Destination, layout and editorial data remain unchanged. Migration never invents or downloads imagery.
+
+### Physical layout rule
+
+The technical minimum binding zone is **15 mm** from the left page edge. It is a publishing/layout constraint and is not stored as per-page geometry. The Fjord Companion keeps its Editorial-World position independently of this content inset.

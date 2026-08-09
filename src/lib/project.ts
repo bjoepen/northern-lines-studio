@@ -69,6 +69,12 @@ export interface DestinationPracticalInfo {
   text: string;
 }
 
+export interface DestinationImages {
+  wide?: string;
+  left?: string;
+  right?: string;
+}
+
 export interface Destination {
   id: string;
   name: string;
@@ -78,6 +84,7 @@ export interface Destination {
   reasons: string[];
   highlights: DestinationHighlight[];
   practicalInfo: DestinationPracticalInfo[];
+  images?: DestinationImages;
   editorial: {
     layoutVariant: DestinationLayoutVariantId;
   };
