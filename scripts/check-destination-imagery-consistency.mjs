@@ -19,8 +19,8 @@ const combined = Object.values(files).join('\n');
 for (const token of [
   'DestinationImages',
   'wide?: string',
-  'left?: string',
-  'right?: string',
+  'portrait?: string',
+  "DestinationImageRole = 'wide' | 'portrait'",
   'destinationImageRole',
   'destinationImageGeometry',
   'Bild des Ortes',
@@ -30,8 +30,9 @@ for (const token of [
   'read_image_preview',
   'assets/destinations/',
   'object-fit: contain',
-  '2400 × 600 px',
+  'ca. 3:1–4:1',
   '1500 × 2250 px',
+  'destination-image-present',
   '0.9.0'
 ]) {
   if (!combined.includes(token)) failures.push(`Build 022 imagery token: ${token}`);
@@ -55,13 +56,25 @@ if (!files.styles.includes('--binding-safe-left: 42.57px')) {
   failures.push('Build 022 must use the approved 15 mm technical binding minimum');
 }
 if (!files.styles.includes('.a5-page.destination-page .companion-zone-bottom-left') || !files.styles.includes('left: 34px;')) {
-  failures.push('Companion must return to its invariant Editorial-World position');
+  failures.push('Companion must remain at its invariant Editorial-World position');
+}
+if (!files.styles.includes('.a5-page.fjord-page.destination-page') || !files.styles.includes('background: #fffdfa')) {
+  failures.push('Fjord Destination Pages must keep the approved neutral-white paper surface');
+}
+if (!files.styles.includes('.destination-hero-placeholder.destination-image-present') || !files.styles.includes('background: transparent')) {
+  failures.push('Real imagery must be composed on paper without a coloured image-card background');
+}
+if (!files.styles.includes('Editorial modules are not automatically cards')) {
+  failures.push('Destination modules must not default to a Card UI system');
 }
 if (!files.productDna.includes('Der Begleiter ist unantastbar')) {
   failures.push('Product DNA must protect the Companion');
 }
 if (!files.destinationTests.includes('maps each page effect to its semantic image role')) {
   failures.push('Destination image-role test must be present');
+}
+if (!files.destinationTests.includes("toBe('portrait')")) {
+  failures.push('Bild links and Bild rechts must share the portrait image role');
 }
 
 if (failures.length) {
@@ -71,4 +84,4 @@ if (failures.length) {
 }
 
 console.log('Destination Imagery Consistency Gate: PASS');
-console.log('Image Roles → Project Assets → Inspector → Geometry Help → Preview → 15 mm Binding → Companion Invariance → Tests');
+console.log('Image Roles → Project Assets → Inspector → Geometry Help → Image Composition → White Fjord Surface → 15 mm Binding → Companion Invariance → Tests');

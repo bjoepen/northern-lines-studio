@@ -1,457 +1,131 @@
 # Northern Lines Studio – Build 022
-## Destination Imagery Foundation
+## Destination Imagery Foundation – Final Image Composition Specification
 
-**Dokumenttyp:** Build-Spezifikation / Bildleitfaden
-**Status:** Arbeitsgrundlage für Build 022
-**Zweck:** Verbindliche Orientierung für Bildrollen, Zielgeometrien, Dateiformate und die UI-Hinweise zur Bildauswahl in Northern Lines Studio
+**Status:** Verbindliche Referenz für Build 022 Final
 
----
+## 1. Bildrollen
 
-# 1. Ziel von Build 022
+Für die drei Destination-Seitenwirkungen benötigt Fjord zwei Bildrollen:
 
-Build 022 führt die erste kontrollierte Bildintegration für Destination Pages ein.
+| Studio-Seitenwirkung | Bildrolle | Empfehlung |
+|---|---|---|
+| **Weite** | `wide` | breites Panorama, ca. **3:1–4:1**, mindestens **2400 px breit** |
+| **Bild links** | `portrait` | Hochformat, ca. **2:3**, etwa **1500 × 2250 px** oder größer |
+| **Bild rechts** | `portrait` | dasselbe Hochformat wie Bild links |
 
-Der Fokus liegt **nicht** auf Asset Management, Bildbearbeitung oder freier Platzierung.
+Die Maße sind Zielkorridore zur Bildvorbereitung, keine finale Publisher-Geometrie.
 
-Der Fokus liegt auf einer einfachen, Northern-Lines-gerechten Frage:
+## 2. Image Composition statt Bildbox
 
-> **Welches Bild eröffnet diesen Ort?**
+Ein ausgewähltes Bild wird nicht in eine farbige Medienkarte eingesetzt.
 
-Daraus folgt:
+Für Fjord gilt:
 
-- Bilder werden **bewusst und einfach** ausgewählt
-- die UI spricht **Travel Language**
-- Bilder werden **rollenbasiert** gedacht
-- die Bildauswahl bleibt **ruhig und verständlich**
-- es gibt **keinen Crop-Editor**
-- es gibt **keinen Focal-Point-Editor**
-- es gibt **keine freie Geometrie**
+- Destination-Seiten bleiben **weiß / neutral-weiß**;
+- Fotografie ist die wichtigste atmosphärische Farbquelle;
+- echte Bilder liegen direkt auf der Papierfläche;
+- bei Aquarellmotiven darf der weiße Bildrand optisch mit der Seite verschmelzen;
+- die Preview darf die sichtbare Bildhöhe aus dem vorbereiteten Seitenverhältnis ableiten;
+- die Breite und Platzierung bleiben durch **Weite / Bild links / Bild rechts** und die Layout Grammar kontrolliert;
+- Studio speichert keine freien Bildboxgrößen oder Koordinaten.
 
----
+> **Bilder werden nicht in Boxen eingesetzt. Sie werden innerhalb der Editorial Grammar in die Seite komponiert.**
 
-# 2. Grundsatz
+## 3. Weite
 
-Da Build 022 **keinen Crop-Editor** vorsieht, wird **nicht ein einziges Bild** in alle Seitenwirkungen gezwungen.
+**Weite** ist eine atmosphärische Panoramazone, kein Web-Hero und keine starre Bannerkarte.
 
-Stattdessen arbeiten wir mit **passenden Bildrollen**.
-
-Das vermeidet spätere Notlösungen und entspricht dem Produktprinzip:
-
-> **Wenige starke Möglichkeiten. Viele persönliche Geschichten.**
-
----
-
-# 3. Die Bildrollen
-
-Für Destination Pages werden zunächst drei Bildrollen vorgesehen.
-
-## 3.1 Weite
-
-Verwendung für die Seitenwirkung:
-
-- **Weite**
-
-Charakter:
-
-- breit
-- flach
-- ruhig
-- atmosphärisch
-- Panorama als Öffnung des Ortes
-- kein dominanter Web-Hero
-- kein hoher Marketing-Banner
-
-Einsatz:
-
-- flacher Panorama-Auftakt
-- atmosphärischer Einstieg
-- visuelle Öffnung der Seite
-
----
-
-## 3.2 Bild links
-
-Verwendung für die Seitenwirkung:
-
-- **Bild links**
-
-Charakter:
-
-- hochformatiges Leitbild
-- klarer Fokus
-- gut lesbar
-- ruhige Bildsprache
-- geeignet für ein redaktionelles Travelbook
-
-Einsatz:
-
-- das Bild führt in den Ort
-- der Text begleitet
-
----
-
-## 3.3 Bild rechts
-
-Verwendung für die Seitenwirkung:
-
-- **Bild rechts**
-
-Charakter:
-
-- hochformatiges Leitbild
-- klarer Fokus
-- gut lesbar
-- ruhige Bildsprache
-- geeignet für ein redaktionelles Travelbook
-
-Einsatz:
-
-- die Geschichte führt
-- das Bild begleitet
-
----
-
-# 4. Zielgeometrien
-
-Die folgenden Maße sind **Zielkorridore** für die Bildgestaltung.
-
-Sie sind bewusst praxisnah formuliert und sollen helfen, passende Bilder vorzubereiten oder generieren zu lassen.
-
-Ausgangspunkt:
-
-- DIN A5 Hochformat
-- Editorial World bleibt stabil
-- Footer und Companion bleiben stabil
-- Binding Safe Area: **15 mm Mindestzone**
-- keine freie Bildgeometrie im Studio
-
-## 4.1 Übersicht
-
-| Bildrolle | Einsatz | Zielmaß (ca. mm) | Seitenverhältnis | empfohlene Generierungsgröße |
-|---|---|---:|---:|---:|
-| **Weite** | flaches Panorama | **118–122 × 26–32 mm** | **ca. 4:1** | **2400 × 600 px** |
-| **Bild links** | hochformatiges Leitbild | **48–56 × 78–92 mm** | **ca. 2:3** | **1500 × 2250 px** |
-| **Bild rechts** | hochformatiges Leitbild | **48–56 × 78–92 mm** | **ca. 2:3** | **1500 × 2250 px** |
-
-## 4.2 Auflösungsreserve
-
-Wenn Bilder gezielt erzeugt oder vorbereitet werden, ist eine leichte Auflösungsreserve sinnvoll.
-
-Empfehlung:
-
-- **Weite:** auch **2800 × 700 px** möglich
-- **Bild links:** auch **1800 × 2700 px** möglich
-- **Bild rechts:** auch **1800 × 2700 px** möglich
-
-Diese Reserve ist hilfreich, ohne bereits in Bildbearbeitung oder Crop-Logik zu kippen.
-
----
-
-# 5. Inhaltliche Anforderungen an die Bildmotive
-
-## 5.1 Weite
-
-Das Motiv für **Weite** sollte:
-
-- als breites Panorama funktionieren
-- Luft links und rechts besitzen
-- keine wichtigen Motive an den äußersten Bildrändern tragen
-- ruhig und atmosphärisch wirken
-- keinen zu engen Bildausschnitt haben
-- sich für einen flachen Banner eignen
-
-Geeignet sind zum Beispiel:
+Geeignet:
 
 - Stadtpanorama
 - Hafenansicht
-- Fjordblick
-- Küstenlinie
-- weite Architekturansicht
+- Fjord- oder Küstenblick
 - ruhige Landschaftseröffnung
+- Motive mit Luft an den Seiten
 
----
+Das Bild darf innerhalb des vorgesehenen horizontalen Raums seine natürliche Höhe behalten. Ein Panorama von etwa 3:1 bis 4:1 ist für die aktuelle A5-Grammar ein sinnvoller Ausgangspunkt.
 
-## 5.2 Bild links / Bild rechts
+## 4. Bild links / Bild rechts
 
-Das Motiv für **Bild links** oder **Bild rechts** sollte:
+Beide Seitenwirkungen verwenden **dieselbe Portrait-Bildrolle**.
 
-- hochformatig funktionieren
-- einen klaren Hauptfokus besitzen
-- nicht zu eng beschnitten sein
-- genug Randluft besitzen
-- in einem redaktionellen Travelbook ruhig wirken
-- keine chaotische, überladene Szene zeigen
+Geeignet:
 
-Geeignet sind zum Beispiel:
+- hochformatige Ortsansicht
+- Architektur
+- Hafen- oder Straßenszene
+- klarer Hauptfokus
+- ausreichend Randluft
 
-- Straßen- oder Hafenszene
-- markante Architektur
-- Ortsszene mit Tiefe
-- charakteristischer Blick auf ein Reiseziel
-- ein Motiv mit klarer Bildstruktur
+Die Seitenwirkung entscheidet nur, ob das Bild links oder rechts komponiert wird. Sie verlangt kein zweites Bild.
 
----
+## 5. Tooltip
 
-# 6. Empfehlung für die praktische Bildvorbereitung
+Neben **Bild auswählen …** erscheint bei Bedarf `?`.
 
-Für jeden Ort sollten nach Möglichkeit drei konkret benannte Bildvarianten vorbereitet werden:
+Für Weite:
 
-- `ort-weite`
-- `ort-bild-links`
-- `ort-bild-rechts`
+> **Weite**
+> Breites Panorama. Empfohlen: ca. **3:1–4:1**, mindestens **2400 px breit**.
+> Die sichtbare Höhe folgt innerhalb der Layout Grammar dem vorbereiteten Motiv.
 
-Beispiel:
+Für Bild links / Bild rechts:
 
-- `bergen-weite`
-- `bergen-bild-links`
-- `bergen-bild-rechts`
+> **Bild links / Bild rechts**
+> Gemeinsames hochformatiges Leitbild. Empfohlen: ca. **2:3**, etwa **1500 × 2250 px** oder größer.
 
-Damit bleibt klar:
+Der Tooltip erklärt keine Asset-Pfade, IDs, Renderlogik oder freie Geometrie.
 
-- welches Bild für welche Seitenwirkung gedacht ist
-- warum das Bild eine bestimmte Geometrie besitzt
-- dass Studio noch keinen Crop-Editor benötigt
+## 6. Informationsflächen
 
----
+Nicht jedes Inhaltsmodul wird automatisch in eine Box gesetzt.
 
-# 7. Dateiformate
+- Typografie, Abstände und feine Linien strukturieren den Normalfall.
+- Eine sanft eingefärbte Informationsfläche darf gezielt einen redaktionellen Akzent setzen.
+- Daraus entsteht kein allgemeines Card-UI-System.
 
-Für Build 022 sollten wir bewusst einfach bleiben.
+## 7. Fjord-Grundfläche
 
-Empfohlene Formate:
+Für **Weite · Bild links · Bild rechts** gilt dieselbe weiße / neutral-weiße Seite.
 
-- **JPEG** für normale Fotos
-- **PNG** nur dann, wenn es einen echten Grund gibt
+> **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**
 
-Empfehlung:
+Keine zusätzlichen Hintergrundvarianten, Themes oder frei wählbaren Seitenfarben.
 
-- Farbraum praxisnah halten
-- normale, robuste Bilddateien
-- keine exotischen Formate
-- keine komplexe RAW- oder EXIF-Logik in Build 022
+## 8. Physische Invarianten
 
-Build 022 ist **keine** Bildverwaltung.
+- Binding Safe Area: **15 mm technische Mindestzone** für relevante Nutzinhalte.
+- Companion: feste Editorial-World-Position, unabhängig vom Content-Inset.
+- Footer und Seitenzahl: stabil über alle drei Seitenwirkungen.
 
----
+## 9. Nicht Bestandteil von Build 022
 
-# 8. UI-Vorschlag in Travel Language
-
-Die UI soll nicht nach Medienverwaltung klingen.
-
-Stattdessen zum Beispiel:
-
-## Ortsprofil
-
-### Bild des Ortes
-
-**Bild auswählen …**
-
-Darunter – sofern ein Bild vorhanden ist – etwa:
-
-- **Bild ersetzen**
-- **Bild entfernen**
-
-Keine Begriffe wie:
-
-- Asset
-- Media Library
-- Manifest
-- Resource
-- Image Slot
-
----
-
-# 9. Tooltip-Idee für die Bildgeometrie
-
-Die vorgeschlagene Idee mit einem **Fragezeichen-Tooltip** ist sehr sinnvoll.
-
-Sie passt gut zur Northern-Lines-Philosophie, weil sie:
-
-- hilfreich ist
-- nicht aufdringlich ist
-- technische Information nur **bei Bedarf** zeigt
-- den Inspector nicht überlädt
-
-## Vorschlag
-
-Neben dem Button:
-
-**Bild auswählen …**
-ein kleines **?**-Symbol
-
-Beim Hover / Klick erscheint ein kurzer Tooltip oder ein kleines Popover.
-
----
-
-# 10. Inhalt des Tooltips
-
-Der Tooltip sollte **nicht technisch überladen** sein.
-
-Er soll die Bildrolle erklären, nicht ein Mini-DTP-Handbuch werden.
-
-## Beispieltext
-
-### Für Weite
-
-**Weite**
-Breites, ruhiges Panorama.
-Empfohlen: **ca. 4:1**
-Zielgröße: **2400 × 600 px**
-
-### Für Bild links / Bild rechts
-
-**Bild links / Bild rechts**
-Hochformatiges Leitbild mit klarem Fokus.
-Empfohlen: **ca. 2:3**
-Zielgröße: **1500 × 2250 px**
-
----
-
-# 11. Erweiterter Tooltip mit Mini-Geometrie
-
-Wenn wir etwas visueller werden wollen, könnte der Tooltip zusätzlich kleine abstrahierte Miniaturen zeigen.
-
-Beispielhaft:
-
-## Weite
-
-```text
-┌──────────────────────────────┐
-│         WEITE                │
-└──────────────────────────────┘
-ca. 4:1
-```
-
-## Bild links
-
-```text
-┌──────────────┐
-│██│          │
-│██│          │
-│██│          │
-└──────────────┘
-ca. 2:3
-```
-
-## Bild rechts
-
-```text
-┌──────────────┐
-│          │██│
-│          │██│
-│          │██│
-└──────────────┘
-ca. 2:3
-```
-
-Wichtig:
-
-- schlicht
-- abstrahiert
-- nicht zu dekorativ
-- schnell erfassbar
-
----
-
-# 12. Produktregel für den Tooltip
-
-Der Tooltip erklärt nur das, was der Reisende gerade wissen muss.
-
-Er soll **nicht** erklären:
-
-- interne Asset-Struktur
-- Publisher-Geometrie
-- technische IDs
-- Projektverzeichnisse
-- Renderlogik
-
-Der Tooltip hilft nur bei der Frage:
-
-> **Welches Bild passt hier gut?**
-
----
-
-# 13. Architekturhinweis
-
-Auch wenn die UI einfach bleibt, sollten die Bildrollen semantisch sauber gedacht werden.
-
-Wichtig:
-
-- das Bild gehört zur **Destination**
-- nicht zu frei gespeicherten X/Y-Koordinaten
-- nicht zu einer technischen DTP-Ebene
-
-Für Build 022 ist es sinnvoll, die Bildrolle intern eher neutral zu benennen, zum Beispiel:
-
-- `primaryImage`
-- oder rollenbezogen für die drei Seitenwirkungen
-
-Welche konkrete technische Lösung gewählt wird, muss zur `.nls`-Logik passen.
-
-Wichtig ist der Produktgrundsatz:
-
-> **Die sichtbare UI bleibt einfach. Die technische Zuordnung bleibt intern.**
-
----
-
-# 14. Ausdrücklich nicht Bestandteil von Build 022
-
-Folgende Themen gehören **nicht** zu Build 022:
-
-- Asset Management
 - Crop Editor
 - Focal Point
-- Bildbearbeitung
-- Drag-and-drop Layout
 - freie Bildpositionierung
-- Galerie pro Destination
-- Metadatenverwaltung
+- freie Bildboxgröße
+- Asset Manager
+- Drag-and-drop Layout
+- Gallery
 - EXIF-Workflow
-- AI-Bildanalyse
-- automatische Motivempfehlungen
-- weitere Layoutvarianten
+- automatische AI-Bildauswahl
+- neue Seitenwirkung
+- frei wählbare Seitenfarben
 
-Build 022 ist eine **Foundation**, keine Medienplattform.
+## 10. Real-World-Test
 
----
+Für Bergen reichen zwei Dateien:
 
-# 15. Validation für Build 022
+- `bergen-weite` – Panorama
+- `bergen-portrait` – Hochformat
 
-Ein sinnvoller Real-World-Test wäre:
+Prüfen:
 
-## Beispiel Bergen
-
-1. Ein Panorama für **Weite** wählen
-2. Ein hochformatiges Bild für **Bild links** wählen
-3. Ein hochformatiges Bild für **Bild rechts** wählen
-4. Zwischen den Seitenwirkungen wechseln
-5. Prüfen:
-
-- wirkt **Weite** ruhig und atmosphärisch?
-- funktioniert **Bild links** als bildgeführte Seite?
-- funktioniert **Bild rechts** als textgeführte Seite?
-- bleibt der Companion an seiner festen Position?
-- bleibt der Footer stabil?
-- bleibt die 15-mm-Bindungszone gewahrt?
-- fühlt sich die Bildauswahl einfach und nicht technisch an?
-
----
-
-# 16. Fazit
-
-Build 022 soll nicht möglichst viel Bildtechnik einführen.
-
-Build 022 soll den ersten guten, einfachen und Northern-Lines-gerechten Schritt ermöglichen:
-
-> **Ein Ort bekommt ein Bild, das ihn glaubwürdig eröffnet.**
-
-Die Bildauswahl bleibt:
-
-- ruhig
-- verständlich
-- rollenbasiert
-- ohne technische Überforderung
-
-Und genau deshalb passt auch die kleine Tooltip-Idee sehr gut:
-
-> **Hilfe bei Bedarf – nicht Technik auf Vorrat.**
+1. Weite importieren und natürliche Panoramahöhe beurteilen.
+2. Bild links importieren.
+3. Zu Bild rechts wechseln – dasselbe Portrait muss erscheinen.
+4. Zurück zu Weite wechseln.
+5. Keine farbige Medienbox hinter echten Bildern.
+6. Neutral-weiße Seite bleibt invariant.
+7. Companion, Footer, Seitenzahl und 15-mm-Sicherheitszone bleiben stabil.
+8. Speichern, Studio schließen, `.nls` erneut öffnen und Persistenz prüfen.

@@ -1,9 +1,11 @@
-# Build 022 – Delivery Notes
+# Build 022 Final – Delivery Notes
 
-Build 022 is delivered as:
+Build 022 Final – Image Composition Fix is delivered as:
 
 1. authoritative **Full Repo**;
-2. **Drop-in** from Build 021 Final;
+2. **Drop-in** for the previously delivered Build 022 Destination Imagery Foundation pre-final;
 3. `APPLY-DROPIN.md` following the established Northern Lines Studio release procedure.
 
-The Drop-in contains only files added or changed relative to Build 021 Final. No `.git/` content is included.
+The Fix Drop-in contains only files added or changed by the approved image-composition finalization. No `.git/` content is included.
+
+If Build 022 has not yet been installed, use the authoritative Full Repo over the existing repository while preserving only `.git/`.

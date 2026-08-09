@@ -1013,7 +1013,7 @@
                     </div>
                   </div>
 
-                  <div class="destination-hero-placeholder" aria-label={`Bild für ${destinationImageRoleLabel(destinationActiveImageRole)}`}>
+                  <div class:destination-image-present={Boolean(destinationImagePreviewUrl)} class="destination-hero-placeholder" aria-label={`Bild für ${destinationImageRoleLabel(destinationActiveImageRole)}`}>
                     {#if destinationImagePreviewUrl}
                       <img class="destination-hero-image" src={destinationImagePreviewUrl} alt={`Bild von ${destinationName || selectedPage.title}`} />
                     {:else}

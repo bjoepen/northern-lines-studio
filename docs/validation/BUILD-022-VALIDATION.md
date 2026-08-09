@@ -22,34 +22,46 @@ Destination Imagery Consistency Gate: PASS
 
 ## Real-world test – Bergen
 
-Prepare three image files:
+Prepare two source images:
 
-- `bergen-weite.jpg` – approximately 4:1
-- `bergen-bild-links.jpg` – approximately 2:3 portrait
-- `bergen-bild-rechts.jpg` – approximately 2:3 portrait
+- `bergen-weite` – broad panorama; recommended corridor about 3:1–4:1
+- `bergen-portrait` – approximately 2:3 portrait
 
 Then:
 
 1. open the validated Build-021 travel;
 2. select Bergen;
 3. choose **Weite**;
-4. use **Bild auswählen …** and import the wide image;
+4. use **Bild auswählen …** and import the panorama;
 5. open `?` and verify the geometry help;
-6. switch to **Bild links** and import the portrait image;
-7. switch to **Bild rechts** and import its portrait image;
-8. cycle Weite → Bild links → Bild rechts;
-9. close Studio;
-10. reopen the `.nls` from Finder.
+6. verify that the panorama sits directly on the neutral-white Fjord page without a coloured media-card backdrop;
+7. switch to **Bild links** and import the portrait image;
+8. switch to **Bild rechts** and verify that the same portrait image is used;
+9. cycle Weite → Bild links → Bild rechts → Weite;
+10. close Studio;
+11. reopen the `.nls` from Finder.
 
 Expected:
 
-- each page effect shows its own prepared image role;
+- Weite preserves the prepared panorama ratio and no longer uses a fixed-height coloured image box;
+- Bild links / Bild rechts share one portrait image role;
 - images remain part of the travel after reopening;
-- no crop controls or free positioning appear;
+- no crop controls, focal point or free positioning appear;
+- all three page effects use the same white / neutral-white Fjord surface;
+- content modules are not all presented as Cards;
+- a selective practical-info accent may remain subtle and editorial;
 - the 15 mm binding minimum remains respected by relevant content;
 - Companion, footer and page number stay visually stable;
 - the Companion has the same horizontal home as established Fjord knowledge pages;
-- replacing or removing an image updates only that image role.
+- replacing or removing an image updates only the active semantic image role.
+
+## Compatibility test – pre-final Build 022
+
+If a test project from the pre-final Build 022 contains `left` or `right` imagery:
+
+- Studio may use either as a fallback for the shared portrait role;
+- a new portrait import writes the final `portrait` role;
+- no image is silently cropped or transformed.
 
 ## Migration test
 

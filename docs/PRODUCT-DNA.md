@@ -1582,9 +1582,9 @@ Build 022 führt echte Ortsbilder ein, ohne Northern Lines Studio zu einer Medie
 Verbindliche Regeln:
 
 - Studio spricht von **Bild des Ortes**, nicht von Asset oder Media Resource.
-- Für **Weite**, **Bild links** und **Bild rechts** dürfen passend vorbereitete Bildrollen existieren.
-- **Weite** zielt auf ein breites, flaches Panorama (ca. 4:1).
-- **Bild links** und **Bild rechts** zielen auf hochformatige Leitbilder (ca. 2:3).
+- Es gibt zwei semantische Bildrollen: **Weite** und ein gemeinsames **Hochformat-Bild** für **Bild links / Bild rechts**.
+- **Weite** verwendet ein breites Panorama; die Geometrie ist ein Zielkorridor und keine starre Box. Studio darf innerhalb der Layout Grammar die sichtbare Höhe aus dem vorbereiteten Bildverhältnis ableiten.
+- **Bild links** und **Bild rechts** verwenden dieselbe hochformatige Bildrolle (Richtwert ca. 2:3).
 - Studio bietet bei Bedarf eine kleine Geometrie-Hilfe neben der Bildauswahl.
 - Build 022 besitzt keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung.
 - Bilder werden innerhalb des `.nls`-Packages verwaltet; technische Pfade bleiben unsichtbar.
@@ -1593,3 +1593,30 @@ Verbindliche Regeln:
 > **Hilfe bei Bedarf – nicht Technik auf Vorrat.**
 
 Die Binding Safe Area ist ab Build 022 eine **15-mm-Mindestzone für relevante Nutzinhalte**. Der Companion wird davon nicht verschoben. Seine Position ist Bestandteil der Editorial World und über geeignete Seitentypen invariant.
+
+---
+
+# 61. Fjord – weiße Bühne und Bildkomposition
+
+Für Destination Pages der Editorial World **Fjord** ist die eigentliche Seitenfläche grundsätzlich **weiß bzw. neutral-weiß**.
+
+Diese Grundfläche wird nicht durch großflächig eingefärbte Seitenhintergründe ersetzt. Das Weiß ist die ruhige Bühne für Fotografie, Typografie und Inhalt.
+
+Die visuelle Identität von Fjord entsteht über:
+
+- Fotografie als wichtigste atmosphärische Farbquelle;
+- Typografie und Fjord-Akzentfarbe als Identität und Hierarchie;
+- Linien, Signets und kleine grafische Elemente;
+- gezielt sanft eingefärbte redaktionelle Flächen;
+- Footer und Companion;
+- Bildsprache und Hero-Komposition.
+
+Eine farbig hinterlegte Informationsfläche ist ein **redaktioneller Akzent**, kein neues Card-UI-System. Nicht jedes Inhaltsmodul wird automatisch in eine Box gesetzt.
+
+Für **Weite**, **Bild links** und **Bild rechts** gilt dieselbe neutrale Seitenfläche.
+
+Bilder werden nicht in farbige Medienboxen eingesetzt. Sie werden innerhalb der Editorial Grammar **in die Seite komponiert**. Bei vorbereiteten Aquarellmotiven darf die weiße Bildfläche optisch mit dem Papier verschmelzen.
+
+Die Bildkomposition darf innerhalb definierter Grammar-Regeln auf das tatsächliche Seitenverhältnis reagieren. Das ist keine freie DTP-Geometrie: Studio speichert weiterhin keine x/y-Koordinaten, keine freien Boxgrößen und keine Crop-Rechtecke.
+
+> **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**

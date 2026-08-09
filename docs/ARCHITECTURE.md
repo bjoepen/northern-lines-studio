@@ -115,7 +115,7 @@ Destination imagery is semantic project data, not free layout geometry.
 
 Studio owns:
 
-- selecting a prepared image for **Weite**, **Bild links** or **Bild rechts**;
+- selecting a prepared **Weite** image or one shared portrait image for **Bild links / Bild rechts**;
 - copying supported JPEG/PNG files into the `.nls` package;
 - storing project-relative image-role paths;
 - fast non-destructive editorial preview;
@@ -123,4 +123,4 @@ Studio owns:
 
 Publisher remains responsible for authoritative image composition, final geometry, Content Fit, rendering and Preflight.
 
-Build 022 deliberately introduces no crop rectangle, focal point, x/y image position or generic Asset Manager. The 15 mm technical binding minimum protects relevant page content; Companion positioning remains an Editorial-World invariant and is not derived from the content inset.
+Build 022 deliberately introduces no crop rectangle, focal point, x/y image position, free image-box geometry or generic Asset Manager. Fjord Destination pages keep a neutral-white paper surface; real imagery is composed directly on that surface and may preserve its prepared source ratio inside the grammar. Information modules are not automatically cardified. The 15 mm technical binding minimum protects relevant page content; Companion positioning remains an Editorial-World invariant and is not derived from the content inset.

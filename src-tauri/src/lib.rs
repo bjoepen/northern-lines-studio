@@ -110,11 +110,16 @@ struct DestinationPracticalInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 struct DestinationImages {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     wide: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    portrait: Option<String>,
+    // Compatibility with the pre-final Build 022 imagery schema. These values
+    // are read so existing test projects do not lose an imported image, but
+    // new writes use only `wide` and `portrait`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     left: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     right: Option<String>,
 }
 
@@ -593,7 +598,7 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
         if !matches!(destination.editorial.layout_variant.as_str(), "destination-hero-banner" | "destination-hero-left" | "destination-hero-right") {
             return Err(format!("Destination '{}' besitzt eine unbekannte Layout-Variante.", destination.name));
         }
-        for image in [&destination.images.wide, &destination.images.left, &destination.images.right].into_iter().flatten() {
+        for image in [&destination.images.wide, &destination.images.portrait, &destination.images.left, &destination.images.right].into_iter().flatten() {
             if !image.starts_with("assets/destinations/") {
                 return Err(format!("Destination '{}' besitzt einen ungültigen Bildpfad.", destination.name));
             }
@@ -1068,7 +1073,7 @@ fn update_destination_profile(
 
 
 fn validate_destination_image_role(role: &str) -> Result<(), String> {
-    if matches!(role, "wide" | "left" | "right") {
+    if matches!(role, "wide" | "portrait") {
         Ok(())
     } else {
         Err("Unbekannte Bildrolle für das Reiseziel.".into())
@@ -1086,8 +1091,7 @@ fn normalized_image_extension(path: &Path) -> Result<&'static str, String> {
 fn destination_image_for_role(images: &DestinationImages, role: &str) -> Option<String> {
     match role {
         "wide" => images.wide.clone(),
-        "left" => images.left.clone(),
-        "right" => images.right.clone(),
+        "portrait" => images.portrait.clone().or_else(|| images.left.clone()).or_else(|| images.right.clone()),
         _ => None,
     }
 }
@@ -1095,8 +1099,11 @@ fn destination_image_for_role(images: &DestinationImages, role: &str) -> Option<
 fn set_destination_image_for_role(images: &mut DestinationImages, role: &str, value: Option<String>) {
     match role {
         "wide" => images.wide = value,
-        "left" => images.left = value,
-        "right" => images.right = value,
+        "portrait" => {
+            images.portrait = value;
+            images.left = None;
+            images.right = None;
+        },
         _ => {}
     }
 }
@@ -1531,8 +1538,7 @@ mod tests {
         assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_021_FORMAT_VERSION));
         let destination = migrated.destinations.iter().find(|destination| destination.id == "destination-bergen").expect("destination profile");
         assert!(destination.images.wide.is_none());
-        assert!(destination.images.left.is_none());
-        assert!(destination.images.right.is_none());
+        assert!(destination.images.portrait.is_none());
         validate_project(&migrated).expect("migrated Build-021 destination must validate");
     }
 
@@ -1622,9 +1628,25 @@ mod tests {
         assert_eq!(relative, format!("assets/destinations/{}/wide.jpg", destination.id));
         assert!(Path::new(&created.project_path).join(relative).exists());
 
-        let removed = remove_destination_image(created.project_path.clone(), stage.id, "wide".into()).expect("remove image");
+        let removed = remove_destination_image(created.project_path.clone(), stage.id.clone(), "wide".into()).expect("remove image");
         let destination = removed.project.destinations.iter().find(|destination| destination.id == destination_id).expect("destination");
         assert!(destination.images.wide.is_none());
+
+        let portrait_source = temp.path().join("bergen-portrait.png");
+        fs::write(&portrait_source, b"portrait-image-bytes").expect("portrait fixture");
+        let portrait_updated = set_destination_image(
+            created.project_path.clone(),
+            stage.id.clone(),
+            "portrait".into(),
+            portrait_source.to_string_lossy().into_owned(),
+        ).expect("store portrait image");
+        let destination = portrait_updated.project.destinations.iter().find(|destination| destination.id == destination_id).expect("destination");
+        let relative = destination.images.portrait.as_deref().expect("portrait image");
+        assert_eq!(relative, format!("assets/destinations/{}/portrait.png", destination.id));
+        assert!(Path::new(&created.project_path).join(relative).exists());
+        assert!(validate_destination_image_role("portrait").is_ok());
+        assert!(validate_destination_image_role("left").is_err());
+        assert!(validate_destination_image_role("right").is_err());
     }
 
     #[test]
