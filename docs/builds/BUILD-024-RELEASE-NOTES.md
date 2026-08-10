@@ -20,3 +20,11 @@ Destinationen können jetzt selektiv zusätzliche redaktionelle Hinweise tragen.
 - Ortsnamen werden nicht mitten im Wort getrennt.
 - Editorial Extension Zones reagieren auf Textgewicht und müssen nicht mehr statisch 50/50 stehen.
 - Keine Schema- oder Persistenzänderung gegenüber Build 024 Foundation.
+
+## Capacity Protection Polish
+
+- Editorial Extension Zones now use hard capacity protection before the Companion/Footer safe zone.
+- `comfortable`, `tight` and `overflow` are evaluated per selected page effect.
+- When overflow is reached, Studio does not render an invalid overlapping composition; it shows the Travel Language notice **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“**
+- Existing alternative page effects are suggested when they can carry the same content.
+- Root `LICENSE.md` and README source-availability notice added.

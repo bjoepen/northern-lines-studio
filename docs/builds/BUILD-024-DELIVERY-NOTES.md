@@ -6,3 +6,7 @@
 **.nls:** 0.10.0
 
 Der Build ist als Full Repo und Drop-in vorgesehen. Real-World-Validation soll mindestens eine Destination ohne Extensions und eine Destination mit Wissen + Tipp prüfen. Companion, Footer und Hero/Title-Zonen dürfen durch Extensions nicht verändert werden.
+
+## Final polish addition
+
+The Build-024 final baseline includes Extension Capacity Protection and repository licensing/source-availability documentation. No `.nls` schema change is introduced by this polish fix.

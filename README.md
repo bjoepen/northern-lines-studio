@@ -330,3 +330,21 @@ The final Build-023 baseline makes protected page zones structural. In **Weite**
 `Weite` now uses strict Hero/Title zone separation plus a compact, grammar-owned
 Title-Zone composition: title and introduction sit side by side with one functional
 vertical divider. Companion and Footer remain protected invariants.
+
+## License and source availability
+
+Northern Lines Studio is **source available, but not open source**.
+
+The source code is publicly visible to make development transparent. The public repository may be viewed and forked using GitHub's functionality in accordance with the GitHub Terms of Service.
+
+No general license is granted for independent redistribution, relicensing, incorporation into another product, or commercial exploitation.
+
+Northern Lines brand and design materials remain separately reserved.
+
+See [`LICENSE.md`](LICENSE.md) for the complete rights notice.
+
+Copyright © 2026 Northern Lines. All rights reserved.
+
+## Build 024 · Extension Capacity Protection Fix
+
+Editorial Extension Zones may adapt, stack and change width, but protected zones remain hard boundaries. If no allowed composition can keep extensions clear of Companion and Footer, Studio stops the invalid preview composition and says: **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** The traveller may try another existing page effect; Studio never rescues the page by shrinking type, clipping copy or moving the Companion.

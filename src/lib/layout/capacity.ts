@@ -1,4 +1,4 @@
-import type { DestinationEditorialExtension, DestinationHighlight, DestinationPracticalInfo } from '../project';
+import type { DestinationEditorialExtension, DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo } from '../project';
 
 export type DestinationContentCapacity = 'comfortable' | 'tight' | 'overflow';
 export type DestinationModuleComposition = 'single' | 'two' | 'three';
@@ -105,4 +105,60 @@ export function destinationExtensionComposition(extensions: DestinationEditorial
   if (first >= second * 1.55 && first >= 7) return 'wide-first';
   if (second >= first * 1.55 && second >= 7) return 'wide-second';
   return 'balanced';
+}
+
+
+export interface DestinationExtensionCapacityResult {
+  state: DestinationContentCapacity;
+  alternatives: DestinationLayoutVariantId[];
+}
+
+function extensionCapacityScore(input: DestinationCapacityInput, layoutVariant: DestinationLayoutVariantId): number {
+  const active = (input.editorialExtensions ?? []).filter((item) => item.title.trim() || item.text.trim());
+  if (!active.length) return 0;
+
+  const extensionScore = active.reduce((sum, item) => sum + extensionWeight(item), 0);
+  const corePressure =
+    textWeight(input.introduction, 76) +
+    input.reasons.filter(Boolean).reduce((sum, item) => sum + textWeight(item, 72), 0) +
+    input.highlights.reduce((sum, item) => sum + textWeight(item.name, 52) + textWeight(item.description ?? '', 90), 0) +
+    input.practicalInfo.reduce((sum, item) => sum + textWeight(item.title, 48) + textWeight(item.text, 86), 0);
+
+  // Portrait effects can reclaim some vertical room because the hero and story
+  // share the upper composition. Weite remains intentionally more conservative.
+  const layoutRelief = layoutVariant === 'destination-hero-banner' ? 0 : 3;
+  return extensionScore + Math.min(corePressure, 8) - layoutRelief;
+}
+
+/**
+ * Hard capacity protection for optional Editorial Extension Zones. Adaptive
+ * grammar may rearrange content, but it may never borrow the Companion/Footer
+ * safe zone. When the finite grammar is exhausted, Studio reports overflow
+ * instead of shrinking type, clipping copy or moving protected anchors.
+ */
+export function destinationExtensionCapacity(
+  input: DestinationCapacityInput,
+  layoutVariant: DestinationLayoutVariantId
+): DestinationContentCapacity {
+  const score = extensionCapacityScore(input, layoutVariant);
+  if (score === 0) return 'comfortable';
+  if (score >= 22) return 'overflow';
+  if (score >= 16) return 'tight';
+  return 'comfortable';
+}
+
+export function destinationExtensionCapacityResult(
+  input: DestinationCapacityInput,
+  layoutVariant: DestinationLayoutVariantId
+): DestinationExtensionCapacityResult {
+  const variants: DestinationLayoutVariantId[] = [
+    'destination-hero-banner',
+    'destination-hero-left',
+    'destination-hero-right'
+  ];
+  const state = destinationExtensionCapacity(input, layoutVariant);
+  const alternatives = state === 'overflow'
+    ? variants.filter((variant) => variant !== layoutVariant && destinationExtensionCapacity(input, variant) !== 'overflow')
+    : [];
+  return { state, alternatives };
 }

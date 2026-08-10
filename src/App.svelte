@@ -10,7 +10,7 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { layoutSystemForWorld } from './lib/layout';
-  import { destinationContentCapacity, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './lib/layout/capacity';
+  import { destinationContentCapacity, destinationExtensionCapacityResult, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
   import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
@@ -882,6 +882,9 @@
   $: destinationModuleLayout = destinationModuleComposition({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo, editorialExtensions: destinationEditorialExtensions });
   $: destinationTitleLayout = destinationTitleComposition({ name: destinationName || selectedPage?.title || '', introduction: destinationIntroduction });
   $: destinationExtensionLayout = destinationExtensionComposition(destinationEditorialExtensions);
+  $: destinationExtensionCapacityInfo = destinationExtensionCapacityResult({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo, editorialExtensions: destinationEditorialExtensions }, destinationLayoutVariant);
+  $: destinationExtensionOverflow = destinationExtensionCapacityInfo.state === 'overflow';
+  $: destinationExtensionAlternativeLabels = destinationExtensionCapacityInfo.alternatives.map((variant) => editorialLayout?.destinationLayouts.find((layout) => layout.id === variant)?.label ?? variant);
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
@@ -1118,17 +1121,25 @@
                   </div>
 
                   {#if destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()).length}
-                    <div class={`destination-extension-zones destination-extensions-${destinationExtensionLayout}`} aria-label="Redaktionelle Ergänzungen">
-                      {#each destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()) as extension (extension.id)}
-                        <section class={`destination-extension-zone extension-${extension.kind}`}>
-                          <span class={`editorial-signet editorial-signet-${editorialExtensionDefinition(extension.kind).signet}`} role="img" aria-label={editorialExtensionLabel(extension.kind)}></span>
-                          <div>
-                            {#if extension.title.trim()}<strong>{extension.title}</strong>{/if}
-                            {#if extension.text.trim()}<p>{extension.text}</p>{/if}
-                          </div>
-                        </section>
-                      {/each}
-                    </div>
+                    {#if destinationExtensionOverflow}
+                      <div class="destination-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
+                        <span>Mehr Raum nötig</span>
+                        <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
+                        <small>Die geschützte Companion- und Footer-Zone bleibt frei.</small>
+                      </div>
+                    {:else}
+                      <div class={`destination-extension-zones destination-extensions-${destinationExtensionLayout}`} aria-label="Redaktionelle Ergänzungen">
+                        {#each destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()) as extension (extension.id)}
+                          <section class={`destination-extension-zone extension-${extension.kind}`}>
+                            <span class={`editorial-signet editorial-signet-${editorialExtensionDefinition(extension.kind).signet}`} role="img" aria-label={editorialExtensionLabel(extension.kind)}></span>
+                            <div>
+                              {#if extension.title.trim()}<strong>{extension.title}</strong>{/if}
+                              {#if extension.text.trim()}<p>{extension.text}</p>{/if}
+                            </div>
+                          </section>
+                        {/each}
+                      </div>
+                    {/if}
                   {/if}
                 </div>
               {:else}
@@ -1395,6 +1406,16 @@
                 </div>
               </div>
             </details>
+
+            {#if destinationExtensionCapacityInfo.state !== 'comfortable'}
+              <div class:overflow={destinationExtensionOverflow} class="destination-capacity-guidance" role="status">
+                <span>{destinationExtensionOverflow ? 'Mehr Raum nötig' : 'Diese Seite wird dichter'}</span>
+                <strong>{destinationExtensionOverflow ? 'Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.' : 'Studio nutzt bereits eine kompaktere Komposition.'}</strong>
+                {#if destinationExtensionOverflow}
+                  <small>{destinationExtensionAlternativeLabels.length ? `Prüfe ${destinationExtensionAlternativeLabels.join(' oder ')} – dort kann derselbe Inhalt mehr Raum bekommen.` : 'Auch die anderen Seitenwirkungen reichen für diesen Inhalt nicht aus. Kürze eine Ergänzung oder verteile sie später auf eine Fortsetzungsseite.'}</small>
+                {/if}
+              </div>
+            {/if}
 
             <div class="destination-section-title destination-effect-title"><span>Seitenwirkung</span><strong>Wie soll sich dieser Ort öffnen?</strong></div>
             <div class="destination-layout-options" role="radiogroup" aria-label="Seitenwirkung">
