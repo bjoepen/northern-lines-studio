@@ -24,7 +24,7 @@ for (const token of [
   'destinationImageRole',
   'destinationImageGeometry',
   'Bild des Ortes',
-  'Bild auswählen …',
+  '+ Bild auswählen',
   'set_destination_image',
   'remove_destination_image',
   'read_image_preview',

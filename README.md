@@ -277,6 +277,8 @@ Gestaltungsmöglichkeit abzubilden.
 
 Build 023 macht die drei vorhandenen Destination-Seitenwirkungen gestalterisch belastbarer, ohne neue Varianten oder freie DTP-Geometrie einzuführen.
 
+Der finale UX-/Composition-Fix schützt bei **Weite** den Abstand zwischen Panorama und Titelblock, entfernt die dekorative Kopflinie der Portraitvarianten, gibt **Bild rechts** etwas mehr Textluft und reduziert die Hero-Bildbedienung im Inspector auf ruhige kontextuelle Textaktionen (`+ Bild auswählen`, `Bild ersetzen · Entfernen`). Persistenz und Hero-Asset-Modell bleiben unverändert.
+
 - **Weite** bleibt eine atmosphärische Panoramazone auf weißer/neutral-weißer Fjord-Grundfläche.
 - **Bild links** wird als bildgeführte Komposition feinjustiert.
 - **Bild rechts** wird als textgeführte Komposition neu ausbalanciert; das Bild beginnt bewusst etwas tiefer und begleitet die Geschichte.

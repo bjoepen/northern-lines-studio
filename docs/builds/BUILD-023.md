@@ -5,11 +5,15 @@
 
 ## Purpose
 
-Build 023 refines the three existing Destination compositions and improves Inspector ergonomics without adding new travel-domain features.
+Build 023 refines the three existing Destination compositions and improves Inspector ergonomics without adding new travel-domain features. The final UX / composition fix also removes unnecessary visual competition around the Hero image.
 
 ## Scope
 
 - refine **Weite**, **Bild links**, **Bild rechts**;
+- keep **Weite** clear of the title marker by letting the story follow the intrinsic panorama block plus a protected editorial gap;
+- remove the decorative top rule from **Bild links** and **Bild rechts**;
+- give **Bild rechts** slightly more text room;
+- reduce Hero image controls to quiet contextual text actions: **+ Bild auswählen**, **Bild ersetzen · Entfernen**;
 - preserve white / neutral-white Fjord Destination surface;
 - automatically choose approved 1-/2-/3-column module groupings from semantic content density;
 - keep tinted boxes semantic and exceptional;
@@ -29,3 +33,4 @@ No new Editorial World, Page Archetype, crop/focal-point tool, Asset Manager, fr
 - Composition remains grammar-controlled.
 - Photography remains the atmospheric colour source on Fjord Destination pages.
 - No content field is semantically repurposed.
+- Image actions remain available without becoming a toolbar or card system.

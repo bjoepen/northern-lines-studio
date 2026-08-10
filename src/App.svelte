@@ -1236,13 +1236,20 @@
                   </div>
                 </details>
               </div>
-              <div class="destination-image-picker-actions">
-                <button type="button" on:click={chooseDestinationImage} disabled={destinationImageState === 'saving'}>
-                  {destinationActiveImagePath ? 'Bild ersetzen …' : 'Bild auswählen …'}
+              <div class="destination-image-picker-actions" aria-label="Bildaktionen">
+                <button type="button" class="destination-image-text-action" on:click={chooseDestinationImage} disabled={destinationImageState === 'saving'}>
+                  {destinationActiveImagePath ? 'Bild ersetzen' : '+ Bild auswählen'}
                 </button>
-                {#if destinationActiveImagePath}<button type="button" class="quiet-action" on:click={removeDestinationImage} disabled={destinationImageState === 'saving'}>Bild entfernen</button>{/if}
+                {#if destinationActiveImagePath}
+                  <span class="destination-image-action-separator" aria-hidden="true">·</span>
+                  <button type="button" class="destination-image-remove-action" on:click={removeDestinationImage} disabled={destinationImageState === 'saving'}>Entfernen</button>
+                {/if}
               </div>
-              {#if destinationActiveImagePath}<small>Das Bild für {destinationImageRoleLabel(destinationActiveImageRole)} ist Teil dieser Reise.</small>{/if}
+              {#if destinationActiveImagePath}
+                <small>Bild für {destinationImageRoleLabel(destinationActiveImageRole)} gewählt.</small>
+              {:else}
+                <small>Noch kein Bild gewählt.</small>
+              {/if}
               {#if destinationImageState === 'saved'}<small>Bild übernommen.</small>{/if}
               {#if destinationImagePreviewError}<small class="planning-save-error">Die Bildvorschau konnte nicht geladen werden.</small>{/if}
             </div>
