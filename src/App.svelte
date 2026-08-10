@@ -10,7 +10,7 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { layoutSystemForWorld } from './lib/layout';
-  import { destinationContentCapacity, destinationModuleComposition } from './lib/layout/capacity';
+  import { destinationContentCapacity, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
   import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
@@ -880,6 +880,8 @@
     editorialExtensions: destinationEditorialExtensions
   });
   $: destinationModuleLayout = destinationModuleComposition({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo, editorialExtensions: destinationEditorialExtensions });
+  $: destinationTitleLayout = destinationTitleComposition({ name: destinationName || selectedPage?.title || '', introduction: destinationIntroduction });
+  $: destinationExtensionLayout = destinationExtensionComposition(destinationEditorialExtensions);
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
@@ -1065,9 +1067,9 @@
               in:fade={{ duration: 190 }}
             >
               {#if selectedPage?.type === 'destination'}
-                <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity}`}>
+                <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity} title-${destinationTitleLayout}`}>
                   <div class="destination-story">
-                    <div class="destination-title-intro-composition">
+                    <div class={`destination-title-intro-composition destination-title-${destinationTitleLayout}`}>
                       <div class="destination-title-block">
                         <div class="page-rule"></div>
                         <p class="eyebrow">Reiseziel</p>
@@ -1116,7 +1118,7 @@
                   </div>
 
                   {#if destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()).length}
-                    <div class="destination-extension-zones" aria-label="Redaktionelle Ergänzungen">
+                    <div class={`destination-extension-zones destination-extensions-${destinationExtensionLayout}`} aria-label="Redaktionelle Ergänzungen">
                       {#each destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()) as extension (extension.id)}
                         <section class={`destination-extension-zone extension-${extension.kind}`}>
                           <span class={`editorial-signet editorial-signet-${editorialExtensionDefinition(extension.kind).signet}`} role="img" aria-label={editorialExtensionLabel(extension.kind)}></span>

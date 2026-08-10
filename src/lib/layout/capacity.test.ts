@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { destinationContentCapacity, destinationModuleComposition } from './capacity';
+import { destinationContentCapacity, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './capacity';
 
 describe('destination content capacity', () => {
   it('keeps a concise destination comfortable', () => {
@@ -45,5 +45,37 @@ describe('destination module composition', () => {
       highlights: [{ id: 'h-1', name: 'Bryggen', description: 'x'.repeat(220), category: 'landmark' }],
       practicalInfo: [{ id: 'p-1', title: 'Unterwegs', text: 'x'.repeat(220) }]
     })).toBe('two');
+  });
+});
+
+
+describe('adaptive destination title composition', () => {
+  it('keeps Bergen balanced', () => {
+    expect(destinationTitleComposition({ name: 'Bergen', introduction: 'Kurzer Einstieg.' })).toBe('balanced');
+  });
+
+  it('gives Stavanger and Geiranger more title room without breaking the word', () => {
+    expect(destinationTitleComposition({ name: 'Stavanger', introduction: 'Kurzer Einstieg.' })).toBe('title-wide');
+    expect(destinationTitleComposition({ name: 'Geiranger', introduction: 'Kurzer Einstieg.' })).toBe('title-wide');
+  });
+
+  it('stacks the introduction when a very long place name needs the full title zone', () => {
+    expect(destinationTitleComposition({ name: 'Llanfairpwllgwyngyll', introduction: 'Ein ruhiger Einstieg.' })).toBe('stacked');
+  });
+});
+
+describe('adaptive editorial extension composition', () => {
+  const extension = (id: string, text: string) => ({ id, kind: 'knowledge' as const, title: id, text });
+
+  it('keeps two compact extensions balanced', () => {
+    expect(destinationExtensionComposition([extension('Wissen', 'Kurz.'), extension('Tipp', 'Kurz.')])).toBe('balanced');
+  });
+
+  it('gives a longer first extension more width', () => {
+    expect(destinationExtensionComposition([extension('Wissen', 'x'.repeat(220)), extension('Tipp', 'Kurz.')])).toBe('wide-first');
+  });
+
+  it('stacks dense extensions instead of forcing a 50/50 row', () => {
+    expect(destinationExtensionComposition([extension('Wissen', 'x'.repeat(420)), extension('Geschichte', 'x'.repeat(360))])).toBe('stacked');
   });
 });

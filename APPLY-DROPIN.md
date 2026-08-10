@@ -1,6 +1,6 @@
-# APPLY-DROPIN – Build 024
+# APPLY-DROPIN – Build 024 Adaptive Grammar Polish Fix
 
-Upgrade von **Build 023 Final – Weite Editorial Composition Fix** auf **Build 024 – Editorial Extension Zones Foundation**.
+Upgrade von **Build 024 – Editorial Extension Zones Foundation** auf **Build 024 – Adaptive Grammar Polish Fix**.
 
 ## 1. Branch
 
@@ -8,13 +8,13 @@ Upgrade von **Build 023 Final – Weite Editorial Composition Fix** auf **Build 
 cd ~/Projekte/northern-lines-studio
 git switch main
 git pull --ff-only
-git switch -c build/024-editorial-extension-zones
+git switch -c build/024-adaptive-grammar-polish
 ```
 
 ## 2. Dry Run
 
 ```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-024-Editorial-Extension-Zones-Foundation-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-024-Adaptive-Grammar-Polish-Fix-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
 Prüfe die Dateiliste. Das Drop-in löscht keine Dateien.
@@ -22,7 +22,7 @@ Prüfe die Dateiliste. Das Drop-in löscht keine Dateien.
 ## 3. Apply
 
 ```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-024-Editorial-Extension-Zones-Foundation-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-024-Adaptive-Grammar-Polish-Fix-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
 ## 4. Consistency Gate
@@ -35,7 +35,7 @@ pnpm consistency
 Erwartet wird zusätzlich:
 
 ```text
-Editorial Extension Zones Consistency Gate: PASS
+Adaptive Layout Grammar Consistency Gate: PASS
 ```
 
 ## 5. Full Gates
@@ -50,13 +50,20 @@ git diff --check
 
 ## 6. Real-World-Test
 
-1. Ein vorhandenes Build-023-`.nls` öffnen. Es wird von 0.9.0 auf 0.10.0 migriert.
-2. Bergen ohne Extension prüfen: die bisherige Seite muss unverändert wirken.
-3. Unter **Besondere Hinweise** eine Extension **Wissen** anlegen, z. B. Titel `Hanse in Bergen` und einen kurzen Text.
-4. Ortsprofil sichern. Die Preview muss genau **ein Signet + world-konforme Fläche + Inhalt** zeigen: kein Rahmen, kein Divider, kein dekorativer Zusatz.
-5. Einen **Tipp** ergänzen und prüfen, dass die Fläche ruhiger gewichtet ist als Wissen.
-6. Ungesicherte Extension ändern und die Seite wechseln. Erwartet: **Verwerfen · Abbrechen · Speichern**.
-7. Projekt schließen/öffnen. Extensions müssen erhalten bleiben.
-8. **Weite · Bild links · Bild rechts** prüfen: Hero/Title, Companion und Footer bleiben unverändert und geschützt.
+1. **Bergen / Weite** öffnen. Erwartet: ruhige ausgeglichene Title-Komposition.
+2. **Stavanger / Weite** öffnen. Erwartet: Ortsname bleibt vollständig; kein `Stavange / r`. Studio gibt dem Titel automatisch mehr Breite.
+3. **Geiranger / Weite** genauso prüfen.
+4. Einen längeren Namen wie **Geirangerfjord** prüfen. Erwartet: stärker titelbetonte Komposition; bei noch längeren Namen darf der Introtext unter den Titel wechseln.
+5. Zwei kurze Extensions anlegen. Erwartet: ruhige Zweierkomposition.
+6. Eine lange **Wissen**-Extension und einen kurzen **Fotospot** anlegen. Erwartet: asymmetrische Verteilung zugunsten des längeren Inhalts.
+7. Zwei deutlich längere Extensions anlegen. Erwartet: Studio verlässt den starren 50/50-Zustand und stapelt innerhalb der Grammar.
+8. In allen Zuständen prüfen: Companion und Footer bleiben unverändert und werden nicht als zusätzliche Layoutkapazität benutzt.
+9. **Bild links** und **Bild rechts** gegenprüfen. Der Polish Fix darf deren bestehende Komposition nicht beschädigen.
 
-**STOP**, wenn Extensions wie Cards wirken, den Companion verdrängen oder Semantik und World-Farbe vermischen.
+**STOP**, wenn ein Ortsname mitten im Wort getrennt wird, die Grammar trotz klar ungleicher Inhalte starr 50/50 bleibt oder Extensions den Companion bedrängen.
+
+## Git-Commit-Vorschlag
+
+```text
+fix(build-024): make destination grammar adapt to content
+```

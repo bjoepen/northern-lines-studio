@@ -2,6 +2,8 @@ import type { DestinationEditorialExtension, DestinationHighlight, DestinationPr
 
 export type DestinationContentCapacity = 'comfortable' | 'tight' | 'overflow';
 export type DestinationModuleComposition = 'single' | 'two' | 'three';
+export type DestinationTitleComposition = 'balanced' | 'title-wide' | 'title-dominant' | 'stacked';
+export type DestinationExtensionComposition = 'single' | 'balanced' | 'wide-first' | 'wide-second' | 'stacked';
 
 export interface DestinationCapacityInput {
   name: string;
@@ -60,4 +62,47 @@ export function destinationModuleComposition(input: DestinationCapacityInput): D
     practical.reduce((sum, item) => sum + textWeight(item.title, 28) + textWeight(item.text, 54), 0);
 
   return compactWeight <= 14 ? 'three' : 'two';
+}
+
+
+/**
+ * Chooses one of a small set of allowed title/intro compositions. Long place
+ * names get more room before Studio moves the introduction below the title.
+ * The decision is preview-only and never persists free geometry.
+ */
+export function destinationTitleComposition(input: Pick<DestinationCapacityInput, 'name' | 'introduction'>): DestinationTitleComposition {
+  const name = input.name.trim();
+  const introduction = input.introduction.trim();
+  const longestWord = name.split(/\s+/).reduce((max, word) => Math.max(max, word.length), 0);
+
+  if (longestWord >= 18 || name.length >= 30 || (longestWord >= 13 && introduction.length >= 150)) return 'stacked';
+  if (longestWord >= 13 || name.length >= 23) return 'title-dominant';
+  if (longestWord >= 9 || name.length >= 16) return 'title-wide';
+  return 'balanced';
+}
+
+function extensionWeight(item: DestinationEditorialExtension): number {
+  return 2 + textWeight(item.title, 24) + textWeight(item.text, 42);
+}
+
+/**
+ * Editorial Extension Zones follow the content. Compact peers may share a row;
+ * unequal content receives an asymmetric grammar state; dense content stacks.
+ * This remains a finite grammar, never a user-editable grid.
+ */
+export function destinationExtensionComposition(extensions: DestinationEditorialExtension[] = []): DestinationExtensionComposition {
+  const active = extensions.filter((item) => item.title.trim() || item.text.trim());
+  if (active.length <= 1) return 'single';
+
+  const weights = active.map(extensionWeight);
+  const total = weights.reduce((sum, value) => sum + value, 0);
+  const max = Math.max(...weights);
+
+  if (active.length > 2) return total <= 18 && max <= 7 ? 'balanced' : 'stacked';
+
+  const [first, second] = weights;
+  if (total >= 17 || (first >= 10 && second >= 10)) return 'stacked';
+  if (first >= second * 1.55 && first >= 7) return 'wide-first';
+  if (second >= first * 1.55 && second >= 7) return 'wide-second';
+  return 'balanced';
 }

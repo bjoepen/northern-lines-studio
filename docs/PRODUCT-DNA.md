@@ -1703,3 +1703,30 @@ Diese Zonenregel gilt analog für Bilder, Typografie, grafische Assets, Infoflä
 > **Der Companion nimmt nicht am Layout teil. Das Layout nimmt Rücksicht auf den Companion.**
 
 Der Companion ist ein invariantes World-Element mit eigener geschützter Zone. Content Fit darf ihn weder verschieben noch verkleinern; andere Zonen müssen ihre Komposition so organisieren, dass sein Raum frei bleibt.
+
+
+## 63. Die Seitenwirkung bleibt stabil, die innere Komposition folgt dem Inhalt
+
+Northern Lines Studio behandelt Seitenwirkungen nicht als starre 50/50-Templates.
+Die Layout Grammar wählt innerhalb einer begrenzten, kuratierten Menge von
+Kompositionszuständen diejenige Verteilung, die den realen Inhalt am besten trägt.
+
+Für die Title Zone von **Weite** gilt insbesondere:
+
+- kurze Ortsnamen können in einer ausgeglichenen 50/50-Komposition stehen;
+- längere Ortsnamen erhalten kontrolliert mehr Raum, z. B. 60/40 oder 70/30;
+- reicht auch das nicht sinnvoll aus, wechselt der Introtext unter den Titelblock;
+- Ortsnamen werden niemals mitten im Wort getrennt;
+- Schrift wird nicht heimlich verkleinert, um einen Zustand zu erzwingen.
+
+Dasselbe Prinzip gilt für Editorial Extension Zones. Zwei kompakte Erweiterungen
+dürfen eine ausgeglichene Zeile teilen. Ungleich lange Erweiterungen erhalten eine
+asymmetrische Verteilung; dichte Erweiterungen dürfen gestapelt oder auf volle
+Breite komponiert werden. Die Companion-/Footer-Safe-Zone bleibt dabei eine harte
+Grenze.
+
+> **Die Seitenwirkung bleibt stabil. Die innere Komposition passt sich dem Inhalt an.**
+
+Diese Anpassung ist keine freie DTP-Geometrie. Der Reisende wählt keine Spaltenbreite
+und keine Koordinaten. Studio übernimmt das Layoutdenken innerhalb der freigegebenen
+Grammar-Zustände.
