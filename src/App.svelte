@@ -10,7 +10,7 @@
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
   import { availableEditorialWorlds, requireEditorialWorld } from './lib/worlds';
   import { layoutSystemForWorld } from './lib/layout';
-  import { destinationContentCapacity } from './lib/layout/capacity';
+  import { destinationContentCapacity, destinationModuleComposition } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
   import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
@@ -36,6 +36,7 @@
     formatTravelTime
   } from './lib/destinations';
   import type { DestinationImageRole } from './lib/destinations';
+  import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -100,7 +101,30 @@
   let destinationImagePreviewError = '';
   let destinationImageState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let destinationImagePreviewRequest = 0;
+  let inspectorWidth = INSPECTOR_DEFAULT_WIDTH;
+  let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
+  let inspectorResizing = false;
   const journeyWorlds = availableEditorialWorlds();
+
+  function applyInspectorWidth(width: number) {
+    inspectorPreferredWidth = clampInspectorWidth(width, window.innerWidth);
+    inspectorWidth = inspectorPreferredWidth;
+    window.localStorage.setItem(INSPECTOR_WIDTH_STORAGE_KEY, String(inspectorPreferredWidth));
+  }
+
+  function beginInspectorResize(event: MouseEvent) {
+    event.preventDefault();
+    inspectorResizing = true;
+    const move = (moveEvent: MouseEvent) => applyInspectorWidth(window.innerWidth - moveEvent.clientX);
+    const stop = () => {
+      inspectorResizing = false;
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', stop);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', stop);
+  }
+
 
   async function showJourneyBeginning() {
     projectMenuOpen = false;
@@ -776,6 +800,16 @@
   }
 
   onMount(() => {
+    inspectorPreferredWidth = parseStoredInspectorWidth(window.localStorage.getItem(INSPECTOR_WIDTH_STORAGE_KEY), window.innerWidth);
+    inspectorWidth = inspectorPreferredWidth;
+    const resize = () => {
+      inspectorWidth = clampInspectorWidth(inspectorPreferredWidth, window.innerWidth);
+    };
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  });
+
+  onMount(() => {
     if (!previewStage) return;
     const observer = new ResizeObserver(updatePreviewScale);
     observer.observe(previewStage);
@@ -816,6 +850,7 @@
     highlights: destinationHighlights,
     practicalInfo: destinationPracticalInfo
   });
+  $: destinationModuleLayout = destinationModuleComposition({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo });
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
@@ -917,7 +952,7 @@
     <div class="error-banner" role="alert">{errorMessage}</div>
   {/if}
 
-  <main class="workspace">
+  <main class="workspace" style={`--inspector-width:${inspectorWidth}px`}>
     <aside class="sidebar" aria-label="Travelbook-Navigation">
       <div class="panel-heading">
         <span>Travelbook</span>
@@ -1023,7 +1058,7 @@
                     {/if}
                   </div>
 
-                  <div class:destination-modules-three={destinationPracticalInfo.filter((entry) => entry.title.trim() || entry.text.trim()).length > 0} class="destination-modules-preview">
+                  <div class={`destination-modules-preview destination-modules-${destinationModuleLayout}`}>
                     <section>
                       <span>Warum dieser Ort?</span>
                       {#if destinationReasons.length}
@@ -1111,7 +1146,9 @@
       </div>
     </section>
 
-    <aside class="inspector" aria-label="Inspector">
+    <aside class:resizing={inspectorResizing} class="inspector" aria-label="Inspector">
+      <button class="inspector-resize-handle" type="button" aria-label="Inspectorbreite ändern" title="Inspectorbreite ändern" on:mousedown={beginInspectorResize}></button>
+      <div class="inspector-scroll">
       <div class="panel-heading">
         <span>Inspector</span>
         <strong>{selectedPage ? 'Seite' : 'Reise'}</strong>
@@ -1501,6 +1538,7 @@
         <dt>Travelbook-Format</dt><dd>{project?.formatVersion ?? '–'}</dd>
       </dl>
       {/if}
+      </div>
     </aside>
   </main>
 

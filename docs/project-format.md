@@ -154,3 +154,8 @@ The technical minimum binding zone is **15 mm** from the left page edge. It is a
 For Fjord Destination Pages, `.nls` does not store a page background choice. The Editorial World defines a white / neutral-white page surface for **Weite**, **Bild links** and **Bild rechts**.
 
 Selected imagery is composed directly on that surface. Coloured image-card backgrounds and arbitrary image-box geometry are not project data. Information modules are likewise not automatically persisted or rendered as cards; selective tinted editorial accents remain a grammar concern.
+
+
+## Build 023 – no project-format change
+
+Build 023 changes only derived Editorial Preview composition and local workspace ergonomics. `.nls` remains **0.9.0**. Inspector width and 1-/2-/3-column preview grouping are not persisted.

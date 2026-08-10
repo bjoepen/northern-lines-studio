@@ -1,7 +1,7 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 022 Final – Destination Imagery Foundation / Image Composition Fix
-**Studio:** 0.22.0
+**Aktueller Stand:** Build 023 – Destination Composition Refinement
+**Studio:** 0.23.0
 **Projektformat:** `.nls` 0.9.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
@@ -272,6 +272,24 @@ Gestaltungsmöglichkeit abzubilden.
 **Northern Lines Studio**
 *Deine Reise. Deine Geschichten. Dein Fieldbook.*
 
-### Build 022 Final – Open-Flow Regression geschlossen
+#
+## Build 023 – Destination Composition Refinement
+
+Build 023 macht die drei vorhandenen Destination-Seitenwirkungen gestalterisch belastbarer, ohne neue Varianten oder freie DTP-Geometrie einzuführen.
+
+- **Weite** bleibt eine atmosphärische Panoramazone auf weißer/neutral-weißer Fjord-Grundfläche.
+- **Bild links** wird als bildgeführte Komposition feinjustiert.
+- **Bild rechts** wird als textgeführte Komposition neu ausbalanciert; das Bild beginnt bewusst etwas tiefer und begleitet die Geschichte.
+- Inhaltsgruppen verwenden automatisch eine zulässige **1-/2-/3-spaltige** Komposition abhängig von Menge und Dichte des Inhalts.
+- Sanft eingefärbte Flächen bleiben semantische Akzente und werden nicht zu einem Card-UI-System.
+- 15-mm-Bindungszone, Companion, Footer und Seitenzahl bleiben Invarianten.
+
+### Inspector-Ergonomie
+
+Der rechte Inspector lässt sich nun an seiner linken Kante Richtung Canvas vergrößern. Die Arbeitsbreite liegt bei **320–440 px**; auf kleineren Fenstern schützt Studio automatisch ausreichend Canvas-Raum. Die gewählte Breite wird lokal als Workspace-Präferenz gespeichert und gehört ausdrücklich **nicht** zum `.nls`-Projekt.
+
+> **Der Inspector darf wachsen, wenn der Inhalt es verlangt – aber nie so weit, dass das Travelbook seine Rolle als Hauptfläche verliert.**
+
+## Build 022 Final – Open-Flow Regression geschlossen
 
 Der interne Befehl **Reise öffnen …** verwendet wieder den `.nls`-Dokument-/Package-Pfad und damit dieselbe gemeinsame Ladepipeline wie der macOS/Finder-Open-Flow. Finder-Integration, `.nls`-Registrierung und die Destination-Image-Composition bleiben unverändert.

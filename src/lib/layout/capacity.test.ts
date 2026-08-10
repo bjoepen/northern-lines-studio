@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { destinationContentCapacity } from './capacity';
+import { destinationContentCapacity, destinationModuleComposition } from './capacity';
 
 describe('destination content capacity', () => {
   it('keeps a concise destination comfortable', () => {
@@ -16,5 +16,26 @@ describe('destination content capacity', () => {
       highlights: Array.from({ length: 6 }, (_, i) => ({ id: `h-${i}`, name: 'Aussichtspunkt', description: 'x'.repeat(90), category: 'viewpoint' })),
       practicalInfo: Array.from({ length: 4 }, (_, i) => ({ id: `p-${i}`, title: 'Hinweis', text: 'x'.repeat(100) }))
     })).toBe('overflow');
+  });
+});
+
+
+describe('destination module composition', () => {
+  it('uses three columns only for three compact editorial groups', () => {
+    expect(destinationModuleComposition({
+      name: 'Bergen', subtitle: '', introduction: '',
+      reasons: ['Hafen'],
+      highlights: [{ id: 'h-1', name: 'Bryggen', description: '', category: 'landmark' }],
+      practicalInfo: [{ id: 'p-1', title: 'Zu Fuß', text: 'Gut erreichbar.' }]
+    })).toBe('three');
+  });
+
+  it('falls back to two columns when three groups become text-heavy', () => {
+    expect(destinationModuleComposition({
+      name: 'Bergen', subtitle: '', introduction: '',
+      reasons: ['x'.repeat(180), 'x'.repeat(180)],
+      highlights: [{ id: 'h-1', name: 'Bryggen', description: 'x'.repeat(220), category: 'landmark' }],
+      practicalInfo: [{ id: 'p-1', title: 'Unterwegs', text: 'x'.repeat(220) }]
+    })).toBe('two');
   });
 });

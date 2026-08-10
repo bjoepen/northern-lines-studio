@@ -1,6 +1,7 @@
 import type { DestinationHighlight, DestinationPracticalInfo } from '../project';
 
 export type DestinationContentCapacity = 'comfortable' | 'tight' | 'overflow';
+export type DestinationModuleComposition = 'single' | 'two' | 'three';
 
 export interface DestinationCapacityInput {
   name: string;
@@ -34,4 +35,26 @@ export function destinationContentCapacity(input: DestinationCapacityInput): Des
   if (score >= 34) return 'overflow';
   if (score >= 23) return 'tight';
   return 'comfortable';
+}
+
+
+/**
+ * Chooses one of the small number of allowed editorial module compositions.
+ * This is preview grammar, never free grid geometry and never persisted.
+ */
+export function destinationModuleComposition(input: DestinationCapacityInput): DestinationModuleComposition {
+  const reasons = input.reasons.filter((reason) => reason.trim());
+  const highlights = input.highlights.filter((item) => item.name.trim() || (item.description ?? '').trim());
+  const practical = input.practicalInfo.filter((item) => item.title.trim() || item.text.trim());
+
+  const activeCount = Number(reasons.length > 0) + Number(highlights.length > 0) + Number(practical.length > 0);
+  if (activeCount <= 1) return 'single';
+  if (activeCount === 2) return 'two';
+
+  const compactWeight =
+    reasons.reduce((sum, value) => sum + textWeight(value, 52), 0) +
+    highlights.reduce((sum, item) => sum + textWeight(item.name, 30) + textWeight(item.description ?? '', 58), 0) +
+    practical.reduce((sum, item) => sum + textWeight(item.title, 28) + textWeight(item.text, 54), 0);
+
+  return compactWeight <= 14 ? 'three' : 'two';
 }

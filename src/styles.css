@@ -53,8 +53,15 @@ button { font: inherit; }
 .project-icon { width: 15px; height: 15px; flex: 0 0 auto; }
 .error-banner { flex: 0 0 auto; padding: 10px 20px; background: #f7e6e3; color: #7c251d; border-bottom: 1px solid #d9b2ac; }
 
-.workspace { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 264px minmax(500px, 1fr) 276px; overflow: hidden; }
-.sidebar, .inspector { min-height: 0; background: var(--panel); overflow: auto; }
+.workspace { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 264px minmax(0, 1fr) var(--inspector-width, 320px); overflow: hidden; }
+.sidebar, .inspector { min-height: 0; background: var(--panel); }
+.sidebar { overflow: auto; }
+.inspector { position: relative; overflow: hidden; min-width: 320px; max-width: 440px; }
+.inspector-scroll { height: 100%; overflow: auto; }
+.inspector-resize-handle { position: absolute; z-index: 40; top: 0; bottom: 0; left: 0; width: 7px; padding: 0; border: 0; background: transparent; cursor: col-resize; }
+.inspector-resize-handle::after { content: ""; position: absolute; left: 2px; top: 0; bottom: 0; width: 1px; background: transparent; transition: background 120ms ease; }
+.inspector-resize-handle:hover::after, .inspector.resizing .inspector-resize-handle::after { background: color-mix(in srgb, var(--fjord-blue) 45%, transparent); }
+.inspector.resizing, .inspector.resizing * { cursor: col-resize !important; user-select: none; }
 .sidebar { border-right: 1px solid var(--line); }
 .inspector { border-left: 1px solid var(--line); }
 .panel-heading { padding: 18px 16px 14px; border-bottom: 1px solid #dbe2e5; }
@@ -827,8 +834,18 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   margin-bottom: 1px;
 }
 
-/* The editorial grammar may compose three peer modules when the content calls
-   for it. This is not a fourth layout variant and exposes no free grid control. */
+/* Build 023 · Destination Composition Refinement
+   The grammar chooses from one, two or three editorial module groupings.
+   This remains automatic preview composition: no free grid control is exposed. */
+.destination-modules-preview.destination-modules-single {
+  grid-template-columns: 1fr;
+}
+.destination-modules-preview.destination-modules-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.destination-modules-preview.destination-modules-two .destination-practical-preview {
+  grid-column: 1 / -1;
+}
 .destination-modules-preview.destination-modules-three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
@@ -839,6 +856,8 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-modules-preview.destination-modules-three .destination-practical-preview div {
   grid-template-columns: 1fr;
 }
+.destination-modules-preview.destination-modules-single section,
+.destination-modules-preview.destination-modules-two section,
 .destination-modules-preview.destination-modules-three section {
   min-width: 0;
 }
@@ -1050,4 +1069,60 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   border-top-color: color-mix(in srgb, var(--world-accent) 32%, transparent);
   border-radius: 2px;
   background: color-mix(in srgb, var(--world-accent) 5%, transparent);
+}
+
+
+/* Build 023 · Destination Composition Refinement
+   Photography, typography and white paper form one composition. The rules below
+   refine rhythm without adding variants, crop controls or persisted geometry. */
+.destination-preview.destination-hero-banner.destination-preview {
+  row-gap: 9px;
+}
+.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
+  margin: -5px -2px 2px;
+}
+.destination-preview.destination-hero-banner .destination-hero-image {
+  max-width: 100%;
+}
+
+/* Bild links is visually led by the image: a slightly broader image field and
+   compact copy column keep the opening calm while the lower modules span the page. */
+.destination-preview.destination-hero-left {
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr);
+  column-gap: 14px;
+}
+.destination-preview.destination-hero-left .destination-hero-placeholder.destination-image-present {
+  align-self: start;
+}
+
+/* Bild rechts is text-led. The image deliberately begins a little lower, near
+   the title rhythm, so it accompanies the story rather than competing with it. */
+.destination-preview.destination-hero-right {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+  column-gap: 14px;
+}
+.destination-preview.destination-hero-right .destination-hero-placeholder.destination-image-present {
+  margin-top: 24px;
+  align-self: start;
+}
+.destination-preview.destination-hero-right .destination-story .preview-body,
+.destination-preview.destination-hero-left .destination-story .preview-body {
+  margin-top: 18px;
+}
+.destination-preview.destination-hero-left .destination-facts-preview,
+.destination-preview.destination-hero-right .destination-facts-preview {
+  margin-top: 10px;
+}
+
+/* Module rhythm stays open. Tinted areas remain semantic accents rather than a
+   generic card system. */
+.destination-modules-preview {
+  column-gap: 10px;
+  row-gap: 8px;
+}
+.destination-modules-preview section {
+  padding-top: 7px;
+}
+.destination-modules-preview .destination-practical-preview {
+  background: color-mix(in srgb, var(--world-accent) 4.5%, transparent);
 }
