@@ -1227,3 +1227,15 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   line-height: 1.3;
   letter-spacing: 0;
 }
+
+/* Build 023 · Weite Spacing Fix
+   The panorama and title-safe zone are two consecutive editorial areas.
+   The protected breathing room belongs to the hero block itself so the
+   REISEZIEL marker can never drift into the visible watercolor edge. */
+.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
+  margin-bottom: 24px;
+}
+.destination-preview.destination-hero-banner .destination-story {
+  padding-top: 0;
+  margin-top: 0;
+}

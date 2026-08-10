@@ -44,3 +44,8 @@ git diff --check
 2. Switch to **Bild links** and **Bild rechts** and verify no regression in composition.
 3. In the Inspector, verify `Bild links / Bild rechts` reads as quiet status text, while `Bild ersetzen · Entfernen` remains the actionable line.
 4. Re-run `pnpm consistency`, `pnpm check`, `pnpm test`, `pnpm build`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
+
+### Weite title-safe regression
+- Verify an active panorama in `Weite` has a visible neutral-paper breathing zone before `REISEZIEL`.
+- Verify `REISEZIEL` does not touch or visually overlap the watercolor edge.
+- Verify `Bild links` and `Bild rechts` remain unchanged.

@@ -41,3 +41,7 @@ No new Editorial World, Page Archetype, crop/focal-point tool, Asset Manager, fr
 - **Weite:** Hero-Medium und Titelblock sind nun strukturell getrennte Zonen. Der Titelblock beginnt mit einer festen Editorial-Ruhezone unter dem Panorama; `REISEZIEL` darf nicht in die sichtbare Bildwirkung rücken.
 - **Inspector:** Die Bildrollen-Zeile ist jetzt ruhiger Meta-Kontext (`Bild links / Bild rechts`) statt einer zusätzlichen Zwischenüberschrift. Das erklärende „Für“ entfällt.
 - Persistenz, `.nls`, Hero-Asset-Modell und Bildlogik bleiben unverändert.
+
+## Final Weite Spacing Fix
+
+The `Weite` grammar now owns an explicit protected breathing zone after the panorama. The spacing is attached to the hero block itself rather than to the title copy. This prevents the `REISEZIEL` marker from visually entering the watercolor edge while keeping the hero asset model and persisted layout semantics unchanged.
