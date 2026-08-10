@@ -298,3 +298,5 @@ Der rechte Inspector lässt sich nun an seiner linken Kante Richtung Canvas verg
 ## Build 022 Final – Open-Flow Regression geschlossen
 
 Der interne Befehl **Reise öffnen …** verwendet wieder den `.nls`-Dokument-/Package-Pfad und damit dieselbe gemeinsame Ladepipeline wie der macOS/Finder-Open-Flow. Finder-Integration, `.nls`-Registrierung und die Destination-Image-Composition bleiben unverändert.
+
+> Build 023 final polish: `Weite` reserves a hero-owned title-safe breathing zone so the panorama can never visually collide with `REISEZIEL`.

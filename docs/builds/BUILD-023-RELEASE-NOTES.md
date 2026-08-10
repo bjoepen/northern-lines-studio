@@ -34,3 +34,8 @@
 - corrected the remaining `Weite` title-safe collision by separating panorama and title block in normal layout flow with an editorial breathing zone;
 - reduced the visual weight of the image-role status in the Destination inspector and removed the redundant „Für“ prefix;
 - no project-format, persistence or asset-model changes.
+
+### Final Weite spacing correction
+- Added an explicit protected gap after an active `Weite` panorama.
+- `REISEZIEL` begins only after this hero-owned breathing zone.
+- No changes to `.nls`, image persistence, asset roles, or portrait layouts.
