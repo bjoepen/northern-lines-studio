@@ -1,31 +1,11 @@
-# Build 022 Final – Open-Flow Regression Fix Drop-in Manifest
-
-**Baseline:** Build 022 Final – Image Composition Fix
-**Target:** Build 022 Final – Open-Flow Regression Fix
-
-- Geändert: **12**
-- Neu: **1**
-- Gelöscht: **0**
-
-## Geänderte Dateien
+# Drop-in Manifest – Build 023 Final Zone Separation Fix
 
 - `APPLY-DROPIN.md`
-- `BUILD-022-SHA256SUMS.txt`
 - `README.md`
-- `SHA256SUMS.txt`
-- `docs/builds/BUILD-022-DELIVERY-NOTES.md`
-- `docs/builds/BUILD-022-RELEASE-NOTES.md`
-- `docs/builds/BUILD-022.md`
-- `docs/ecr/ECR-022-DESTINATION-IMAGERY-FOUNDATION.md`
-- `docs/git/BUILD-022-GIT-WORKFLOW.md`
-- `docs/validation/BUILD-022-VALIDATION.md`
-- `package.json`
-- `src/App.svelte`
-
-## Neue Dateien
-
-- `scripts/check-open-travel-consistency.mjs`
-
-## Gelöschte Dateien
-
-- keine
+- `docs/PRODUCT-DNA.md`
+- `docs/adr/ADR-019-PROTECTED-EDITORIAL-ZONES-AND-CONTENT-CAPACITY.md`
+- `docs/builds/BUILD-023-RELEASE-NOTES.md`
+- `docs/builds/BUILD-023.md`
+- `docs/validation/BUILD-023-VALIDATION.md`
+- `scripts/check-destination-composition-consistency.mjs`
+- `src/styles.css`
