@@ -45,3 +45,48 @@ No new Editorial World, Page Archetype, crop/focal-point tool, Asset Manager, fr
 ## Final Weite Spacing Fix
 
 The `Weite` grammar now owns an explicit protected breathing zone after the panorama. The spacing is attached to the hero block itself rather than to the title copy. This prevents the `REISEZIEL` marker from visually entering the watercolor edge while keeping the hero asset model and persisted layout semantics unchanged.
+
+## Final Weite Grammar Consolidation
+
+The previous visual spacing patches were superseded after real-world review showed that `REISEZIEL` could still sit inside the watercolor transition. Build 023 now uses one authoritative grid grammar for **Weite**:
+
+1. Hero / panorama
+2. explicit 18 px title-safe zone
+3. Destination story beginning with `REISEZIEL`
+4. semantic modules
+
+The safe zone is a real layout row, not margin or padding on the image or title copy. Accumulated Weite-specific spacing overrides from Build 021/022/023 have been removed. `Bild links` and `Bild rechts`, the Hero asset model, persistence and `.nls` 0.9.0 are unchanged.
+
+## Final Zone Separation Fix
+
+The final Build-023 correction replaces the remaining image-dependent `Weite` geometry with a strict semantic zone contract:
+
+- Hero Zone: fixed grammar-owned corridor (`118px` in Studio's 420×594 A5 preview grammar);
+- Hero image: `width/height: 100%`, `object-fit: contain`, clipped to the Hero Zone;
+- Title Safe Zone: separate `20px` row;
+- Title Zone: begins only after the protected row;
+- no intrinsic image height may enlarge the Hero Zone;
+- no source-specific crop or focal-point UI is introduced.
+
+This is deliberately not a Bergen-specific fix. The same rule must remain stable for other panorama ratios and image styles.
+
+## Final Weite Editorial Composition Fix
+
+Real-world review after strict zone separation showed that the protected Hero/Title
+boundary worked, but the vertically stacked title and introduction consumed too
+much of the page and pushed semantic modules toward the Companion/Footer safe zone.
+
+The final composition therefore keeps the zone contract and changes only the
+internal grammar of the **Title Zone**:
+
+- the legacy horizontal rule below the panorama is removed;
+- `REISEZIEL`, place title and subtitle remain one title block;
+- the introduction is composed beside that title block;
+- a restrained vertical divider separates title and introduction by editorial role;
+- facts and semantic modules move upward without shrinking typography;
+- Companion and Footer remain invariant and are not used as overflow space;
+- `Bild links` and `Bild rechts` remain unchanged;
+- `.nls` 0.9.0 and image persistence remain unchanged.
+
+This is still curated Layout Grammar: no x/y coordinates, free boxes or user-editable
+column geometry are introduced.

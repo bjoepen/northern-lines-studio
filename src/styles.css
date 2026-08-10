@@ -744,12 +744,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-practical-preview p { margin: 0; color: #697a81; font-size: 6.8px; line-height: 1.35; }
 .destination-practical-preview p strong { color: #3d5661; }
 
-/* Weite: flaches, ruhiges Panorama. Die genaue vertikale Komposition bleibt bewusst visuell. */
-.destination-preview.destination-hero-banner { grid-template-columns: 1fr; }
-.destination-preview.destination-hero-banner .destination-hero-placeholder { order: 1; min-height: 72px; height: 72px; margin: 0 -8px 2px; border-radius: 0; opacity: .88; }
-.destination-preview.destination-hero-banner .destination-story { order: 2; }
-.destination-preview.destination-hero-banner .destination-modules-preview { order: 3; }
-
 .destination-preview.destination-hero-left,
 .destination-preview.destination-hero-right { grid-template-columns: .9fr 1.1fr; align-items: start; column-gap: 12px; }
 .destination-preview.destination-hero-left .destination-hero-placeholder { grid-column: 1; grid-row: 1; min-height: 245px; }
@@ -820,18 +814,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview {
   min-height: 0;
   padding-bottom: var(--companion-safe-height);
-}
-
-/* Weite uses more of the upper A5 composition while staying deliberately
-   shallow. Exact Publisher geometry remains authoritative and is not stored. */
-.destination-preview.destination-hero-banner {
-  gap: 10px;
-}
-.destination-preview.destination-hero-banner .destination-hero-placeholder {
-  min-height: 66px;
-  height: 66px;
-  margin-top: -3px;
-  margin-bottom: 1px;
 }
 
 /* Build 023 · Destination Composition Refinement
@@ -1036,14 +1018,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   object-position: center;
 }
 
-/* Weite is an atmospheric panorama zone on the paper surface. Its height is
-   derived from the prepared image ratio rather than a fixed banner box. */
-.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
-  min-height: 0;
-  height: auto;
-  margin: -3px -4px 4px;
-}
-
 /* Bild links / Bild rechts share the same portrait image role. The image column
    remains grammar-controlled while its vertical extent follows the source
    geometry, so the illustration feels composed rather than card-mounted. */
@@ -1073,17 +1047,8 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 
 
 /* Build 023 · Destination Composition Refinement
-   Photography, typography and white paper form one composition. The rules below
-   refine rhythm without adding variants, crop controls or persisted geometry. */
-.destination-preview.destination-hero-banner.destination-preview {
-  row-gap: 9px;
-}
-.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
-  margin: -5px -2px 2px;
-}
-.destination-preview.destination-hero-banner .destination-hero-image {
-  max-width: 100%;
-}
+   Photography, typography and white paper form one composition. Portrait rules
+   below refine rhythm without adding variants, crop controls or persisted geometry. */
 
 /* Bild links is visually led by the image: a slightly broader image field and
    compact copy column keep the opening calm while the lower modules span the page. */
@@ -1184,13 +1149,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   margin-top: 3px;
 }
 
-/* Weite follows the intrinsic panorama block. The story therefore moves with
-   the prepared image and receives a fixed editorial breathing distance rather
-   than relying on overlap or persisted coordinates. */
-.destination-preview.destination-hero-banner .destination-story {
-  margin-top: 7px;
-}
-
 /* The portrait compositions no longer need a decorative rule to announce the
    title area. Typography and photography carry the hierarchy themselves. */
 .destination-preview.destination-hero-left .destination-story .page-rule,
@@ -1205,17 +1163,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 }
 
 
-/* Build 023 Final Polish Fix
-   Weite keeps Hero and title as two sequential editorial zones. The title-safe
-   breathing space is part of the grammar and never an overlap workaround. */
-.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
-  margin-bottom: 0;
-}
-.destination-preview.destination-hero-banner .destination-story {
-  margin-top: 0;
-  padding-top: 18px;
-}
-
 /* Image-role copy is context, not a second heading. It stays close to the label
    and deliberately quieter than the image actions. */
 .destination-image-picker-heading .destination-image-role-status {
@@ -1228,14 +1175,140 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   letter-spacing: 0;
 }
 
-/* Build 023 · Weite Spacing Fix
-   The panorama and title-safe zone are two consecutive editorial areas.
-   The protected breathing room belongs to the hero block itself so the
-   REISEZIEL marker can never drift into the visible watercolor edge. */
-.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
-  margin-bottom: 24px;
+/* Build 023 · Final Zone Separation Fix
+   Binding layout rule: page zones are semantic rooms, not overlapping layers.
+   In Weite, Hero Zone and Title Zone are siblings. The image is contained by a
+   fixed grammar-owned hero corridor; the title begins only after an explicit
+   protected zone. No source image may enlarge or visually escape the hero row. */
+.destination-title-safe-zone {
+  display: none;
 }
+
+.destination-preview.destination-hero-banner {
+  --weites-hero-height: 118px;
+  --weites-title-gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--weites-hero-height) var(--weites-title-gap) auto auto;
+  gap: 0;
+}
+
+.destination-preview.destination-hero-banner .destination-hero-placeholder,
+.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--weites-hero-height);
+  height: var(--weites-hero-height);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.destination-preview.destination-hero-banner .destination-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.destination-preview.destination-hero-banner .destination-title-safe-zone {
+  display: block;
+  grid-column: 1;
+  grid-row: 2;
+  min-height: var(--weites-title-gap);
+  height: var(--weites-title-gap);
+  overflow: hidden;
+}
+
 .destination-preview.destination-hero-banner .destination-story {
-  padding-top: 0;
-  margin-top: 0;
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0;
+  padding: 0;
+}
+
+.destination-preview.destination-hero-banner .destination-modules-preview {
+  grid-column: 1;
+  grid-row: 4;
+  margin-top: 9px;
+}
+
+/* Build 023 · Final Weite Editorial Composition Fix
+   Weite keeps its semantic rooms separate while using the title zone more
+   efficiently. Hero stays fully contained above. Inside the title zone, title
+   and introduction form one curated horizontal composition; a functional
+   vertical divider separates their editorial roles. The companion/footer room
+   remains protected and is never used as overflow capacity. */
+.destination-title-intro-composition {
+  min-width: 0;
+}
+
+.destination-title-block {
+  min-width: 0;
+}
+
+.destination-introduction {
+  min-width: 0;
+}
+
+.destination-preview.destination-hero-banner {
+  --weites-hero-height: 118px;
+  --weites-title-gap: 16px;
+  grid-template-rows: var(--weites-hero-height) var(--weites-title-gap) auto auto;
+}
+
+/* Weite does not need a decorative horizontal rule. The panorama and type
+   hierarchy already announce the beginning of the destination story. */
+.destination-preview.destination-hero-banner .destination-story .page-rule {
+  display: none;
+}
+
+/* Title and introduction share the Title Zone, not the Hero Zone. This is a
+   fixed editorial grammar, not free positioning. */
+.destination-preview.destination-hero-banner .destination-title-intro-composition {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  column-gap: 18px;
+  align-items: center;
+}
+
+.destination-preview.destination-hero-banner .destination-title-block {
+  padding-right: 2px;
+}
+
+.destination-preview.destination-hero-banner .destination-introduction {
+  margin: 0;
+  padding: 2px 0 2px 18px;
+  border-left: 1px solid rgba(84, 113, 129, .38);
+  color: #53676f;
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.destination-preview.destination-hero-banner .destination-story h1 {
+  margin-top: 5px;
+}
+
+.destination-preview.destination-hero-banner .destination-subtitle {
+  margin: 6px 0 0;
+}
+
+/* Facts follow immediately after the compact title composition so lower
+   modules stay clear of the companion/footer safe zone. */
+.destination-preview.destination-hero-banner .destination-facts-preview {
+  margin-top: 10px;
+  padding-top: 9px;
+}
+
+.destination-preview.destination-hero-banner .destination-modules-preview {
+  margin-top: 7px;
 }

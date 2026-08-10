@@ -39,3 +39,26 @@
 - Added an explicit protected gap after an active `Weite` panorama.
 - `REISEZIEL` begins only after this hero-owned breathing zone.
 - No changes to `.nls`, image persistence, asset roles, or portrait layouts.
+
+### Final Weite Grammar Fix
+
+- Consolidates the `Weite` preview into a single authoritative layout rule set.
+- Adds an explicit title-safe row between panorama and story.
+- Removes legacy margin/padding fixes that could be overridden by earlier CSS layers.
+- Adds a consistency check that rejects those legacy spacing patches.
+- No schema, persistence or asset-model changes.
+
+### Final Zone Separation Fix
+- Enforces strict separation of Hero Zone and Title Zone in `Weite`.
+- Replaces intrinsic auto-height hero behavior with a grammar-owned 118px panorama corridor.
+- Contains arbitrary source images with `object-fit: contain` and `overflow: hidden`; no crop UI is introduced.
+- Keeps a separate 20px title-safe row before `REISEZIEL`.
+- Adds a Product-DNA rule that all page elements remain inside their semantic zone unless Layout Grammar explicitly documents an exception.
+
+### Final Weite Editorial Composition Fix
+- Removes the obsolete horizontal rule below the Weite panorama.
+- Keeps Hero Zone and Title Zone strictly separated.
+- Composes title/subtitle and introduction side by side inside the Title Zone.
+- Adds one functional, restrained vertical divider between title and introduction.
+- Recovers vertical capacity without moving or shrinking the Companion/Footer area.
+- Leaves portrait compositions, project schema, persistence and image roles unchanged.

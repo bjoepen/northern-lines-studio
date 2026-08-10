@@ -49,3 +49,66 @@ git diff --check
 - Verify an active panorama in `Weite` has a visible neutral-paper breathing zone before `REISEZIEL`.
 - Verify `REISEZIEL` does not touch or visually overlap the watercolor edge.
 - Verify `Bild links` and `Bild rechts` remain unchanged.
+
+## Final Weite Grammar regression test
+
+Real-world trigger: Bergen / **Weite** with the watercolor panorama used during Build 023 review.
+
+Expected visual sequence:
+
+`Panorama → visible white breathing room → REISEZIEL → Bergen`
+
+Validation points:
+
+- `REISEZIEL` must start below the visible watercolor transition.
+- The title-safe zone must remain an explicit layout row, not a margin/padding workaround.
+- `Bild links` and `Bild rechts` must remain visually unchanged.
+- Hero image replace/remove behavior and `.nls` persistence must remain unchanged.
+
+## Final zone-separation real-world test
+
+Use at least three panorama sources, not only the Bergen watercolor reference:
+
+1. the Build-023 Bergen panorama (approx. 2.74:1);
+2. a wider panorama around 3.5–4:1;
+3. a less-wide source around 2:1–2.4:1.
+
+For each source select **Weite** and verify:
+
+- the image remains entirely inside the Hero Zone;
+- no image pixel or visual effect enters the Title Safe Zone or Title Zone;
+- the source is not cropped by Studio (`contain` behavior);
+- additional neutral space caused by a different aspect ratio remains inside the Hero Zone;
+- after the Hero Zone there is a visible protected neutral gap;
+- `REISEZIEL` begins only in the Title Zone;
+- changing the source image does not move the Title Zone;
+- Bild links / Bild rechts remain unchanged.
+
+Expected visual sequence:
+
+`Hero Zone → protected neutral gap → REISEZIEL → Bergen`
+
+## Final Weite Editorial Composition Fix – Real-World-Test
+
+Use Bergen first, then repeat with another destination containing a different
+panorama ratio.
+
+1. Select **Weite**.
+2. Verify the panorama remains completely inside the Hero Zone.
+3. Verify there is no horizontal decorative rule between panorama and Title Zone.
+4. Verify `REISEZIEL`, place title and subtitle form the left part of the Title Zone.
+5. Verify the introduction sits beside the title block and never enters the Hero Zone.
+6. Verify one restrained vertical divider separates title role and introduction role.
+7. Verify facts and semantic modules start higher than in the previous stacked composition.
+8. Verify the final content remains clearly above the Companion/Footer safe zone.
+9. Verify the Companion has not moved and Footer/page number remain invariant.
+10. Switch to **Bild links** and **Bild rechts** and verify both compositions are unchanged.
+11. Change the Weite source image to a different aspect ratio and verify Title/Content/Companion zones do not move into one another.
+
+Expected editorial sequence:
+
+`Hero Zone → Title Safe Zone → Title + Introduction → Facts → Modules → Companion/Footer Safe Zone`
+
+The build fails the real-world test if vertical capacity is recovered by shrinking
+text, moving the Companion, moving the Footer, or allowing content to enter a
+foreign semantic zone.

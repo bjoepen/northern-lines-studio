@@ -299,4 +299,13 @@ Der rechte Inspector lässt sich nun an seiner linken Kante Richtung Canvas verg
 
 Der interne Befehl **Reise öffnen …** verwendet wieder den `.nls`-Dokument-/Package-Pfad und damit dieselbe gemeinsame Ladepipeline wie der macOS/Finder-Open-Flow. Finder-Integration, `.nls`-Registrierung und die Destination-Image-Composition bleiben unverändert.
 
-> Build 023 final polish: `Weite` reserves a hero-owned title-safe breathing zone so the panorama can never visually collide with `REISEZIEL`.
+> Build 023 final grammar fix: `Weite` uses one consolidated four-row composition — Hero → protected title-safe zone → Story → Modules. Earlier margin/padding spacing patches are removed.
+
+### Build 023 · Final Zone Separation Fix
+
+The final Build-023 baseline makes protected page zones structural. In **Weite**, the image is contained inside a fixed grammar-owned Hero Zone and can no longer expand into the Title Zone. A separate protected row follows before `REISEZIEL`. This rule is now part of Product DNA and applies generally to images, typography and future Editorial World assets: elements stay inside the semantic zone that owns them unless Layout Grammar explicitly defines an exception.
+
+### Build 023 final composition note
+`Weite` now uses strict Hero/Title zone separation plus a compact, grammar-owned
+Title-Zone composition: title and introduction sit side by side with one functional
+vertical divider. Companion and Footer remain protected invariants.

@@ -1633,3 +1633,42 @@ Der rechte Inspector darf als Workspace-Hilfe zwischen **320 und 440 px** wachse
 Verbindlicher Ergonomie-Leitsatz:
 
 > **Der Inspector darf wachsen, wenn der Inhalt es verlangt – aber nie so weit, dass das Travelbook seine Rolle als Hauptfläche verliert.**
+
+---
+
+# 47. Geschützte Seitenzonen sind verbindliche Layout Grammar
+
+Northern Lines Studio behandelt Seitenzonen als **semantisch getrennte Layoutbereiche**.
+
+> **Hero Zone und Title Zone sind Geschwister, keine Mitbewohner. Sie dürfen sich nicht dasselbe Zimmer teilen.**
+
+Daraus folgt verbindlich:
+
+- Bilder bleiben vollständig innerhalb ihrer Bild- bzw. Hero-Zone.
+- Titel, Marker und Titeltypografie bleiben vollständig innerhalb ihrer Title-Zone.
+- Grafische Assets, redaktionelle Flächen und weitere Seitenelemente überschreiten die Grenzen ihrer definierten Zone nicht.
+- Ein Element darf eine fremde Zone nur dann betreten, wenn die Layout Grammar dafür eine ausdrückliche und dokumentierte Ausnahme definiert.
+- Zonen werden nicht durch zufällige Margins oder optische Korrekturen getrennt, sondern durch die Struktur der Layout Grammar.
+
+Für **Weite** bedeutet das konkret: Die Hero-Zone besitzt einen kontrollierten, grammar-owned Höhenkorridor. Das gewählte Bild wird ohne Crop innerhalb dieses Korridors mit `contain` komponiert und darf den Hero-Raum nicht vergrößern oder visuell verlassen. Erst nach einer separaten geschützten Ruhezone beginnt die Title-Zone mit `REISEZIEL`.
+
+Diese Regel ist bildunabhängig. Sie gilt für Aquarelle, Fotografien und andere zulässige Reisebilder gleichermaßen und darf nicht auf ein einzelnes Referenzbild optimiert werden.
+
+## 62. Nicht festnageln, sondern komponieren
+
+Semantische Inhalte besitzen eine feste Rolle, aber nicht zwingend eine einzige
+starre Position innerhalb derselben zulässigen Seitenzone. Die Layout Grammar darf
+Module innerhalb ihrer Zone neu komponieren, wenn dadurch Hierarchie, Rhythmus und
+Content Capacity verbessert werden und die Wirkung der Editorial World erhalten
+bleibt.
+
+Für **Weite** ist die Title Zone deshalb als kuratierte horizontale Komposition
+zulässig: Titelblock und Einleitung stehen nebeneinander und werden durch einen
+funktionalen, zurückhaltenden vertikalen Trenner gegliedert. Das ist keine freie
+DTP-Geometrie und keine Benutzeroption.
+
+> **Nicht festnageln, sondern komponieren.**
+
+Die geschützten Zonen bleiben dabei unantastbar: Die Hero Zone nimmt keine
+Titeltypografie auf; die Companion-/Footer-Zone nimmt keinen überlaufenden Content
+auf.

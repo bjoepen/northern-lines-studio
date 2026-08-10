@@ -34,3 +34,9 @@ Trade-offs:
 - Studio preview uses a heuristic content-capacity estimate, not authoritative Publisher fit;
 - final A5 geometry still belongs to Northern Lines Publisher;
 - future content groups such as Souvenirs, country-specific rules, Northern Lines Wissen or Photography must integrate with the same protected zones rather than bypass them.
+
+## Build 023 clarification: semantic zone separation
+
+Build 023 makes the protected-zone rule explicit for all page elements: semantic page zones do not visually overlap unless a documented Layout Grammar exception exists. For `Weite`, the Hero Zone uses a grammar-owned fixed height corridor and clips its visual contents to that zone. The source asset is fitted with `contain`; its intrinsic aspect ratio may change the amount of neutral space inside the Hero Zone, but it may not move the Title Zone or escape into it. `REISEZIEL` begins only after the separate title-safe row.
+
+This rule generalizes beyond imagery: typography, graphic assets, information areas and future Editorial World elements remain inside the zone that owns them.

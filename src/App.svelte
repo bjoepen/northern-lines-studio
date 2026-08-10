@@ -1037,11 +1037,15 @@
               {#if selectedPage?.type === 'destination'}
                 <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity}`}>
                   <div class="destination-story">
-                    <div class="page-rule"></div>
-                    <p class="eyebrow">Reiseziel</p>
-                    <h1>{destinationName || selectedPage.title}</h1>
-                    {#if destinationSubtitle}<p class="destination-subtitle">{destinationSubtitle}</p>{/if}
-                    <p class="preview-body">{destinationIntroduction || 'Erzähle, was diesen Ort für deine Reise besonders macht.'}</p>
+                    <div class="destination-title-intro-composition">
+                      <div class="destination-title-block">
+                        <div class="page-rule"></div>
+                        <p class="eyebrow">Reiseziel</p>
+                        <h1>{destinationName || selectedPage.title}</h1>
+                        {#if destinationSubtitle}<p class="destination-subtitle">{destinationSubtitle}</p>{/if}
+                      </div>
+                      <p class="preview-body destination-introduction">{destinationIntroduction || 'Erzähle, was diesen Ort für deine Reise besonders macht.'}</p>
+                    </div>
 
                     <div class="destination-facts-preview">
                       <div><span>Ankunft</span><strong>{formatTravelTime(destinationArrival)}</strong></div>
@@ -1057,6 +1061,8 @@
                       <span class="destination-image-empty">Bild für {destinationImageRoleLabel(destinationActiveImageRole)}</span>
                     {/if}
                   </div>
+
+                  <div class="destination-title-safe-zone" aria-hidden="true"></div>
 
                   <div class={`destination-modules-preview destination-modules-${destinationModuleLayout}`}>
                     <section>
