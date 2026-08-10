@@ -159,3 +159,24 @@ Selected imagery is composed directly on that surface. Coloured image-card backg
 ## Build 023 – no project-format change
 
 Build 023 changes only derived Editorial Preview composition and local workspace ergonomics. `.nls` remains **0.9.0**. Inspector width and 1-/2-/3-column preview grouping are not persisted.
+
+## Build 024 – Destination Editorial Extensions (`0.10.0`)
+
+Destination Profiles können ab 0.10.0 eine optionale Liste `editorialExtensions` tragen:
+
+```json
+{
+  "editorialExtensions": [
+    {
+      "id": "extension-hanse",
+      "kind": "knowledge",
+      "title": "Hanse in Bergen",
+      "text": "Bryggen erzählt von Bergens jahrhundertelanger Rolle im Hansehandel."
+    }
+  ]
+}
+```
+
+Erlaubte Foundation-Kinds: `knowledge`, `photo_spot`, `tip`, `souvenir`, `important`, `history`.
+
+Die Daten speichern Semantik und Inhalt, aber keine Farbe, Box-Geometrie, Koordinaten oder Signet-Dateipfade. Diese Expression gehört zur Editorial World und Layout Grammar.

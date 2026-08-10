@@ -1,0 +1,20 @@
+# Build 024 – Consistency Gates
+
+Build 024 ergänzt `pnpm consistency` um den **Editorial Extension Zones Consistency Gate**.
+
+Der Gate prüft insbesondere:
+
+- sechs freigegebene semantische Extension-Typen in TypeScript und Rust
+- `.nls` 0.10.0 und explizite Migration von 0.9.0
+- persistentes `editorialExtensions`-Modell
+- Inspector- und Preview-Anbindung
+- shared semantic signets
+- world-abgeleitete Flächenfarbe
+- rahmenlose Extension-Grammatik
+- verbindliche Product-DNA-Regeln zu Signet, Zonen und Companion
+
+```bash
+pnpm consistency:extensions
+```
+
+Der Gate ergänzt, ersetzt aber nicht TypeScript-, Test-, Build- und Rust-Gates.

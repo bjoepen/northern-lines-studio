@@ -17,6 +17,14 @@ describe('destination content capacity', () => {
       practicalInfo: Array.from({ length: 4 }, (_, i) => ({ id: `p-${i}`, title: 'Hinweis', text: 'x'.repeat(100) }))
     })).toBe('overflow');
   });
+  it('counts editorial extensions as real page capacity without shrinking type', () => {
+    expect(destinationContentCapacity({
+      name: 'Bergen', subtitle: 'Tor zu den Fjorden', introduction: 'Kurz.',
+      reasons: [], highlights: [], practicalInfo: [],
+      editorialExtensions: Array.from({ length: 5 }, (_, i) => ({ id: `e-${i}`, kind: 'knowledge', title: 'Wissen', text: 'x'.repeat(180) }))
+    })).toBe('overflow');
+  });
+
 });
 
 

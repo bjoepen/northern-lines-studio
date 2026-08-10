@@ -4,7 +4,7 @@ import { destinationDraft, destinationForPage, destinationImageGeometry, destina
 
 const project: StudioProject = {
   format: 'northern-lines-studio-project',
-  formatVersion: '0.9.0',
+  formatVersion: '0.10.0',
   projectId: 'norway',
   title: 'Norway',
   language: 'de',
@@ -14,7 +14,7 @@ const project: StudioProject = {
   },
   destinations: [{
     id: 'destination-bergen', name: 'Bergen', subtitle: 'Tor zu den Fjorden', reasons: ['Bryggen'],
-    highlights: [], practicalInfo: [], images: { wide: 'assets/destinations/destination-bergen/wide.jpg', portrait: 'assets/destinations/destination-bergen/portrait.jpg' }, editorial: { layoutVariant: 'destination-hero-banner' }
+    highlights: [], practicalInfo: [], editorialExtensions: [], images: { wide: 'assets/destinations/destination-bergen/wide.jpg', portrait: 'assets/destinations/destination-bergen/portrait.jpg' }, editorial: { layoutVariant: 'destination-hero-banner' }
   }],
   document: { pageFormat: 'A5', orientation: 'portrait' },
   pageManifest: [{ id: 'page-bergen', order: 5, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-hero-banner', journeyStage: 'bergen' }],
@@ -56,6 +56,10 @@ describe('destination profiles', () => {
     const changedPractical = destinationDraft(project.destinations[0]);
     changedPractical.practicalInfo.push({ id: 'practical-rain', title: 'Regen', text: 'Jacke griffbereit halten' });
     expect(destinationIsDirty(project.destinations[0], changedPractical)).toBe(true);
+
+    const changedExtension = destinationDraft(project.destinations[0]);
+    changedExtension.editorialExtensions.push({ id: 'knowledge-1', kind: 'knowledge', title: 'Hanse', text: 'Bryggen erzählt Geschichte.' });
+    expect(destinationIsDirty(project.destinations[0], changedExtension)).toBe(true);
   });
 
   it('uses Travel Language time formatting without storing the word Uhr as UI burden', () => {

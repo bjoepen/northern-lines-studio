@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.9.0";
+const CURRENT_FORMAT_VERSION: &str = "0.10.0";
+const BUILD_023_FORMAT_VERSION: &str = "0.9.0";
 const BUILD_021_FORMAT_VERSION: &str = "0.8.0";
 const BUILD_019_FORMAT_VERSION: &str = "0.7.0";
 const BUILD_018_FORMAT_VERSION: &str = "0.6.0";
@@ -107,6 +108,17 @@ struct DestinationPracticalInfo {
     text: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DestinationEditorialExtension {
+    id: String,
+    kind: String,
+    #[serde(default)]
+    title: String,
+    #[serde(default)]
+    text: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 struct DestinationImages {
@@ -149,6 +161,8 @@ struct Destination {
     highlights: Vec<DestinationHighlight>,
     #[serde(default)]
     practical_info: Vec<DestinationPracticalInfo>,
+    #[serde(default)]
+    editorial_extensions: Vec<DestinationEditorialExtension>,
     #[serde(default)]
     images: DestinationImages,
     #[serde(default = "default_destination_editorial")]
@@ -393,6 +407,7 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
             reasons: Vec::new(),
             highlights: Vec::new(),
             practical_info: Vec::new(),
+            editorial_extensions: Vec::new(),
             images: DestinationImages::default(),
             editorial: DestinationEditorial { layout_variant },
         });
@@ -408,6 +423,13 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_023_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_023_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+            ensure_destination_profiles(&mut project);
+        }
         BUILD_021_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_021_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -611,6 +633,18 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
             }
             if !highlight_ids.insert(highlight.id.clone()) {
                 return Err(format!("Destination '{}' besitzt doppelte Highlight-IDs.", destination.name));
+            }
+        }
+        let mut extension_ids = HashSet::new();
+        for extension in &destination.editorial_extensions {
+            if extension.id.trim().is_empty() || (extension.title.trim().is_empty() && extension.text.trim().is_empty()) {
+                return Err(format!("Destination '{}' besitzt eine leere Editorial Extension.", destination.name));
+            }
+            if !matches!(extension.kind.as_str(), "knowledge" | "photo_spot" | "tip" | "souvenir" | "important" | "history") {
+                return Err(format!("Destination '{}' besitzt eine unbekannte Editorial Extension '{}'.", destination.name, extension.kind));
+            }
+            if !extension_ids.insert(extension.id.clone()) {
+                return Err(format!("Destination '{}' besitzt doppelte Editorial-Extension-IDs.", destination.name));
             }
         }
     }
@@ -837,6 +871,7 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
         reasons: Vec::new(),
         highlights: Vec::new(),
         practical_info: Vec::new(),
+        editorial_extensions: Vec::new(),
         images: DestinationImages::default(),
         editorial: default_destination_editorial(),
     });
@@ -1010,6 +1045,7 @@ fn update_destination_profile(
     reasons: Vec<String>,
     highlights: Vec<DestinationHighlight>,
     practical_info: Vec<DestinationPracticalInfo>,
+    editorial_extensions: Vec<DestinationEditorialExtension>,
     layout_variant: String,
 ) -> Result<ProjectSession, String> {
     let name = name.trim();
@@ -1050,6 +1086,11 @@ fn update_destination_profile(
         info.title = info.title.trim().to_string();
         info.text = info.text.trim().to_string();
         if info.title.is_empty() && info.text.is_empty() { None } else { Some(info) }
+    }).collect();
+    destination.editorial_extensions = editorial_extensions.into_iter().filter_map(|mut extension| {
+        extension.title = extension.title.trim().to_string();
+        extension.text = extension.text.trim().to_string();
+        if extension.title.is_empty() && extension.text.is_empty() { None } else { Some(extension) }
     }).collect();
     destination.editorial.layout_variant = layout_variant.clone();
 
@@ -1253,6 +1294,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
@@ -1265,6 +1307,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
                 || version == BUILD_018_FORMAT_VERSION
@@ -1301,13 +1344,13 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
-                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
                 None
             },
-            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
+            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
                 vec![Destination {
                     id: "destination-bergen".into(),
                     name: "Bergen".into(),
@@ -1317,6 +1360,7 @@ mod tests {
                     reasons: Vec::new(),
                     highlights: Vec::new(),
                     practical_info: Vec::new(),
+                    editorial_extensions: Vec::new(),
                     images: DestinationImages::default(),
                     editorial: default_destination_editorial(),
                 }]
@@ -1332,10 +1376,10 @@ mod tests {
                 role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
-                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
+                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 knowledge_type: None,
-                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
+                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
                 authoring: BTreeMap::new(),
             }],
             project_path: String::new(),
@@ -1532,6 +1576,16 @@ mod tests {
     }
 
     #[test]
+    fn migrates_build_023_to_editorial_extension_schema() {
+        let migrated = migrate_project(sample_project(BUILD_023_FORMAT_VERSION)).expect("Build-023 migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_023_FORMAT_VERSION));
+        let destination = migrated.destinations.iter().find(|destination| destination.id == "destination-bergen").expect("destination profile");
+        assert!(destination.editorial_extensions.is_empty());
+        validate_project(&migrated).expect("migrated Build-023 destination must validate");
+    }
+
+    #[test]
     fn migrates_build_021_to_destination_imagery_schema() {
         let migrated = migrate_project(sample_project(BUILD_021_FORMAT_VERSION)).expect("Build-021 migration");
         assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
@@ -1588,6 +1642,7 @@ mod tests {
             vec!["Bryggen im Morgenlicht".into(), "Blick vom Fløyen".into()],
             vec![DestinationHighlight { id: "highlight-bryggen".into(), name: "Bryggen".into(), description: "Historische Hansehäuser".into(), category: "architecture".into() }],
             vec![DestinationPracticalInfo { id: "practical-walk".into(), title: "Zu Fuß".into(), text: "Viele Highlights liegen dicht beieinander.".into() }],
+            vec![DestinationEditorialExtension { id: "knowledge-hanse".into(), kind: "knowledge".into(), title: "Hanse".into(), text: "Bryggen erzählt von Bergens Hansegeschichte.".into() }],
             "destination-hero-right".into(),
         ).expect("destination update");
         let updated_stage = &updated.project.journey.as_ref().expect("journey").stages[0];
@@ -1596,6 +1651,8 @@ mod tests {
         let destination = updated.project.destinations.iter().find(|destination| destination.id == stage.destination_id.as_deref().unwrap()).expect("destination");
         assert_eq!(destination.subtitle.as_deref(), Some("Tor zu den Fjorden"));
         assert_eq!(destination.highlights.len(), 1);
+        assert_eq!(destination.editorial_extensions.len(), 1);
+        assert_eq!(destination.editorial_extensions[0].kind, "knowledge");
         assert_eq!(destination.editorial.layout_variant, "destination-hero-right");
         let page = updated.project.page_manifest.iter().find(|page| page.journey_stage.as_deref() == Some(stage.id.as_str())).expect("page");
         assert_eq!(page.layout, "destination-hero-right");
