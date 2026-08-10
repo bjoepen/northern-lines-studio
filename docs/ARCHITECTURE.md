@@ -124,3 +124,10 @@ Studio owns:
 Publisher remains responsible for authoritative image composition, final geometry, Content Fit, rendering and Preflight.
 
 Build 022 deliberately introduces no crop rectangle, focal point, x/y image position, free image-box geometry or generic Asset Manager. Fjord Destination pages keep a neutral-white paper surface; real imagery is composed directly on that surface and may preserve its prepared source ratio inside the grammar. Information modules are not automatically cardified. The 15 mm technical binding minimum protects relevant page content; Companion positioning remains an Editorial-World invariant and is not derived from the content inset.
+
+
+## Build 023 – composition and workspace preference boundary
+
+Destination composition refinement remains entirely in the Editorial Preview/Layout Grammar layer. No new `.nls` fields, crop geometry, x/y coordinates or layout variants are introduced. Module grouping is derived at runtime from semantic destination content and is not persisted.
+
+Inspector width is a **workspace preference**, not project state. It is stored locally in the webview preference store (`localStorage`) and clamped between 320 and 440 px with an additional viewport-dependent maximum. This keeps machine/user ergonomics outside the portable `.nls` document contract.

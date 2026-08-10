@@ -1,6 +1,6 @@
 # Northern Lines Studio – Produkt-DNA & Retrospektive
 
-**Stand:** Build 022 – Destination Imagery Foundation
+**Stand:** Build 023 – Destination Composition Refinement
 **Projekt:** Northern Lines Studio
 **Dokumenttyp:** Dauerhafte Produkt-, UX- und Layoutreferenz
 **Zweck:** Verbindliche Zusammenfassung der bisher entwickelten Produktphilosophie, UX-Grundsätze, Architekturgrenzen und Layoutregeln
@@ -1620,3 +1620,16 @@ Bilder werden nicht in farbige Medienboxen eingesetzt. Sie werden innerhalb der 
 Die Bildkomposition darf innerhalb definierter Grammar-Regeln auf das tatsächliche Seitenverhältnis reagieren. Das ist keine freie DTP-Geometrie: Studio speichert weiterhin keine x/y-Koordinaten, keine freien Boxgrößen und keine Crop-Rechtecke.
 
 > **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**
+
+
+# 60. Build 023 – Composition Refinement und Inspector-Ergonomie
+
+Build 023 bestätigt, dass die drei Seitenwirkungen **Weite · Bild links · Bild rechts** keine statischen Templates sind, sondern kuratierte Kompositionen innerhalb derselben Layout Grammar. Bilder werden nicht in Medienkarten montiert; sie werden mit Typografie und weißer Seitenfläche zu einer redaktionellen Komposition verbunden.
+
+Die Grammar darf Inhaltsgruppen automatisch ein-, zwei- oder dreispaltig ordnen, wenn Menge und Dichte des Inhalts dies erlauben. Diese Entscheidung ist nicht frei konfigurierbar und wird nicht als Geometrie persistiert.
+
+Der rechte Inspector darf als Workspace-Hilfe zwischen **320 und 440 px** wachsen. Seine Breite ist eine lokale Benutzerpräferenz, kein Travelbook-Inhalt. Der Canvas bleibt die wichtigste Fläche.
+
+Verbindlicher Ergonomie-Leitsatz:
+
+> **Der Inspector darf wachsen, wenn der Inhalt es verlangt – aber nie so weit, dass das Travelbook seine Rolle als Hauptfläche verliert.**

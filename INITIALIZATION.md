@@ -26,13 +26,13 @@ pnpm tauri dev
 
 ## Beispielprojekt
 
-Im Öffnen-Dialog das komplette Verzeichnis auswählen:
+Im Studio-Dialog **Reise öffnen …** das `.nls`-Reisepaket auswählen:
 
 ```text
 examples/Norway-Sample.nls
 ```
 
-Nicht die darin enthaltene `project.json` auswählen.
+macOS zeigt das Paket wie ein Dokument. Nicht `project.json` innerhalb des Pakets auswählen.
 
 ## Release-Build
 
