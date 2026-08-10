@@ -771,7 +771,9 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
   margin-top: 7px;
   margin-bottom: 0;
   max-width: 100%;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .destination-subtitle {
@@ -1382,6 +1384,63 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .editorial-signet-souvenir { --editorial-signet: url('/design-library/signets/shared/souvenir.svg'); }
 .editorial-signet-important { --editorial-signet: url('/design-library/signets/shared/important.svg'); }
 .editorial-signet-history { --editorial-signet: url('/design-library/signets/shared/history.svg'); }
+
+
+
+/* Build 024 · Adaptive Grammar Polish
+   The page effect stays stable while the inner composition follows content.
+   These are finite grammar states, not user-editable geometry. */
+.destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-balanced {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-title-wide {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+.destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-title-dominant {
+  grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr);
+}
+.destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-stacked {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 10px;
+  align-items: start;
+}
+.destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-stacked .destination-introduction {
+  padding: 9px 0 0;
+  border-left: 0;
+  border-top: 1px solid rgba(84, 113, 129, .26);
+}
+
+.destination-extension-zones.destination-extensions-single,
+.destination-extension-zones.destination-extensions-stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+.destination-extension-zones.destination-extensions-balanced {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.destination-extension-zones.destination-extensions-wide-first {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+.destination-extension-zones.destination-extensions-wide-second {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+}
+
+
+/* Portrait page effects keep their identity but may give the story column more
+   room when a long place name would otherwise collide with the image zone. */
+.destination-preview.destination-hero-left.title-title-wide {
+  grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+}
+.destination-preview.destination-hero-right.title-title-wide {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+}
+.destination-preview.destination-hero-left.title-title-dominant,
+.destination-preview.destination-hero-left.title-stacked {
+  grid-template-columns: minmax(0, .65fr) minmax(0, 1.35fr);
+}
+.destination-preview.destination-hero-right.title-title-dominant,
+.destination-preview.destination-hero-right.title-stacked {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr);
+}
 
 /* Inspector: semantic authoring, not an asset browser. */
 .destination-extension-editor-intro {

@@ -1,6 +1,9 @@
 # Northern Lines Studio
 
 **Aktueller Stand:** Build 024 – Editorial Extension Zones Foundation
+
+> **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
+
 **Studio:** 0.24.0
 **Projektformat:** `.nls` 0.10.0
 

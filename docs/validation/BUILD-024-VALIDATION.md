@@ -23,3 +23,18 @@ git diff --check
 ## Stop/Go
 **GO**, wenn Semantik persistiert, Preview ruhig bleibt und die Companion-Zone frei bleibt.
 **STOP**, wenn Extension-Flächen zu Cards werden, den Companion verdrängen oder Signet-/World-Semantik vermischen.
+
+
+## Adaptive Grammar Polish – Real-World-Checks
+
+Zusätzlich prüfen:
+
+1. **Bergen** in Weite: ausgeglichene Title-Komposition.
+2. **Stavanger** und **Geiranger**: Name bleibt vollständig in einer Zeile/zulässigen Wortgrenze; kein `Stavange / r`.
+3. **Geirangerfjord** bzw. längerer Name: Title erhält mehr Breite oder Intro wechselt unter den Titel.
+4. Zwei kurze Extensions: ruhige Zweierkomposition.
+5. Lange Wissen-Extension + kurzer Fotospot: asymmetrische Verteilung.
+6. Zwei dichte Extensions: gestapelte Grammar prüfen.
+7. In allen Fällen bleibt die Companion-/Footer-Zone frei.
+
+8. **Portraitvarianten mit langem Ortsnamen:** Bild links/rechts dürfen dem Story-Bereich innerhalb ihrer Grammar mehr Breite geben; das Bild bleibt in seiner Bildzone.

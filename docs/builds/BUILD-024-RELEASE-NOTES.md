@@ -12,3 +12,11 @@ Destinationen können jetzt selektiv zusätzliche redaktionelle Hinweise tragen.
 
 ## Migration
 `.nls` 0.9.0 → 0.10.0. Bestehende Destinationen erhalten eine leere Extension-Liste; Inhalte werden nicht erfunden.
+
+
+## Adaptive Grammar Polish
+
+- Weite reagiert auf Ortsnamenlänge mit kuratierten 50/50-, 60/40-, 70/30- oder gestapelten Title-Zuständen.
+- Ortsnamen werden nicht mitten im Wort getrennt.
+- Editorial Extension Zones reagieren auf Textgewicht und müssen nicht mehr statisch 50/50 stehen.
+- Keine Schema- oder Persistenzänderung gegenüber Build 024 Foundation.
