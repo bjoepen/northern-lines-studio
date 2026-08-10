@@ -1126,3 +1126,80 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-modules-preview .destination-practical-preview {
   background: color-mix(in srgb, var(--world-accent) 4.5%, transparent);
 }
+
+/* Build 023 Final · UX / Composition Fix
+   Actions are present where needed without becoming a tool surface. The image
+   remains the important object; its controls follow the restraint of
+   "+ Ort hinzufügen" in the journey navigation. */
+.destination-image-picker {
+  padding: 5px 1px 3px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.destination-image-picker-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+.destination-image-picker-actions button {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 8.5px;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+.destination-image-picker-actions .destination-image-text-action {
+  color: #687d86;
+}
+.destination-image-picker-actions .destination-image-text-action:hover:not(:disabled),
+.destination-image-picker-actions .destination-image-text-action:focus-visible {
+  color: #3f5f6b;
+}
+.destination-image-action-separator {
+  color: #b4c0c4;
+  font-size: 8px;
+  user-select: none;
+}
+.destination-image-picker-actions .destination-image-remove-action {
+  color: #97a2a6;
+}
+.destination-image-picker-actions .destination-image-remove-action:hover:not(:disabled),
+.destination-image-picker-actions .destination-image-remove-action:focus-visible {
+  color: #8a6653;
+}
+.destination-image-picker-actions button:disabled {
+  opacity: .42;
+  cursor: default;
+}
+.destination-image-picker > small {
+  margin-top: 3px;
+}
+
+/* Weite follows the intrinsic panorama block. The story therefore moves with
+   the prepared image and receives a fixed editorial breathing distance rather
+   than relying on overlap or persisted coordinates. */
+.destination-preview.destination-hero-banner .destination-story {
+  margin-top: 7px;
+}
+
+/* The portrait compositions no longer need a decorative rule to announce the
+   title area. Typography and photography carry the hierarchy themselves. */
+.destination-preview.destination-hero-left .destination-story .page-rule,
+.destination-preview.destination-hero-right .destination-story .page-rule {
+  display: none;
+}
+
+/* Bild rechts receives a small amount of additional text room. This remains a
+   grammar-level proportion, not user-editable geometry. */
+.destination-preview.destination-hero-right {
+  grid-template-columns: minmax(0, 1.10fr) minmax(0, .90fr);
+}

@@ -1,6 +1,16 @@
 # Build 023 – Release Notes
 
-## Neu
+## Finaler UX- / Composition-Fix
+
+- **Weite:** der Titelbereich folgt dem intrinsischen Panorama mit geschütztem Abstand; `REISEZIEL` konkurriert nicht mehr mit dem Bild;
+- **Bild links / Bild rechts:** die rein dekorative obere Linie entfällt;
+- **Bild rechts:** leicht mehr Raum für die Textspalte;
+- **Hero-Bild im Inspector:** keine Button-Gruppe mehr, sondern ruhige kontextuelle Textaktionen nach dem Vorbild von `+ Ort hinzufügen`;
+- ohne Bild: `Noch kein Bild gewählt` + `+ Bild auswählen`;
+- mit Bild: `Bild ersetzen · Entfernen`, wobei `Entfernen` klar sekundär bleibt;
+- Persistenz, Hero-Asset-Modell und Bildlogik bleiben unverändert.
+
+## Bereits in Build 023
 
 - feinere Balance für **Weite · Bild links · Bild rechts**;
 - textgeführtes **Bild rechts** mit ruhigerer Bildposition;
