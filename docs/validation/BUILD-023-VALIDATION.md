@@ -36,3 +36,11 @@ git diff --check
 - Finder-Open und interner Open-Flow aus Build 022 bleiben grün.
 - Dirty-State-Dialog bleibt **Verwerfen · Abbrechen · Speichern**.
 - Destination-Bilder und Bildrollen bleiben vorhanden.
+
+
+## Final Polish Fix – additional validation
+
+1. Open a Destination with **Weite** and a real panorama image. Verify that `REISEZIEL` starts clearly below the visual image area and never overlays the watercolor fade.
+2. Switch to **Bild links** and **Bild rechts** and verify no regression in composition.
+3. In the Inspector, verify `Bild links / Bild rechts` reads as quiet status text, while `Bild ersetzen · Entfernen` remains the actionable line.
+4. Re-run `pnpm consistency`, `pnpm check`, `pnpm test`, `pnpm build`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.

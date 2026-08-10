@@ -275,6 +275,9 @@ Gestaltungsmöglichkeit abzubilden.
 #
 ## Build 023 – Destination Composition Refinement
 
+> **Final Polish Fix:** In `Weite` sind Panorama und Titelbereich jetzt strukturell getrennt; `REISEZIEL` erhält eine geschützte Ruhezone unter dem Bild. Im Inspector ist die Bildrollen-Angabe nun bewusst ruhiger Meta-Kontext statt Zwischenüberschrift. Persistenz und Bildmodell bleiben unverändert.
+
+
 Build 023 macht die drei vorhandenen Destination-Seitenwirkungen gestalterisch belastbarer, ohne neue Varianten oder freie DTP-Geometrie einzuführen.
 
 Der finale UX-/Composition-Fix schützt bei **Weite** den Abstand zwischen Panorama und Titelblock, entfernt die dekorative Kopflinie der Portraitvarianten, gibt **Bild rechts** etwas mehr Textluft und reduziert die Hero-Bildbedienung im Inspector auf ruhige kontextuelle Textaktionen (`+ Bild auswählen`, `Bild ersetzen · Entfernen`). Persistenz und Hero-Asset-Modell bleiben unverändert.
