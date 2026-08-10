@@ -27,3 +27,10 @@
 - zwei Bildrollen aus Build 022;
 - interner und Finder-Open-Flow;
 - keine freie Bild-/Layoutgeometrie.
+
+
+## Final Polish Fix
+
+- corrected the remaining `Weite` title-safe collision by separating panorama and title block in normal layout flow with an editorial breathing zone;
+- reduced the visual weight of the image-role status in the Destination inspector and removed the redundant „Für“ prefix;
+- no project-format, persistence or asset-model changes.

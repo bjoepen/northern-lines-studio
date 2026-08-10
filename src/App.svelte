@@ -1224,7 +1224,7 @@
 
             <div class="destination-image-picker">
               <div class="destination-image-picker-heading">
-                <div><span>Bild des Ortes</span><strong>Für {destinationImageRoleLabel(destinationActiveImageRole)}</strong></div>
+                <div><span>Bild des Ortes</span><small class="destination-image-role-status">{destinationImageRoleLabel(destinationActiveImageRole)}</small></div>
                 <details class="destination-image-help">
                   <summary aria-label="Empfohlene Bildgeometrie">?</summary>
                   <div class="destination-image-help-card">

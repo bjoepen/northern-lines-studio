@@ -25,6 +25,8 @@ for (const token of [
   "'Bild ersetzen'",
   'Entfernen</button>',
   'destination-preview.destination-hero-banner .destination-story',
+  'padding-top: 18px',
+  'destination-image-role-status',
   'grid-template-columns: minmax(0, 1.10fr) minmax(0, .90fr)',
   'INSPECTOR_MIN_WIDTH = 320',
   'INSPECTOR_MAX_WIDTH = 440',

@@ -34,3 +34,10 @@ No new Editorial World, Page Archetype, crop/focal-point tool, Asset Manager, fr
 - Photography remains the atmospheric colour source on Fjord Destination pages.
 - No content field is semantically repurposed.
 - Image actions remain available without becoming a toolbar or card system.
+
+
+## Final Polish Fix
+
+- **Weite:** Hero-Medium und Titelblock sind nun strukturell getrennte Zonen. Der Titelblock beginnt mit einer festen Editorial-Ruhezone unter dem Panorama; `REISEZIEL` darf nicht in die sichtbare Bildwirkung rücken.
+- **Inspector:** Die Bildrollen-Zeile ist jetzt ruhiger Meta-Kontext (`Bild links / Bild rechts`) statt einer zusätzlichen Zwischenüberschrift. Das erklärende „Für“ entfällt.
+- Persistenz, `.nls`, Hero-Asset-Modell und Bildlogik bleiben unverändert.
