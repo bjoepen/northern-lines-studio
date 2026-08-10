@@ -131,3 +131,15 @@ Build 022 deliberately introduces no crop rectangle, focal point, x/y image posi
 Destination composition refinement remains entirely in the Editorial Preview/Layout Grammar layer. No new `.nls` fields, crop geometry, x/y coordinates or layout variants are introduced. Module grouping is derived at runtime from semantic destination content and is not persisted.
 
 Inspector width is a **workspace preference**, not project state. It is stored locally in the webview preference store (`localStorage`) and clamped between 320 and 440 px with an additional viewport-dependent maximum. This keeps machine/user ergonomics outside the portable `.nls` document contract.
+
+## Build 024 – Editorial Extension Zones
+
+Editorial Extensions gehören semantisch zum `Destination`-Domain-Modell. Persistiert werden ausschließlich ID, semantischer Typ, optionaler Titel und Inhalt. Signet-Datei, World-Farbe, Flächenintensität und Position gehören nicht in `.nls`; sie werden aus der Editorial World bzw. Layout Grammar abgeleitet.
+
+Damit bleibt die Grenze erhalten:
+
+- **Studio/Domain:** Was ist diese redaktionelle Ergänzung und was erzählt sie?
+- **Editorial World:** Wie drückt sich diese Semantik farblich und grafisch aus?
+- **Layout Grammar / Publisher:** Wo darf sie erscheinen und wie wird Content Fit autoritativ aufgelöst?
+
+Der Companion bleibt außerhalb des Content-Flows. Extension Zones müssen seine geschützte Zone respektieren.

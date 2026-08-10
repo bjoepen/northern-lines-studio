@@ -4,7 +4,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { open } from '@tauri-apps/plugin-dialog';
-  import type { DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, JourneyStage, StudioPage, StudioProject } from './lib/project';
+  import type { DestinationEditorialExtension, DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
@@ -36,6 +36,7 @@
     formatTravelTime
   } from './lib/destinations';
   import type { DestinationImageRole } from './lib/destinations';
+  import { EDITORIAL_EXTENSION_DEFINITIONS, editorialExtensionDefinition, editorialExtensionLabel } from './lib/editorial-extensions';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
 
   type PendingAction =
@@ -92,6 +93,8 @@
   let destinationReasons: string[] = [];
   let destinationHighlights: DestinationHighlight[] = [];
   let destinationPracticalInfo: DestinationPracticalInfo[] = [];
+  let destinationEditorialExtensions: DestinationEditorialExtension[] = [];
+  let destinationNewExtensionKind: EditorialExtensionKind = 'tip';
   let destinationLayoutVariant: DestinationLayoutVariantId = 'destination-hero-banner';
   let destinationSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let destinationActiveImageRole: DestinationImageRole = 'wide';
@@ -354,6 +357,7 @@
     destinationReasons = draft.reasons;
     destinationHighlights = draft.highlights;
     destinationPracticalInfo = draft.practicalInfo;
+    destinationEditorialExtensions = draft.editorialExtensions;
     destinationLayoutVariant = draft.layoutVariant;
     destinationSaveState = 'idle';
   }
@@ -482,6 +486,29 @@
     destinationPracticalInfo = destinationPracticalInfo.map((entry) => entry.id === id ? { ...entry, ...patch } : entry);
   }
 
+  function addDestinationEditorialExtension() {
+    destinationEditorialExtensions = [...destinationEditorialExtensions, {
+      id: `extension-${Date.now()}-${destinationEditorialExtensions.length + 1}`,
+      kind: destinationNewExtensionKind,
+      title: '',
+      text: ''
+    }];
+  }
+
+  function removeDestinationEditorialExtension(id: string) {
+    destinationEditorialExtensions = destinationEditorialExtensions.filter((entry) => entry.id !== id);
+  }
+
+  function updateDestinationEditorialExtension(id: string, patch: Partial<DestinationEditorialExtension>) {
+    destinationEditorialExtensions = destinationEditorialExtensions.map((entry) => entry.id === id ? { ...entry, ...patch } : entry);
+  }
+
+  function updateDestinationEditorialExtensionKind(id: string, value: string) {
+    const kinds = EDITORIAL_EXTENSION_DEFINITIONS.map((entry) => entry.kind);
+    const kind = kinds.includes(value as EditorialExtensionKind) ? value as EditorialExtensionKind : 'tip';
+    updateDestinationEditorialExtension(id, { kind });
+  }
+
   async function saveDestinationProfile(): Promise<boolean> {
     if (!project || !selectedPage?.journeyStage || selectedPage.type !== 'destination') return false;
     if (!destinationName.trim()) {
@@ -505,6 +532,7 @@
         reasons: destinationReasons,
         highlights: destinationHighlights,
         practicalInfo: destinationPracticalInfo,
+        editorialExtensions: destinationEditorialExtensions,
         layoutVariant: destinationLayoutVariant
       });
       project = { ...updated, projectPath };
@@ -848,9 +876,10 @@
     introduction: destinationIntroduction,
     reasons: destinationReasons,
     highlights: destinationHighlights,
-    practicalInfo: destinationPracticalInfo
+    practicalInfo: destinationPracticalInfo,
+    editorialExtensions: destinationEditorialExtensions
   });
-  $: destinationModuleLayout = destinationModuleComposition({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo });
+  $: destinationModuleLayout = destinationModuleComposition({ name: destinationName, subtitle: destinationSubtitle, introduction: destinationIntroduction, reasons: destinationReasons, highlights: destinationHighlights, practicalInfo: destinationPracticalInfo, editorialExtensions: destinationEditorialExtensions });
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
   $: companionVisible = editorialWorld?.id === 'fjord'
     && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
@@ -886,6 +915,7 @@
     reasons: destinationReasons,
     highlights: destinationHighlights,
     practicalInfo: destinationPracticalInfo,
+    editorialExtensions: destinationEditorialExtensions,
     layoutVariant: destinationLayoutVariant
   }, selectedPage?.title ?? '');
   $: hasUnsavedChanges = authoringDirty || destinationDirty;
@@ -1084,6 +1114,20 @@
                       </section>
                     {/if}
                   </div>
+
+                  {#if destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()).length}
+                    <div class="destination-extension-zones" aria-label="Redaktionelle Ergänzungen">
+                      {#each destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()) as extension (extension.id)}
+                        <section class={`destination-extension-zone extension-${extension.kind}`}>
+                          <span class={`editorial-signet editorial-signet-${editorialExtensionDefinition(extension.kind).signet}`} role="img" aria-label={editorialExtensionLabel(extension.kind)}></span>
+                          <div>
+                            {#if extension.title.trim()}<strong>{extension.title}</strong>{/if}
+                            {#if extension.text.trim()}<p>{extension.text}</p>{/if}
+                          </div>
+                        </section>
+                      {/each}
+                    </div>
+                  {/if}
                 </div>
               {:else}
                 <div class="page-rule"></div>
@@ -1310,6 +1354,40 @@
                       <input value={info.title} on:input={(event) => updateDestinationPracticalInfo(info.id, { title: event.currentTarget.value })} placeholder="Zum Beispiel: Zu Fuß" />
                       <textarea rows="2" value={info.text} on:input={(event) => updateDestinationPracticalInfo(info.id, { text: event.currentTarget.value })} placeholder="Was ist unterwegs hilfreich?"></textarea>
                       <div class="destination-item-actions"><span></span><button type="button" on:click={() => removeDestinationPracticalInfo(info.id)}>Entfernen</button></div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            </details>
+
+            <details class="destination-more destination-extensions-editor">
+              <summary>
+                <span>Besondere Hinweise</span>
+                <small>{destinationEditorialExtensions.filter((entry) => entry.title.trim() || entry.text.trim()).length || 'Noch keine'} ergänzt</small>
+              </summary>
+              <div class="destination-more-content">
+                <div class="destination-extension-editor-intro">
+                  <strong>Nur wenn dieser Ort mehr zu erzählen hat.</strong>
+                  <small>Signet und World-Farbe geben der Ergänzung ihre Bedeutung. Mehr braucht sie nicht.</small>
+                </div>
+                <div class="destination-extension-add-row">
+                  <select aria-label="Art der redaktionellen Ergänzung" bind:value={destinationNewExtensionKind}>
+                    {#each EDITORIAL_EXTENSION_DEFINITIONS as definition}<option value={definition.kind}>{definition.label}</option>{/each}
+                  </select>
+                  <button type="button" on:click={addDestinationEditorialExtension}>+ Ergänzung</button>
+                </div>
+                <div class="destination-edit-list destination-extension-edit-list">
+                  {#each destinationEditorialExtensions as extension (extension.id)}
+                    <div class="destination-edit-item destination-extension-edit-item">
+                      <div class="destination-extension-edit-heading">
+                        <span class={`editorial-signet editorial-signet-${editorialExtensionDefinition(extension.kind).signet}`} aria-hidden="true"></span>
+                        <select aria-label="Art der Ergänzung" value={extension.kind} on:change={(event) => updateDestinationEditorialExtensionKind(extension.id, event.currentTarget.value)}>
+                          {#each EDITORIAL_EXTENSION_DEFINITIONS as definition}<option value={definition.kind}>{definition.label}</option>{/each}
+                        </select>
+                        <button type="button" class="destination-extension-remove" on:click={() => removeDestinationEditorialExtension(extension.id)}>Entfernen</button>
+                      </div>
+                      <input value={extension.title} on:input={(event) => updateDestinationEditorialExtension(extension.id, { title: event.currentTarget.value })} placeholder="Eigener Titel (optional)" />
+                      <textarea rows="2" value={extension.text} on:input={(event) => updateDestinationEditorialExtension(extension.id, { text: event.currentTarget.value })} placeholder={editorialExtensionDefinition(extension.kind).hint}></textarea>
                     </div>
                   {/each}
                 </div>

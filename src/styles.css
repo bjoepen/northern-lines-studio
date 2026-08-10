@@ -1312,3 +1312,151 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .destination-preview.destination-hero-banner .destination-modules-preview {
   margin-top: 7px;
 }
+
+/* Build 024 · Editorial Extension Zones Foundation
+   Extensions are semantic editorial guests, never a card system. The signet says
+   what the extension is; the world-derived surface says where it belongs. No
+   borders, dividers or decorative furniture are needed inside the zone. */
+.destination-extension-zones {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+  min-width: 0;
+}
+
+.destination-preview.destination-hero-banner .destination-extension-zones {
+  grid-row: 5;
+}
+
+.destination-extension-zone {
+  --extension-strength: 10%;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: start;
+  min-width: 0;
+  padding: 9px 10px 10px;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--world-accent) var(--extension-strength), var(--world-paper));
+  box-shadow: none;
+  color: var(--world-ink);
+}
+
+.destination-extension-zone.extension-knowledge { --extension-strength: 18%; }
+.destination-extension-zone.extension-photo_spot { --extension-strength: 11%; }
+.destination-extension-zone.extension-tip { --extension-strength: 8%; }
+.destination-extension-zone.extension-souvenir { --extension-strength: 12%; }
+.destination-extension-zone.extension-important { --extension-strength: 22%; }
+.destination-extension-zone.extension-history { --extension-strength: 9%; }
+
+.destination-extension-zone > div { min-width: 0; }
+.destination-extension-zone strong {
+  display: block;
+  margin: 0 0 3px;
+  color: var(--world-ink);
+  font-size: 9px;
+  line-height: 1.25;
+}
+.destination-extension-zone p {
+  margin: 0;
+  color: color-mix(in srgb, var(--world-ink) 78%, var(--world-quiet));
+  font-size: 8px;
+  line-height: 1.42;
+}
+
+.editorial-signet {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  background: var(--world-accent, #547181);
+  -webkit-mask: var(--editorial-signet) center / contain no-repeat;
+  mask: var(--editorial-signet) center / contain no-repeat;
+}
+.editorial-signet-knowledge { --editorial-signet: url('/design-library/signets/shared/knowledge.svg'); }
+.editorial-signet-photo-spot { --editorial-signet: url('/design-library/signets/shared/photo-spot.svg'); }
+.editorial-signet-tip { --editorial-signet: url('/design-library/signets/shared/tip.svg'); }
+.editorial-signet-souvenir { --editorial-signet: url('/design-library/signets/shared/souvenir.svg'); }
+.editorial-signet-important { --editorial-signet: url('/design-library/signets/shared/important.svg'); }
+.editorial-signet-history { --editorial-signet: url('/design-library/signets/shared/history.svg'); }
+
+/* Inspector: semantic authoring, not an asset browser. */
+.destination-extension-editor-intro {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.destination-extension-editor-intro strong {
+  color: #314a54;
+  font-size: 9px;
+  font-weight: 600;
+}
+.destination-extension-editor-intro small {
+  color: #7b8a90;
+  font-size: 7.5px;
+  line-height: 1.4;
+}
+.destination-extension-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.destination-extension-add-row select {
+  min-width: 0;
+}
+.destination-extension-add-row button,
+.destination-extension-remove {
+  border: 0;
+  background: transparent;
+  color: #69818b;
+  padding: 3px 0;
+  font-size: 8px;
+  cursor: pointer;
+}
+.destination-extension-add-row button:hover,
+.destination-extension-add-row button:focus-visible {
+  color: #314a54;
+}
+.destination-extension-edit-list { gap: 7px; }
+.destination-extension-edit-item {
+  padding: 8px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.destination-extension-edit-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.destination-extension-edit-heading {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+.destination-extension-edit-heading .editorial-signet {
+  width: 18px;
+  height: 18px;
+  --world-accent: #6f8994;
+}
+.destination-extension-edit-heading select {
+  min-width: 0;
+}
+.destination-extension-remove {
+  color: #9a8f8b;
+  font-size: 7.5px;
+}
+.destination-extension-remove:hover,
+.destination-extension-remove:focus-visible {
+  color: #8b5c50;
+}
+
+@media (max-width: 980px) {
+  .destination-extension-zones { grid-template-columns: 1fr; }
+}

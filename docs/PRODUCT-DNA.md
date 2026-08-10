@@ -1672,3 +1672,34 @@ DTP-Geometrie und keine Benutzeroption.
 Die geschützten Zonen bleiben dabei unantastbar: Die Hero Zone nimmt keine
 Titeltypografie auf; die Companion-/Footer-Zone nimmt keinen überlaufenden Content
 auf.
+
+## Editorial Extension Zones
+
+Editorial Extension Zones sind optionale, semantisch begründete Erweiterungsbereiche innerhalb der Layout Grammar. Sie erscheinen nur dort, wo ein Ort tatsächlich zusätzliche redaktionelle Bedeutung trägt. Nicht jeder Ort braucht eine Erweiterung; selektiver Einsatz ist Teil der redaktionellen Qualität.
+
+Für Build 024 gelten als kanonische semantische Rollen:
+
+- Wissen
+- Fotospot
+- Tipp
+- Souvenir
+- Wichtig
+- Geschichte
+
+Die visuelle Regel ist bewusst reduziert:
+
+> **Das Signet sagt, was es ist. Die Farbe sagt, zu welcher Welt es gehört. Mehr muss die Box nicht erklären.**
+
+Eine Editorial Extension Zone besteht aus Signet, world-konformer Fläche und Inhalt. Die Gewichtung darf über die Intensität der Fläche innerhalb der jeweiligen Editorial-World-Palette entstehen. Rahmen, zusätzliche Divider, Ornamente oder redundante Labels sind nicht erforderlich.
+
+> **Ein Asset braucht in Studio einen redaktionellen Grund.**
+
+Editorial Extension Zones dürfen Kernzonen nicht kolonisieren. Hero, Title, Content, Companion und Footer behalten ihre eigenen geschützten Räume. Eine Extension wird nur innerhalb einer ausdrücklich vorgesehenen Layoutzone komponiert.
+
+> **Hero Zone und Title Zone sind Geschwister, keine Mitbewohner. Sie dürfen sich nicht dasselbe Zimmer teilen.**
+
+Diese Zonenregel gilt analog für Bilder, Typografie, grafische Assets, Infoflächen und weitere Seitenelemente: Jedes Element bleibt in seiner vorgesehenen Zone, sofern die Layout Grammar keine ausdrückliche dokumentierte Ausnahme definiert.
+
+> **Der Companion nimmt nicht am Layout teil. Das Layout nimmt Rücksicht auf den Companion.**
+
+Der Companion ist ein invariantes World-Element mit eigener geschützter Zone. Content Fit darf ihn weder verschieben noch verkleinern; andere Zonen müssen ihre Komposition so organisieren, dass sein Raum frei bleibt.

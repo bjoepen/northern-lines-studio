@@ -1,4 +1,4 @@
-import type { DestinationHighlight, DestinationPracticalInfo } from '../project';
+import type { DestinationEditorialExtension, DestinationHighlight, DestinationPracticalInfo } from '../project';
 
 export type DestinationContentCapacity = 'comfortable' | 'tight' | 'overflow';
 export type DestinationModuleComposition = 'single' | 'two' | 'three';
@@ -10,6 +10,7 @@ export interface DestinationCapacityInput {
   reasons: string[];
   highlights: DestinationHighlight[];
   practicalInfo: DestinationPracticalInfo[];
+  editorialExtensions?: DestinationEditorialExtension[];
 }
 
 function textWeight(value: string, divisor: number): number {
@@ -26,11 +27,13 @@ export function destinationContentCapacity(input: DestinationCapacityInput): Des
   const practicalWeight = input.practicalInfo.reduce((sum, item) =>
     sum + 2 + textWeight(item.title, 24) + textWeight(item.text, 42), 0);
   const reasonWeight = input.reasons.reduce((sum, reason) => sum + 1 + textWeight(reason, 44), 0);
+  const extensionWeight = (input.editorialExtensions ?? []).reduce((sum, item) =>
+    sum + 2 + textWeight(item.title, 28) + textWeight(item.text, 50), 0);
   const score =
     textWeight(input.name, 18) +
     textWeight(input.subtitle, 30) +
     textWeight(input.introduction, 58) +
-    reasonWeight + highlightWeight + practicalWeight;
+    reasonWeight + highlightWeight + practicalWeight + extensionWeight;
 
   if (score >= 34) return 'overflow';
   if (score >= 23) return 'tight';

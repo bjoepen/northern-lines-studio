@@ -1,8 +1,8 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 023 – Destination Composition Refinement
-**Studio:** 0.23.0
-**Projektformat:** `.nls` 0.9.0
+**Aktueller Stand:** Build 024 – Editorial Extension Zones Foundation
+**Studio:** 0.24.0
+**Projektformat:** `.nls` 0.10.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -139,6 +139,20 @@ Für Fjord gilt auf Destination Pages verbindlich eine **weiße / neutral-weiße
 
 Die Binding Safe Area beträgt ab Build 022 **15 mm technische Mindestzone**. Der Papageientaucher bleibt davon unabhängig an seiner bewährten Editorial-World-Position: **Der Begleiter ist unantastbar – und sein Zuhause ebenfalls.**
 
+## Editorial Extension Zones
+
+Build 024 ergänzt Destination Pages um optionale semantische Erweiterungen: **Wissen, Fotospot, Tipp, Souvenir, Wichtig und Geschichte**. Sie erscheinen nur dort, wo ein Ort tatsächlich zusätzliche redaktionelle Bedeutung trägt.
+
+Die visuelle Regel bleibt bewusst reduziert:
+
+> **Das Signet sagt, was es ist. Die Farbe sagt, zu welcher Welt es gehört. Mehr muss die Box nicht erklären.**
+
+Extension Zones sind rahmenlos. Ein gemeinsames semantisches Signet wird durch die aktive Editorial World eingefärbt; die Stärke der world-konformen Fläche übernimmt die Gewichtung. Es gibt keine frei wählbare Asset-Bibliothek und keinen Box-Designer.
+
+> **Der Companion nimmt nicht am Layout teil. Das Layout nimmt Rücksicht auf den Companion.**
+
+Extensions dürfen deshalb weder Hero/Title noch Companion/Footer kolonisieren. Sie werden ausschließlich in einer definierten Layout-Grammar-Zone komponiert.
+
 ## Reisewelten
 
 Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Die aktuelle Reisewelt ist **Fjord**.
@@ -192,7 +206,7 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 022 aktualisiert das Format auf **0.9.0** und ergänzt semantische Bildrollen für Ortsprofile. Projekte im Format 0.8.0 sowie die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
+Build 024 aktualisiert das Format auf **0.10.0** und ergänzt semantische Editorial Extension Zones für Ortsprofile. Build 023 / 0.9.0 wird beim Öffnen automatisch migriert; bestehende Orte erhalten dabei eine leere Extension-Liste. Projekte im Format 0.8.0 sowie die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
 Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
 redaktionelle Inhalte werden dabei bewusst nicht erfunden.
 
@@ -230,6 +244,7 @@ TypeScript Model
 → Layout Variants (für Destinations)
 → Layout Resilience / Content Capacity
 → Destination Imagery
+→ Editorial Extension Zones
 → Tests
 ```
 
@@ -266,6 +281,9 @@ Gestaltungsmöglichkeit abzubilden.
 - **019** Journey Planning Foundation – strukturierte Reisedaten
 - **020** Destination Profile & Layout Variants Foundation – Ortsprofil und Seitenwirkung
 - **021** Layout Resilience & Content Capacity Foundation – geschützte A5-Zonen und belastbare Inhaltskomposition
+- **022** Destination Imagery Foundation – semantische Bildrollen und `.nls`-Assets
+- **023** Destination Composition Refinement – reife Weite/Bild-links/Bild-rechts-Grammatik
+- **024** Editorial Extension Zones Foundation – selektive semantische Erweiterungen mit World Expression
 
 ---
 

@@ -1,4 +1,4 @@
-import type { Destination, DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, StudioPage, StudioProject } from '../project';
+import type { Destination, DestinationEditorialExtension, DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, StudioPage, StudioProject } from '../project';
 
 export const DESTINATION_LAYOUT_VARIANTS: readonly DestinationLayoutVariantId[] = [
   'destination-hero-banner',
@@ -18,6 +18,7 @@ export interface DestinationDraft {
   reasons: string[];
   highlights: DestinationHighlight[];
   practicalInfo: DestinationPracticalInfo[];
+  editorialExtensions: DestinationEditorialExtension[];
   layoutVariant: DestinationLayoutVariantId;
 }
 
@@ -40,6 +41,7 @@ export function destinationDraft(destination: Destination | null, fallbackName =
     reasons: [...(destination?.reasons ?? [])],
     highlights: (destination?.highlights ?? []).map((entry) => ({ ...entry })),
     practicalInfo: (destination?.practicalInfo ?? []).map((entry) => ({ ...entry })),
+    editorialExtensions: (destination?.editorialExtensions ?? []).map((entry) => ({ ...entry })),
     layoutVariant: destination?.editorial?.layoutVariant ?? 'destination-hero-banner'
   };
 }

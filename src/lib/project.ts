@@ -69,6 +69,21 @@ export interface DestinationPracticalInfo {
   text: string;
 }
 
+export type EditorialExtensionKind =
+  | 'knowledge'
+  | 'photo_spot'
+  | 'tip'
+  | 'souvenir'
+  | 'important'
+  | 'history';
+
+export interface DestinationEditorialExtension {
+  id: string;
+  kind: EditorialExtensionKind;
+  title: string;
+  text: string;
+}
+
 export interface DestinationImages {
   wide?: string;
   portrait?: string;
@@ -87,6 +102,7 @@ export interface Destination {
   reasons: string[];
   highlights: DestinationHighlight[];
   practicalInfo: DestinationPracticalInfo[];
+  editorialExtensions: DestinationEditorialExtension[];
   images?: DestinationImages;
   editorial: {
     layoutVariant: DestinationLayoutVariantId;
