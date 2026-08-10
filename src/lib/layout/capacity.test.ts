@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { destinationContentCapacity, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './capacity';
+import { destinationContentCapacity, destinationExtensionCapacity, destinationExtensionCapacityResult, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './capacity';
 
 describe('destination content capacity', () => {
   it('keeps a concise destination comfortable', () => {
@@ -77,5 +77,38 @@ describe('adaptive editorial extension composition', () => {
 
   it('stacks dense extensions instead of forcing a 50/50 row', () => {
     expect(destinationExtensionComposition([extension('Wissen', 'x'.repeat(420)), extension('Geschichte', 'x'.repeat(360))])).toBe('stacked');
+  });
+});
+
+
+describe('extension capacity protection', () => {
+  const base = {
+    name: 'Bergen', subtitle: 'Tor zu den Fjorden', introduction: 'Hanse, Hafen und Aussicht.',
+    reasons: ['Bryggen'], highlights: [], practicalInfo: []
+  };
+
+  it('keeps a compact semantic extension comfortable', () => {
+    expect(destinationExtensionCapacity({ ...base, editorialExtensions: [
+      { id: 'w', kind: 'knowledge', title: 'Hanse in Bergen', text: 'Ein kompakter Fakt zur Geschichte des Ortes.' }
+    ]}, 'destination-hero-banner')).toBe('comfortable');
+  });
+
+  it('stops two very long extensions before they can enter protected zones', () => {
+    const input = { ...base, editorialExtensions: [
+      { id: 'w', kind: 'knowledge' as const, title: 'Wissen', text: 'x'.repeat(520) },
+      { id: 'p', kind: 'photo_spot' as const, title: 'Fotospot', text: 'x'.repeat(480) }
+    ]};
+    expect(destinationExtensionCapacity(input, 'destination-hero-banner')).toBe('overflow');
+    expect(destinationExtensionCapacity(input, 'destination-hero-right')).toBe('overflow');
+  });
+
+  it('can recommend another page effect before reporting a dead end', () => {
+    const input = { ...base, editorialExtensions: [
+      { id: 'w', kind: 'knowledge' as const, title: 'Wissen', text: 'x'.repeat(390) },
+      { id: 'p', kind: 'photo_spot' as const, title: 'Fotospot', text: 'x'.repeat(170) }
+    ]};
+    const result = destinationExtensionCapacityResult(input, 'destination-hero-banner');
+    expect(['tight', 'overflow']).toContain(result.state);
+    if (result.state === 'overflow') expect(result.alternatives.length).toBeGreaterThan(0);
   });
 });

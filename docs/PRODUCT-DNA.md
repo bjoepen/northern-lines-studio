@@ -1730,3 +1730,13 @@ Grenze.
 Diese Anpassung ist keine freie DTP-Geometrie. Der Reisende wählt keine Spaltenbreite
 und keine Koordinaten. Studio übernimmt das Layoutdenken innerhalb der freigegebenen
 Grammar-Zustände.
+
+## Protected Capacity Rule
+
+> **Eine Safe Zone ist eine Grenze, keine Empfehlung.**
+
+Adaptive Layout Grammar löst das Lösbare. Wenn keine zulässige Komposition mehr existiert, wird Inhalt nicht über Companion, Footer oder andere geschützte Zonen gelegt. Studio verkleinert keine Schrift, schneidet keinen Text ab und verschiebt keine invarianten Elemente. Stattdessen informiert Studio den Reisenden in Travel Language:
+
+> **Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.**
+
+Vor `overflow` dürfen andere bereits vorhandene Seitenwirkungen als alternative Komposition geprüft werden. Automatische Fortsetzungsseiten bleiben ein späterer Content-Fit-Schritt.

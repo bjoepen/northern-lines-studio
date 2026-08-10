@@ -1519,3 +1519,68 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 @media (max-width: 980px) {
   .destination-extension-zones { grid-template-columns: 1fr; }
 }
+
+
+/* Build 024 · Extension Capacity Protection
+   Safe Zones are hard boundaries, not suggestions. When finite adaptive grammar
+   cannot keep Editorial Extensions above the Companion/Footer threshold, Studio
+   refuses the invalid page composition and speaks in Travel Language instead. */
+.destination-preview.destination-hero-banner .destination-capacity-stop { grid-row: 5; }
+
+.destination-capacity-stop {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 9px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--world-quiet);
+}
+.destination-capacity-stop span,
+.destination-capacity-stop strong,
+.destination-capacity-stop small { display: block; }
+.destination-capacity-stop span {
+  color: var(--world-accent);
+  font-size: 6.4px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.destination-capacity-stop strong {
+  margin-top: 4px;
+  color: var(--world-ink);
+  font: 500 9px/1.35 Georgia, "Times New Roman", serif;
+}
+.destination-capacity-stop small {
+  margin-top: 3px;
+  color: var(--world-quiet);
+  font-size: 6.8px;
+  line-height: 1.35;
+}
+
+.destination-capacity-guidance {
+  margin: 11px 0 2px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: #eef4f5;
+}
+.destination-capacity-guidance.overflow { background: #f4f1ec; }
+.destination-capacity-guidance span,
+.destination-capacity-guidance strong,
+.destination-capacity-guidance small { display: block; }
+.destination-capacity-guidance span {
+  color: #71828a;
+  font-size: 8px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.destination-capacity-guidance strong {
+  margin-top: 4px;
+  color: #314a54;
+  font: 500 12px/1.35 Georgia, "Times New Roman", serif;
+}
+.destination-capacity-guidance small {
+  margin-top: 4px;
+  color: #74858c;
+  font-size: 8px;
+  line-height: 1.45;
+}

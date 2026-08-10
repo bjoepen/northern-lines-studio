@@ -23,3 +23,7 @@ Der Gate ergänzt, ersetzt aber nicht TypeScript-, Test-, Build- und Rust-Gates.
 ## Adaptive Layout Grammar Consistency Gate
 
 `node scripts/check-adaptive-layout-grammar-consistency.mjs` prüft die kuratierten Title- und Extension-Zustände, verhindert Zeichenumbrüche in Ortsnamen und stellt sicher, dass der adaptive Grammar-Grundsatz in der Product DNA verankert bleibt.
+
+## Extension Capacity Protection Gate
+
+`node scripts/check-extension-capacity-protection-consistency.mjs` verifies the hard overflow state, Travel Language notice, alternative-layout guidance, Product DNA safe-zone rule, root `LICENSE.md`, and README source-availability notice.
