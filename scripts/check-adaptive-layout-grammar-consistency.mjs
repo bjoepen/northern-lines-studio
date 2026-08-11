@@ -1,9 +1,11 @@
+import { readConsolidatedStyles } from './read-consolidated-styles.mjs';
+import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const capacity = read('src/lib/layout/capacity.ts');
 const app = read('src/App.svelte');
-const css = read('src/styles.css');
+const css = readConsolidatedStyles(resolve(import.meta.dirname, '..'));
 const dna = read('docs/PRODUCT-DNA.md');
 const failures = [];
 

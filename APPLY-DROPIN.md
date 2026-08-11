@@ -1,6 +1,6 @@
-# APPLY-DROPIN – Build 024 Adaptive Grammar Polish Fix
+# APPLY-DROPIN – Build 025A CSS & Grammar Consolidation
 
-Upgrade von **Build 024 – Editorial Extension Zones Foundation** auf **Build 024 – Adaptive Grammar Polish Fix**.
+Upgrade von **Build 024 – Extension Capacity Protection Fix** auf **Build 025A – CSS & Grammar Consolidation**.
 
 ## 1. Branch
 
@@ -8,21 +8,27 @@ Upgrade von **Build 024 – Editorial Extension Zones Foundation** auf **Build 0
 cd ~/Projekte/northern-lines-studio
 git switch main
 git pull --ff-only
-git switch -c build/024-adaptive-grammar-polish
+git switch -c build/025a-css-grammar-consolidation
 ```
 
 ## 2. Dry Run
 
+Nach dem Entpacken des Drop-ins nach `~/Downloads/Northern-Lines-Studio-Build-025A-CSS-Grammar-Consolidation-DropIn/`:
+
 ```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-024-Adaptive-Grammar-Polish-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -avn \
+  ~/Downloads/Northern-Lines-Studio-Build-025A-CSS-Grammar-Consolidation-DropIn/ \
+  ~/Projekte/northern-lines-studio/
 ```
 
-Prüfe die Dateiliste. Das Drop-in löscht keine Dateien.
+Prüfen: 025A ersetzt `src/styles.css`, ergänzt `src/styles/`, einen Consistency Gate sowie Build-/ECR-/Validation-/Git-Dokumente. Es gibt keine `.nls`-Migration.
 
 ## 3. Apply
 
 ```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-024-Adaptive-Grammar-Polish-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -av \
+  ~/Downloads/Northern-Lines-Studio-Build-025A-CSS-Grammar-Consolidation-DropIn/ \
+  ~/Projekte/northern-lines-studio/
 ```
 
 ## 4. Consistency Gate
@@ -32,10 +38,10 @@ cd ~/Projekte/northern-lines-studio
 pnpm consistency
 ```
 
-Erwartet wird zusätzlich:
+Erwartet zusätzlich:
 
 ```text
-Adaptive Layout Grammar Consistency Gate: PASS
+CSS & Grammar Consolidation Consistency Gate: PASS
 ```
 
 ## 5. Full Gates
@@ -48,22 +54,16 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-## 6. Real-World-Test
+## 6. Real-world regression
 
-1. **Bergen / Weite** öffnen. Erwartet: ruhige ausgeglichene Title-Komposition.
-2. **Stavanger / Weite** öffnen. Erwartet: Ortsname bleibt vollständig; kein `Stavange / r`. Studio gibt dem Titel automatisch mehr Breite.
-3. **Geiranger / Weite** genauso prüfen.
-4. Einen längeren Namen wie **Geirangerfjord** prüfen. Erwartet: stärker titelbetonte Komposition; bei noch längeren Namen darf der Introtext unter den Titel wechseln.
-5. Zwei kurze Extensions anlegen. Erwartet: ruhige Zweierkomposition.
-6. Eine lange **Wissen**-Extension und einen kurzen **Fotospot** anlegen. Erwartet: asymmetrische Verteilung zugunsten des längeren Inhalts.
-7. Zwei deutlich längere Extensions anlegen. Erwartet: Studio verlässt den starren 50/50-Zustand und stapelt innerhalb der Grammar.
-8. In allen Zuständen prüfen: Companion und Footer bleiben unverändert und werden nicht als zusätzliche Layoutkapazität benutzt.
-9. **Bild links** und **Bild rechts** gegenprüfen. Der Polish Fix darf deren bestehende Komposition nicht beschädigen.
+025A darf visuell **nichts neu gestalten**. Vergleiche mit dem final freigegebenen Build 024:
 
-**STOP**, wenn ein Ortsname mitten im Wort getrennt wird, die Grammar trotz klar ungleicher Inhalte starr 50/50 bleibt oder Extensions den Companion bedrängen.
+- Bergen in Weite, Bild links und Bild rechts;
+- Stavanger/Geiranger mit langen Ortsnamen und Bild;
+- kurze und lange Editorial Extension Zones;
+- Capacity-Hinweis `Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.`;
+- Companion/Footer unverändert;
+- Inspector 320–440 px;
+- Finder-Open und internes `Reise öffnen`.
 
-## Git-Commit-Vorschlag
-
-```text
-fix(build-024): make destination grammar adapt to content
-```
+**Stop**, sobald eine traveller-visible Abweichung zu Build 024 auftritt. 025B beginnt erst nach grünem 025A-Regressionstest.

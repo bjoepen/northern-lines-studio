@@ -1,3 +1,4 @@
+import { readConsolidatedStyles } from './read-consolidated-styles.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -8,7 +9,7 @@ const files = {
   destination: readFileSync(resolve(root, 'src/lib/destinations/index.ts'), 'utf8'),
   destinationTests: readFileSync(resolve(root, 'src/lib/destinations/destinations.test.ts'), 'utf8'),
   rust: readFileSync(resolve(root, 'src-tauri/src/lib.rs'), 'utf8'),
-  styles: readFileSync(resolve(root, 'src/styles.css'), 'utf8'),
+  styles: readConsolidatedStyles(root),
   productDna: readFileSync(resolve(root, 'docs/PRODUCT-DNA.md'), 'utf8'),
   format: readFileSync(resolve(root, 'docs/project-format.md'), 'utf8')
 };

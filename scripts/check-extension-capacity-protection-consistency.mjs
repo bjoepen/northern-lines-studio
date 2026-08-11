@@ -1,8 +1,9 @@
+import { readConsolidatedStyles } from './read-consolidated-styles.mjs';
 import fs from 'node:fs';
 
 const capacity = fs.readFileSync('src/lib/layout/capacity.ts', 'utf8');
 const app = fs.readFileSync('src/App.svelte', 'utf8');
-const css = fs.readFileSync('src/styles.css', 'utf8');
+const css = readConsolidatedStyles(process.cwd());
 const dna = fs.readFileSync('docs/PRODUCT-DNA.md', 'utf8');
 const readme = fs.readFileSync('README.md', 'utf8');
 

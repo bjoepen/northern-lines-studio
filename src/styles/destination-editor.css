@@ -1,0 +1,81 @@
+/* Build 020 Final — Ortsprofil & Seitenwirkung */
+.destination-profile-card { gap: 9px; }
+.destination-form { margin-top: 9px; display: grid; gap: 8px; }
+.destination-form label > span { display: block; margin-bottom: 4px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.destination-form input, .destination-form textarea, .destination-form select { box-sizing: border-box; width: 100%; border: 1px solid #d8e2e5; border-radius: 7px; padding: 7px 8px; background: #fff; color: #314a54; font: 9px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; outline: none; }
+.destination-form textarea { resize: vertical; }
+.destination-form input:focus, .destination-form textarea:focus, .destination-form select:focus { border-color: #9eb8c2; box-shadow: 0 0 0 2px rgba(105,145,160,.09); }
+.destination-editorial-question > small { display: block; margin-top: 3px; color: #8b989d; font-size: 7.5px; }
+.destination-section-title { margin-top: 3px; padding-top: 9px; border-top: 1px solid #e4eaec; }
+.destination-section-title > span, .destination-list-heading > div > span { display: block; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.destination-section-title > strong, .destination-list-heading > div > strong { display: block; margin-top: 2px; font: 500 11px/1.25 Georgia, "Times New Roman", serif; color: #314a54; }
+.destination-quiet-section { margin-top: 6px; }
+.destination-effect-title { margin-top: 5px; }
+.destination-list-heading { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
+.destination-list-heading > button { border: 1px solid #d3dfe2; border-radius: 6px; padding: 5px 7px; background: #f5f8f8; color: #45606b; font-size: 8px; cursor: pointer; }
+.destination-edit-list { display: grid; gap: 7px; }
+.destination-edit-item { padding: 7px; border: 1px solid #e0e7e9; border-radius: 8px; background: #f8fafa; display: grid; gap: 5px; }
+.destination-item-actions { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+.destination-item-actions button { border: 0; background: transparent; color: #8a6653; font-size: 8px; cursor: pointer; }
+
+.destination-more { border-top: 1px solid #e4eaec; padding-top: 2px; }
+.destination-more summary { list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 1px 6px; cursor: pointer; color: #425a64; }
+.destination-more summary::-webkit-details-marker { display: none; }
+.destination-more summary::after { content: '›'; order: 3; color: #8ba0a8; font-size: 14px; line-height: 1; transform: rotate(0deg); transition: transform 120ms ease; }
+.destination-more[open] summary::after { transform: rotate(90deg); }
+.destination-more summary > span { font: 500 10px/1.25 Georgia, "Times New Roman", serif; }
+.destination-more summary > small { margin-left: auto; color: #8b989d; font-size: 7.5px; }
+.destination-more-content { display: grid; gap: 7px; padding: 2px 0 8px; }
+
+.destination-layout-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.destination-layout-options > button { min-width: 0; display: grid; gap: 6px; align-content: start; padding: 6px; border: 1px solid #dce5e7; border-radius: 8px; background: #fafcfc; color: #4d626b; text-align: left; cursor: pointer; }
+.destination-layout-options > button.active { border-color: #8fabb6; background: #eef4f5; box-shadow: inset 0 0 0 1px rgba(84,123,140,.08); }
+.destination-layout-options strong, .destination-layout-options small { display: block; }
+.destination-layout-options strong { font-size: 8.5px; color: #314a54; }
+.destination-layout-options small { margin-top: 2px; font-size: 7px; line-height: 1.28; color: #7b8a90; }
+.layout-option-copy { min-width: 0; }
+.layout-miniature { position: relative; display: block; height: 34px; overflow: hidden; border: 1px solid #dce5e7; border-radius: 4px; background: #fffdfa; }
+.layout-miniature i { position: absolute; display: block; }
+.layout-miniature-image { background: linear-gradient(145deg, #dce9ec, #9ebbc4); }
+.layout-miniature-copy { background: repeating-linear-gradient(to bottom, #b9c6ca 0 1px, transparent 1px 5px); opacity: .85; }
+.layout-miniature.destination-hero-banner .layout-miniature-image { left: 4px; right: 4px; top: 4px; height: 9px; }
+.layout-miniature.destination-hero-banner .layout-miniature-copy { left: 7px; right: 7px; top: 18px; height: 10px; }
+.layout-miniature.destination-hero-left .layout-miniature-image { left: 4px; top: 4px; bottom: 4px; width: 38%; }
+.layout-miniature.destination-hero-left .layout-miniature-copy { left: 48%; right: 5px; top: 8px; height: 17px; }
+.layout-miniature.destination-hero-right .layout-miniature-image { right: 4px; top: 4px; bottom: 4px; width: 38%; }
+.layout-miniature.destination-hero-right .layout-miniature-copy { left: 5px; right: 48%; top: 8px; height: 17px; }
+
+.destination-preview { position: relative; display: grid; gap: 12px; min-height: 462px; }
+.destination-story { min-width: 0; }
+.destination-story h1 { margin-top: 7px; }
+.destination-subtitle { margin: 8px 0 11px; color: var(--world-accent); font: italic 16px/1.28 Georgia, "Times New Roman", serif; }
+.destination-hero-placeholder { min-height: 150px; border-radius: 2px; background:
+  radial-gradient(circle at 18% 45%, rgba(255,255,255,.62), transparent 22%),
+  radial-gradient(circle at 76% 28%, rgba(255,255,255,.48), transparent 18%),
+  linear-gradient(165deg, #edf4f4 0%, #d4e3e6 24%, #9ebbc4 54%, #60818d 78%, #426574 100%);
+  box-shadow: inset 0 0 0 1px rgba(40,78,91,.08);
+}
+.destination-facts-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #d8e1e2; }
+.destination-facts-preview span, .destination-modules-preview section > span { display: block; color: var(--world-accent); font-size: 6.5px; text-transform: uppercase; letter-spacing: .11em; }
+.destination-facts-preview strong { display: block; margin-top: 3px; color: var(--world-ink); font-size: 8px; font-weight: 600; }
+.destination-modules-preview { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.destination-modules-preview section { padding: 9px; border: 1px solid #dfe7e8; border-radius: 3px; background: rgba(255,255,255,.42); }
+.destination-modules-preview ul { margin: 6px 0 0; padding-left: 13px; color: #41565f; font-size: 7.5px; line-height: 1.45; }
+.destination-modules-preview li + li { margin-top: 3px; }
+.destination-modules-preview li strong, .destination-modules-preview li em { display: block; }
+.destination-modules-preview li em { color: #728188; font-size: 6.7px; font-style: normal; }
+.destination-modules-preview small { display: block; margin-top: 6px; color: #8a989d; font-size: 7px; line-height: 1.4; }
+.destination-practical-preview { grid-column: 1 / -1; }
+.destination-practical-preview div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
+.destination-practical-preview p { margin: 0; color: #697a81; font-size: 6.8px; line-height: 1.35; }
+.destination-practical-preview p strong { color: #3d5661; }
+
+.destination-preview.destination-hero-left,
+.destination-preview.destination-hero-right { grid-template-columns: .9fr 1.1fr; align-items: start; column-gap: 12px; }
+.destination-preview.destination-hero-left .destination-hero-placeholder { grid-column: 1; grid-row: 1; min-height: 245px; }
+.destination-preview.destination-hero-left .destination-story { grid-column: 2; grid-row: 1; }
+.destination-preview.destination-hero-right { grid-template-columns: 1.1fr .9fr; }
+.destination-preview.destination-hero-right .destination-story { grid-column: 1; grid-row: 1; }
+.destination-preview.destination-hero-right .destination-hero-placeholder { grid-column: 2; grid-row: 1; min-height: 245px; }
+.destination-preview.destination-hero-left .destination-modules-preview,
+.destination-preview.destination-hero-right .destination-modules-preview { grid-column: 1 / -1; grid-row: 2; }
