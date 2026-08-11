@@ -1,3 +1,4 @@
+import { readConsolidatedStyles } from './read-consolidated-styles.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -12,7 +13,7 @@ const mustNotContain = (source, token, message) => {
 
 const project = read('src/lib/project.ts');
 const app = read('src/App.svelte');
-const css = read('src/styles.css');
+const css = readConsolidatedStyles(root);
 const rust = read('src-tauri/src/lib.rs');
 const productDna = read('docs/PRODUCT-DNA.md');
 const extensionLib = read('src/lib/editorial-extensions/index.ts');

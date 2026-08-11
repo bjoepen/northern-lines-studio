@@ -1,10 +1,11 @@
+import { readConsolidatedStyles } from './read-consolidated-styles.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const files = {
   app: readFileSync(resolve(root, 'src/App.svelte'), 'utf8'),
-  styles: readFileSync(resolve(root, 'src/styles.css'), 'utf8'),
+  styles: readConsolidatedStyles(root),
   destination: readFileSync(resolve(root, 'src/lib/destinations/index.ts'), 'utf8'),
   capacity: readFileSync(resolve(root, 'src/lib/layout/capacity.ts'), 'utf8'),
   capacityTests: readFileSync(resolve(root, 'src/lib/layout/capacity.test.ts'), 'utf8'),

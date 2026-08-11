@@ -1,0 +1,104 @@
+/* Build 022 Final · Image Composition Fix
+   Fjord Destination Pages keep a neutral-white paper surface. Photography is
+   the atmospheric colour source; image roles are composed into the page, not
+   placed inside coloured media cards. */
+.a5-page.fjord-page.destination-page {
+  background: #fffdfa;
+}
+
+/* A real destination image owns its intrinsic geometry inside the allowed
+   Editorial Grammar. No crop, fixed media-card height or coloured backdrop is
+   introduced in Studio. Empty states keep the quiet placeholder only until an
+   image is selected. */
+.destination-hero-placeholder.destination-image-present {
+  min-height: 0;
+  height: auto;
+  overflow: visible;
+  align-items: flex-start;
+  justify-content: stretch;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+}
+.destination-hero-placeholder.destination-image-present .destination-hero-image {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Bild links / Bild rechts share the same portrait image role. The image column
+   remains grammar-controlled while its vertical extent follows the source
+   geometry, so the illustration feels composed rather than card-mounted. */
+.destination-preview.destination-hero-left .destination-hero-placeholder.destination-image-present,
+.destination-preview.destination-hero-right .destination-hero-placeholder.destination-image-present {
+  min-height: 0;
+  height: auto;
+  margin: 0;
+}
+
+/* Editorial modules are not automatically cards. Peer information is grouped
+   by rhythm and dividers; a subtle practical-info tint is a deliberate accent,
+   not a general Card UI system. */
+.destination-modules-preview section {
+  padding: 8px 6px 4px;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+.destination-modules-preview .destination-practical-preview {
+  padding: 8px 8px 6px;
+  border-top-color: color-mix(in srgb, var(--world-accent) 32%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--world-accent) 5%, transparent);
+}
+
+
+/* Build 023 · Destination Composition Refinement
+   Photography, typography and white paper form one composition. Portrait rules
+   below refine rhythm without adding variants, crop controls or persisted geometry. */
+
+/* Bild links is visually led by the image: a slightly broader image field and
+   compact copy column keep the opening calm while the lower modules span the page. */
+.destination-preview.destination-hero-left {
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr);
+  column-gap: 14px;
+}
+.destination-preview.destination-hero-left .destination-hero-placeholder.destination-image-present {
+  align-self: start;
+}
+
+/* Bild rechts is text-led. The image deliberately begins a little lower, near
+   the title rhythm, so it accompanies the story rather than competing with it. */
+.destination-preview.destination-hero-right {
+  grid-template-columns: minmax(0, 1.10fr) minmax(0, .90fr);
+  column-gap: 14px;
+}
+.destination-preview.destination-hero-right .destination-hero-placeholder.destination-image-present {
+  margin-top: 24px;
+  align-self: start;
+}
+.destination-preview.destination-hero-right .destination-story .preview-body,
+.destination-preview.destination-hero-left .destination-story .preview-body {
+  margin-top: 18px;
+}
+.destination-preview.destination-hero-left .destination-facts-preview,
+.destination-preview.destination-hero-right .destination-facts-preview {
+  margin-top: 10px;
+}
+
+/* Module rhythm stays open. Tinted areas remain semantic accents rather than a
+   generic card system. */
+.destination-modules-preview {
+  column-gap: 10px;
+  row-gap: 8px;
+}
+.destination-modules-preview section {
+  padding-top: 7px;
+}
+.destination-modules-preview .destination-practical-preview {
+  background: color-mix(in srgb, var(--world-accent) 4.5%, transparent);
+}

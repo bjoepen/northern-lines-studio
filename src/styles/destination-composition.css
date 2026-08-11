@@ -1,0 +1,207 @@
+/* Build 023 Final · UX / Composition Fix
+   Actions are present where needed without becoming a tool surface. The image
+   remains the important object; its controls follow the restraint of
+   "+ Ort hinzufügen" in the journey navigation. */
+.destination-image-picker {
+  padding: 5px 1px 3px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.destination-image-picker-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+.destination-image-picker-actions button {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 8.5px;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+.destination-image-picker-actions .destination-image-text-action {
+  color: #687d86;
+}
+.destination-image-picker-actions .destination-image-text-action:hover:not(:disabled),
+.destination-image-picker-actions .destination-image-text-action:focus-visible {
+  color: #3f5f6b;
+}
+.destination-image-action-separator {
+  color: #b4c0c4;
+  font-size: 8px;
+  user-select: none;
+}
+.destination-image-picker-actions .destination-image-remove-action {
+  color: #97a2a6;
+}
+.destination-image-picker-actions .destination-image-remove-action:hover:not(:disabled),
+.destination-image-picker-actions .destination-image-remove-action:focus-visible {
+  color: #8a6653;
+}
+.destination-image-picker-actions button:disabled {
+  opacity: .42;
+  cursor: default;
+}
+.destination-image-picker > small {
+  margin-top: 3px;
+}
+
+/* The portrait compositions no longer need a decorative rule to announce the
+   title area. Typography and photography carry the hierarchy themselves. */
+.destination-preview.destination-hero-left .destination-story .page-rule,
+.destination-preview.destination-hero-right .destination-story .page-rule {
+  display: none;
+}
+
+/* Image-role copy is context, not a second heading. It stays close to the label
+   and deliberately quieter than the image actions. */
+.destination-image-picker-heading .destination-image-role-status {
+  display: block;
+  margin-top: 2px;
+  color: #849298;
+  font-size: 7.25px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+/* Build 023 · Final Zone Separation Fix
+   Binding layout rule: page zones are semantic rooms, not overlapping layers.
+   In Weite, Hero Zone and Title Zone are siblings. The image is contained by a
+   fixed grammar-owned hero corridor; the title begins only after an explicit
+   protected zone. No source image may enlarge or visually escape the hero row. */
+.destination-title-safe-zone {
+  display: none;
+}
+
+.destination-preview.destination-hero-banner {
+  --weites-hero-height: 118px;
+  --weites-title-gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--weites-hero-height) var(--weites-title-gap) auto auto;
+  gap: 0;
+}
+
+.destination-preview.destination-hero-banner .destination-hero-placeholder,
+.destination-preview.destination-hero-banner .destination-hero-placeholder.destination-image-present {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--weites-hero-height);
+  height: var(--weites-hero-height);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.destination-preview.destination-hero-banner .destination-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.destination-preview.destination-hero-banner .destination-title-safe-zone {
+  display: block;
+  grid-column: 1;
+  grid-row: 2;
+  min-height: var(--weites-title-gap);
+  height: var(--weites-title-gap);
+  overflow: hidden;
+}
+
+.destination-preview.destination-hero-banner .destination-story {
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0;
+  padding: 0;
+}
+
+.destination-preview.destination-hero-banner .destination-modules-preview {
+  grid-column: 1;
+  grid-row: 4;
+  margin-top: 9px;
+}
+
+/* Build 023 · Final Weite Editorial Composition Fix
+   Weite keeps its semantic rooms separate while using the title zone more
+   efficiently. Hero stays fully contained above. Inside the title zone, title
+   and introduction form one curated horizontal composition; a functional
+   vertical divider separates their editorial roles. The companion/footer room
+   remains protected and is never used as overflow capacity. */
+.destination-title-intro-composition {
+  min-width: 0;
+}
+
+.destination-title-block {
+  min-width: 0;
+}
+
+.destination-introduction {
+  min-width: 0;
+}
+
+/* Weite does not need a decorative horizontal rule. The panorama and type
+   hierarchy already announce the beginning of the destination story. */
+.destination-preview.destination-hero-banner .destination-story .page-rule {
+  display: none;
+}
+
+/* Title and introduction share the Title Zone, not the Hero Zone. This is a
+   fixed editorial grammar, not free positioning. */
+.destination-preview.destination-hero-banner .destination-title-intro-composition {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  column-gap: 18px;
+  align-items: center;
+}
+
+.destination-preview.destination-hero-banner .destination-title-block {
+  padding-right: 2px;
+}
+
+.destination-preview.destination-hero-banner .destination-introduction {
+  margin: 0;
+  padding: 2px 0 2px 18px;
+  border-left: 1px solid rgba(84, 113, 129, .38);
+  color: #53676f;
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.destination-preview.destination-hero-banner .destination-story h1 {
+  margin-top: 5px;
+}
+
+.destination-preview.destination-hero-banner .destination-subtitle {
+  margin: 6px 0 0;
+}
+
+/* Facts follow immediately after the compact title composition so lower
+   modules stay clear of the companion/footer safe zone. */
+.destination-preview.destination-hero-banner .destination-facts-preview {
+  margin-top: 10px;
+  padding-top: 9px;
+}
+
+.destination-preview.destination-hero-banner .destination-modules-preview {
+  margin-top: 7px;
+}
