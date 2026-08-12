@@ -285,9 +285,9 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 
 /* Build 017 · Editorial World Layout Foundation */
 .a5-page.fjord-page {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,0) 28%),
-    var(--world-paper);
+  /* Editorial Worlds express themselves through typography, accents and content surfaces.
+     The page itself remains neutral white. */
+  background: #ffffff;
   color: var(--world-ink);
 }
 

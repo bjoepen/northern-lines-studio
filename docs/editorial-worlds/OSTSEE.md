@@ -1,6 +1,6 @@
 # Editorial World · Ostsee
 
-Status: Build 025B · PoC / Editorial World 002
+Status: Build 025C · PoC Expression Fix / Editorial World 002
 
 ## Charakter
 
@@ -33,3 +33,12 @@ Shared Signets bleiben unverändert. Extension-Flächen werden aus der Ostsee-Pa
 ## PoC-Beweis
 
 Fjord ↔ Ostsee muss mit identischem Destination-Content, identischen IDs, Bildrollen, Extension-Semantiken und Seitenwirkungen wechseln können. Nur die World Expression verändert sich.
+
+## Build 025C · Expression Fix
+
+Der PoC hat bestätigt, dass Semantik und Grammar beim World-Wechsel stabil bleiben. Build 025C korrigiert zwei traveller-visible Abweichungen:
+
+- der Fischotter wird aus `public/design-library/companions/baltic/companion.png` zuverlässig geladen;
+- Baltic, Steel, Fog, Sand und Amber werden in Typografie, Extension-Flächen, Practical-Info-Akzent, Signets und Footer deutlicher eingesetzt.
+
+Die Layout Grammar bleibt identisch zu Fjord. Ostsee erhält keine eigene Sondergeometrie.

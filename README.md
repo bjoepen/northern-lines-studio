@@ -1,14 +1,16 @@
 # Northern Lines Studio
 
+> **Build 025C · Ostsee Expression & Companion Fix:** Der Editorial-World-PoC bleibt semantisch und grammatisch unverändert, erhält aber die fehlende visuelle Konsequenz: Der Fischotter wird aus dem öffentlichen Design-Library-Pfad geladen und die Ostsee-Expression nutzt Baltic, Steel, Fog, Sand und Amber deutlich erkennbarer. Keine neue Layoutvariante, kein Theme-Editor, keine Inhaltsduplikation.
+
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 025A – CSS & Grammar Consolidation
+**Aktueller Stand:** Build 025C – Ostsee Expression & Companion Fix
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
-**Studio:** 0.24.0
+**Studio:** 0.25.0-alpha.3
 **Projektformat:** `.nls` 0.10.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
@@ -164,7 +166,7 @@ Extensions dürfen deshalb weder Hero/Title noch Companion/Footer kolonisieren. 
 
 ## Reisewelten
 
-Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Die aktuelle Reisewelt ist **Fjord**.
+Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv verfügbar sind **Fjord** und **Ostsee**. Beide teilen dieselbe semantische und adaptive Layout Grammar; Typografie, Palette, Extension Expression und Companion gehören zur jeweiligen World.
 
 Fjord definiert unter anderem:
 
@@ -354,3 +356,7 @@ Copyright © 2026 Northern Lines. All rights reserved.
 ## Build 024 · Extension Capacity Protection Fix
 
 Editorial Extension Zones may adapt, stack and change width, but protected zones remain hard boundaries. If no allowed composition can keep extensions clear of Companion and Footer, Studio stops the invalid preview composition and says: **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** The traveller may try another existing page effect; Studio never rescues the page by shrinking type, clipping copy or moving the Companion.
+
+### Build 025C · White Page Expression Polish
+
+Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt neutral weiß; World Expression entsteht über Typografie, Akzente, Companion, Signets und gezielte Editorial-/Extension-Flächen.
