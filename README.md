@@ -1,10 +1,12 @@
 # Northern Lines Studio
 
+> **Build 025C · Warm Expression Polish:** Die A5-Seite bleibt jetzt auch technisch echtes Weiß. Ostsee zeigt Hanse, Backstein, Bernstein und Sand gezielt über Extension-/Expression-Flächen, Signets und Akzente – ohne Seitenhintergrund, Rahmen oder zusätzliche Dekoration.
+
 > **Build 025C · Ostsee Expression & Companion Fix:** Der Editorial-World-PoC bleibt semantisch und grammatisch unverändert, erhält aber die fehlende visuelle Konsequenz: Der Fischotter wird aus dem öffentlichen Design-Library-Pfad geladen und die Ostsee-Expression nutzt Baltic, Steel, Fog, Sand und Amber deutlich erkennbarer. Keine neue Layoutvariante, kein Theme-Editor, keine Inhaltsduplikation.
 
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 025C – Ostsee Expression & Companion Fix
+**Aktueller Stand:** Build 025C – Ostsee Warm Expression Polish
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 

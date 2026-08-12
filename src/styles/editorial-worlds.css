@@ -28,10 +28,12 @@
 .baltic-page {
   --baltic-deep: #0d3b5b;
   --baltic-steel: #457b8d;
-  --baltic-fog: #b9d3dc;
-  --baltic-sand: #ded8cb;
+  --baltic-fog: #c7d8dc;
+  --baltic-sand: #e7ddcf;
   --baltic-amber: #d08a2e;
-  background: #fffdf9;
+  --baltic-brick: #a9654d;
+  --baltic-warm-paper: #f6f0e8;
+  background: #ffffff;
 }
 .baltic-page h1 {
   font-family: var(--world-heading-family, "Avenir Next", "Helvetica Neue", Arial, sans-serif);
@@ -59,22 +61,32 @@
 }
 .baltic-page .destination-modules-preview .destination-practical-preview {
   border-top-color: color-mix(in srgb, var(--baltic-steel) 40%, transparent);
-  background: color-mix(in srgb, var(--baltic-sand) 30%, #fffdf9);
+  background: color-mix(in srgb, var(--baltic-sand) 42%, #ffffff);
 }
 .baltic-page .destination-extension-zone {
-  background: color-mix(in srgb, var(--baltic-fog) var(--extension-strength), #fffdf9);
+  /* Ostsee carries warmth through editorial surfaces, never through the page itself. */
+  background: color-mix(in srgb, var(--baltic-sand) var(--extension-strength), #ffffff);
 }
-.baltic-page .destination-extension-zone.extension-knowledge { --extension-strength: 42%; }
-.baltic-page .destination-extension-zone.extension-tip { --extension-strength: 20%; }
-.baltic-page .destination-extension-zone.extension-photo_spot { --extension-strength: 28%; }
+.baltic-page .destination-extension-zone.extension-knowledge {
+  --extension-strength: 48%;
+  background: color-mix(in srgb, var(--baltic-brick) 12%, var(--baltic-warm-paper));
+}
+.baltic-page .destination-extension-zone.extension-tip {
+  --extension-strength: 34%;
+  background: color-mix(in srgb, var(--baltic-amber) 10%, var(--baltic-warm-paper));
+}
+.baltic-page .destination-extension-zone.extension-photo_spot {
+  --extension-strength: 24%;
+  background: color-mix(in srgb, var(--baltic-steel) 11%, var(--baltic-warm-paper));
+}
 .baltic-page .destination-extension-zone.extension-history {
-  background: color-mix(in srgb, var(--baltic-sand) 30%, #fffdf9);
+  background: color-mix(in srgb, var(--baltic-brick) 16%, var(--baltic-warm-paper));
 }
 .baltic-page .destination-extension-zone.extension-souvenir {
-  background: color-mix(in srgb, var(--baltic-amber) 18%, #fffdf9);
+  background: color-mix(in srgb, var(--baltic-amber) 20%, var(--baltic-warm-paper));
 }
 .baltic-page .destination-extension-zone.extension-important {
-  background: color-mix(in srgb, var(--baltic-steel) 27%, #fffdf9);
+  background: color-mix(in srgb, var(--baltic-brick) 14%, var(--baltic-sand));
 }
 .baltic-page .destination-extension-zone strong {
   color: var(--baltic-deep);
@@ -85,6 +97,12 @@
 .baltic-page .editorial-signet {
   background: var(--baltic-steel);
 }
+.baltic-page .extension-knowledge .editorial-signet,
+.baltic-page .extension-history .editorial-signet,
+.baltic-page .extension-important .editorial-signet {
+  background: var(--baltic-brick);
+}
+.baltic-page .extension-tip .editorial-signet,
 .baltic-page .extension-souvenir .editorial-signet {
   background: var(--baltic-amber);
 }

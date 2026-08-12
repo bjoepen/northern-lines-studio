@@ -4,7 +4,7 @@ export const balticLayoutSystem: EditorialLayoutSystem = {
   id: 'baltic-layout',
   worldId: 'baltic',
   name: 'Ostsee Layout Language',
-  paperTone: '#fbfaf6',
+  paperTone: '#ffffff',
   inkTone: '#16384c',
   accentTone: '#457b8d',
   quietTone: '#7f959d',
