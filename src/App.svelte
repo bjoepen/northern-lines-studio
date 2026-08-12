@@ -13,7 +13,7 @@
   import { destinationContentCapacity, destinationExtensionCapacityResult, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
-  import { companionVisibleForRole, fjordCompanionLayout } from './lib/companions/layout';
+  import { companionVisibleForRole, fjordCompanionLayout, balticCompanionLayout } from './lib/companions/layout';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
@@ -53,6 +53,7 @@
   let selectedPage: StudioPage | null = null;
   let errorMessage = '';
   let isLoading = false;
+  let worldChangeState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let previewStage: HTMLDivElement | null = null;
   let previewScale = 1;
   let activeAuthoringComponent: EditorialComponentId | null = null;
@@ -577,6 +578,33 @@
     }
   }
 
+  async function changeEditorialWorld(nextWorldId: string) {
+    if (!project || project.editorialWorldId === nextWorldId) return;
+    if (hasUnsavedChanges) {
+      errorMessage = 'Sichere zuerst deine offenen Änderungen, bevor du die Reisewelt wechselst.';
+      return;
+    }
+    worldChangeState = 'saving';
+    errorMessage = '';
+    try {
+      requireEditorialWorld(nextWorldId);
+      const projectPath = project.projectPath;
+      const selectedPageId = selectedPage?.id ?? null;
+      const updated = await invoke<StudioProject>('update_editorial_world', {
+        path: projectPath,
+        editorialWorldId: nextWorldId
+      });
+      project = { ...updated, projectPath };
+      if (selectedPageId) selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? selectedPage;
+      syncPlanningDraft();
+      if (selectedPage?.type === 'destination') syncDestinationDraft();
+      worldChangeState = 'saved';
+    } catch (error) {
+      errorMessage = String(error);
+      worldChangeState = 'error';
+    }
+  }
+
   async function openTravelPath(path: string) {
     if (project?.projectPath === path) return;
 
@@ -886,8 +914,9 @@
   $: destinationExtensionOverflow = destinationExtensionCapacityInfo.state === 'overflow';
   $: destinationExtensionAlternativeLabels = destinationExtensionCapacityInfo.alternatives.map((variant) => editorialLayout?.destinationLayouts.find((layout) => layout.id === variant)?.label ?? variant);
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
-  $: companionVisible = editorialWorld?.id === 'fjord'
-    && companionVisibleForRole(fjordCompanionLayout, selectedPage?.role);
+  $: activeCompanionLayout = editorialWorld?.id === 'baltic' ? balticCompanionLayout : fjordCompanionLayout;
+  $: companionVisible = Boolean(editorialWorld)
+    && companionVisibleForRole(activeCompanionLayout, selectedPage?.role);
   $: statusText = projectStatus(project);
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
@@ -999,10 +1028,22 @@
       {#if editorialWorld}
         <section class="world-card" aria-label="Reisewelt">
           <div class="world-icon" aria-hidden="true">≈</div>
-          <div>
+          <div class="world-card-copy">
             <small>Reisewelt</small>
             <strong>{editorialWorld.name}</strong>
             <span>Reisebegleiter · {editorialWorld.companionName}</span>
+            <label class="world-switch">
+              <span>Welt wechseln</span>
+              <select
+                value={project?.editorialWorldId ?? editorialWorld.id}
+                disabled={worldChangeState === 'saving'}
+                on:change={(event) => void changeEditorialWorld(event.currentTarget.value)}
+              >
+                {#each journeyWorlds as world}
+                  <option value={world.id}>{world.name}</option>
+                {/each}
+              </select>
+            </label>
           </div>
         </section>
       {/if}
@@ -1065,8 +1106,9 @@
               class="a5-page"
               class:cover-page={selectedPage?.type === 'cover'}
               class:fjord-page={editorialWorld?.id === 'fjord'}
+              class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
-              style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'}`}
+              style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
               {#if selectedPage?.type === 'destination'}

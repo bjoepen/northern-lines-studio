@@ -1740,3 +1740,19 @@ Adaptive Layout Grammar löst das Lösbare. Wenn keine zulässige Komposition me
 > **Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.**
 
 Vor `overflow` dürfen andere bereits vorhandene Seitenwirkungen als alternative Komposition geprüft werden. Automatische Fortsetzungsseiten bleiben ein späterer Content-Fit-Schritt.
+
+# 59. Editorial Worlds und adaptive World Expression · Build 025B
+
+Eine Editorial World ist keine Farbpalette. Sie ist eine kuratierte visuelle Sprache aus Typografie, Rhythmus, Bildsprache, Akzenten, Companion und wenigen charakteristischen Assets.
+
+> Shared Graphic Language, World-specific Expression.
+
+Die Semantik bleibt stabil. Signets behalten world-übergreifend ihre Bedeutung; die World interpretiert Farbe und Gewichtung.
+
+> Das Signet sagt, was es ist. Die Farbe sagt, zu welcher Welt es gehört. Mehr muss die Box nicht erklären.
+
+Der Companion gehört zur World, nimmt aber nicht am Layout teil. Das Layout nimmt Rücksicht auf ihn.
+
+World-Wechsel darf Reiseinhalte, Destination IDs, Bildrollen, Extension-Semantik oder Seitenwirkungen nicht verändern.
+
+Build 024 gilt als Milestone Build: adaptive Layout Grammar, Editorial Extension Zones, harte Safe Zones und Extension Capacity Protection bilden gemeinsam die belastbare Basis für weitere Editorial Worlds.

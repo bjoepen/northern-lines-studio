@@ -1,8 +1,10 @@
 import { fjordLayoutSystem } from './fjord';
+import { balticLayoutSystem } from './baltic';
 import type { EditorialLayoutSystem } from './types';
 
 const layoutRegistry: ReadonlyMap<string, EditorialLayoutSystem> = new Map([
-  [fjordLayoutSystem.worldId, fjordLayoutSystem]
+  [fjordLayoutSystem.worldId, fjordLayoutSystem],
+  [balticLayoutSystem.worldId, balticLayoutSystem]
 ]);
 
 export function layoutSystemForWorld(worldId: string | undefined): EditorialLayoutSystem | null {

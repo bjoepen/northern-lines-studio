@@ -90,7 +90,7 @@
 .destination-preview.destination-hero-banner .destination-title-intro-composition.destination-title-stacked .destination-introduction {
   padding: 9px 0 0;
   border-left: 0;
-  border-top: 1px solid rgba(84, 113, 129, .26);
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 26%, transparent);
 }
 
 .destination-extension-zones.destination-extensions-single,
@@ -230,7 +230,7 @@
 .destination-capacity-stop strong {
   margin-top: 4px;
   color: var(--world-ink);
-  font: 500 9px/1.35 Georgia, "Times New Roman", serif;
+  font: 500 9px/1.35 var(--world-body-family, Georgia, "Times New Roman", serif);
 }
 .destination-capacity-stop small {
   margin-top: 3px;
@@ -259,7 +259,7 @@
 .destination-capacity-guidance strong {
   margin-top: 4px;
   color: #314a54;
-  font: 500 12px/1.35 Georgia, "Times New Roman", serif;
+  font: 500 12px/1.35 var(--world-body-family, Georgia, "Times New Roman", serif);
 }
 .destination-capacity-guidance small {
   margin-top: 4px;

@@ -47,5 +47,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Journey Planning Consistency Gate: PASS');
+console.log('Journey Planning Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Model → Rust → Migration → Command → Inspector → Preview → Tests');

@@ -1,8 +1,10 @@
 import { fjordWorld } from './fjord/world';
+import { balticWorld } from './baltic/world';
 import type { EditorialWorldDefinition } from './types';
 
 const worldRegistry: ReadonlyMap<string, EditorialWorldDefinition> = new Map([
-  [fjordWorld.id, fjordWorld]
+  [fjordWorld.id, fjordWorld],
+  [balticWorld.id, balticWorld]
 ]);
 
 export function loadEditorialWorld(id: string | undefined): EditorialWorldDefinition | null {
