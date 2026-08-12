@@ -1,5 +1,7 @@
 # Northern Lines Studio
 
+> **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
+
 **Aktueller Stand:** Build 025A – CSS & Grammar Consolidation
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
@@ -36,6 +38,8 @@ Northern Lines Studio wird durch vier dauerhafte Referenzen geführt:
 - `docs/VISION.md` – langfristiges Zielbild
 - `docs/ARCHITECTURE.md` – technische Verantwortungsgrenzen
 - `docs/PRODUCT-DNA.md` – verbindliche Produkt-, UX-, Travel-Language- und Layoutprinzipien
+- `docs/editorial-worlds/EDITORIAL-WORLD-CONTRACT.md` – verbindlicher Vertrag für alle Editorial Worlds
+- `docs/editorial-worlds/FJORD.md` / `OSTSEE.md` – World Expressions
 
 Die **Produkt-DNA** ist ab Build 021 keine Retrospektive am Rand, sondern eine dauerhafte Referenz. Neue Builds müssen ihre UX- und Produktentscheidungen dagegen prüfen.
 

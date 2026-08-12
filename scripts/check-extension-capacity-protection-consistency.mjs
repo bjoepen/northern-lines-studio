@@ -16,4 +16,4 @@ must(css.includes('.destination-capacity-stop'), 'preview capacity stop styling 
 must(dna.includes('Eine Safe Zone ist eine Grenze, keine Empfehlung.'), 'Product DNA safe-zone rule missing');
 must(readme.includes('source available, but not open source'), 'README source availability notice missing');
 must(fs.existsSync('LICENSE.md'), 'LICENSE.md missing from repository root');
-console.log('Extension Capacity Protection Consistency Gate: PASS');
+console.log('Extension Capacity Protection Consistency Gate: \x1b[32mPASS\x1b[0m');

@@ -143,3 +143,7 @@ Damit bleibt die Grenze erhalten:
 - **Layout Grammar / Publisher:** Wo darf sie erscheinen und wie wird Content Fit autoritativ aufgelöst?
 
 Der Companion bleibt außerhalb des Content-Flows. Extension Zones müssen seine geschützte Zone respektieren.
+
+## Build 025B · Editorial World Contract
+
+Editorial Worlds are resolved through a registry and a shared contract. World-specific expression is kept separate from semantic project data and adaptive Layout Grammar. See `docs/editorial-worlds/EDITORIAL-WORLD-CONTRACT.md`.

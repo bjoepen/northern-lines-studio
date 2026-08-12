@@ -21,9 +21,9 @@ for (const token of ['overflow-wrap: normal', 'word-break: normal', 'hyphens: no
 if (!dna.includes('Die Seitenwirkung bleibt stabil. Die innere Komposition passt sich dem Inhalt an.')) failures.push('Product DNA does not contain adaptive grammar principle.');
 
 if (failures.length) {
-  console.error('Adaptive Layout Grammar Consistency Gate: FAIL');
+  console.error('Adaptive Layout Grammar Consistency Gate: \x1b[31mFAIL\x1b[0m');
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
-console.log('Adaptive Layout Grammar Consistency Gate: PASS');
+console.log('Adaptive Layout Grammar Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Stable Page Effect → Adaptive Title → Adaptive Extensions → Companion Protection → Tests');

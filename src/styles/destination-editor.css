@@ -8,7 +8,7 @@
 .destination-editorial-question > small { display: block; margin-top: 3px; color: #8b989d; font-size: 7.5px; }
 .destination-section-title { margin-top: 3px; padding-top: 9px; border-top: 1px solid #e4eaec; }
 .destination-section-title > span, .destination-list-heading > div > span { display: block; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
-.destination-section-title > strong, .destination-list-heading > div > strong { display: block; margin-top: 2px; font: 500 11px/1.25 Georgia, "Times New Roman", serif; color: #314a54; }
+.destination-section-title > strong, .destination-list-heading > div > strong { display: block; margin-top: 2px; font: 500 11px/1.25 var(--world-body-family, Georgia, "Times New Roman", serif); color: #314a54; }
 .destination-quiet-section { margin-top: 6px; }
 .destination-effect-title { margin-top: 5px; }
 .destination-list-heading { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
@@ -23,7 +23,7 @@
 .destination-more summary::-webkit-details-marker { display: none; }
 .destination-more summary::after { content: '›'; order: 3; color: #8ba0a8; font-size: 14px; line-height: 1; transform: rotate(0deg); transition: transform 120ms ease; }
 .destination-more[open] summary::after { transform: rotate(90deg); }
-.destination-more summary > span { font: 500 10px/1.25 Georgia, "Times New Roman", serif; }
+.destination-more summary > span { font: 500 10px/1.25 var(--world-body-family, Georgia, "Times New Roman", serif); }
 .destination-more summary > small { margin-left: auto; color: #8b989d; font-size: 7.5px; }
 .destination-more-content { display: grid; gap: 7px; padding: 2px 0 8px; }
 
@@ -48,7 +48,7 @@
 .destination-preview { position: relative; display: grid; gap: 12px; min-height: 462px; }
 .destination-story { min-width: 0; }
 .destination-story h1 { margin-top: 7px; }
-.destination-subtitle { margin: 8px 0 11px; color: var(--world-accent); font: italic 16px/1.28 Georgia, "Times New Roman", serif; }
+.destination-subtitle { margin: 8px 0 11px; color: var(--world-accent); font: italic 16px/1.28 var(--world-body-family, Georgia, "Times New Roman", serif); }
 .destination-hero-placeholder { min-height: 150px; border-radius: 2px; background:
   radial-gradient(circle at 18% 45%, rgba(255,255,255,.62), transparent 22%),
   radial-gradient(circle at 76% 28%, rgba(255,255,255,.48), transparent 18%),

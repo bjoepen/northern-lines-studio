@@ -181,7 +181,7 @@
 .destination-preview.destination-hero-banner .destination-introduction {
   margin: 0;
   padding: 2px 0 2px 18px;
-  border-left: 1px solid rgba(84, 113, 129, .38);
+  border-left: 1px solid color-mix(in srgb, var(--world-accent) 38%, transparent);
   color: #53676f;
   font-size: 12px;
   line-height: 1.42;

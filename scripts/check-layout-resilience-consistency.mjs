@@ -74,5 +74,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Layout Resilience Consistency Gate: PASS');
+console.log('Layout Resilience Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('15 mm Binding → Title → Companion Invariance → Footer → Capacity → Time Language → Unsaved Changes → Product DNA → Tests');

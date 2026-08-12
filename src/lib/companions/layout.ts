@@ -34,3 +34,5 @@ export function companionVisibleForRole(
 ): boolean {
   return Boolean(role && rule.visibleRoles.includes(role));
 }
+
+export const balticCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };

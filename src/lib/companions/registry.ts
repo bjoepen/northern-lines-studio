@@ -18,7 +18,7 @@ const companions: readonly CompanionDefinition[] = [
     editorialWorldId: 'baltic',
     name: 'Fischotter',
     role: 'editorial_companion',
-    status: 'planned',
+    status: 'active',
     character: 'gelassen, neugierig, wasserverbunden',
     editorialMood: ['Wasser', 'Küste', 'Leichtigkeit'],
     assetPath: 'design-library/companions/baltic/companion.png',

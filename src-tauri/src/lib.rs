@@ -13,6 +13,11 @@ const BUILD_004_FORMAT_VERSION: &str = "0.3.0";
 const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
 const REFERENCE_WORLD_ID: &str = "fjord";
+const BALTIC_WORLD_ID: &str = "baltic";
+
+fn is_supported_editorial_world(id: &str) -> bool {
+    id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -579,6 +584,9 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
     if world_id.trim().is_empty() {
         return Err("Das Projekt besitzt eine leere Editorial-World-ID.".into());
     }
+    if !is_supported_editorial_world(world_id) {
+        return Err(format!("Unbekannte Editorial World: {world_id}"));
+    }
 
     let journey = project
         .journey
@@ -728,7 +736,7 @@ fn starter_page(id: &str, order: u32, page_type: &str, role: &str, title: &str, 
 fn create_nls_project(parent_path: String, title: String, editorial_world_id: String, language: String) -> Result<ProjectSession, String> {
     let title = title.trim();
     if title.is_empty() { return Err("Die Reise braucht einen Namen.".into()); }
-    if editorial_world_id != REFERENCE_WORLD_ID {
+    if !is_supported_editorial_world(&editorial_world_id) {
         return Err(format!("Editorial World '{editorial_world_id}' ist für neue Reisen noch nicht freigegeben."));
     }
     let folder = Path::new(&parent_path).join(format!("{}.nls", slugify(title)));
@@ -777,6 +785,20 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
     write_project(&folder, &project)?;
     let project = read_project(&folder)?;
     Ok(project_session(project, &folder))
+}
+
+#[tauri::command]
+fn update_editorial_world(path: String, editorial_world_id: String) -> Result<ProjectSession, String> {
+    if !is_supported_editorial_world(&editorial_world_id) {
+        return Err(format!("Editorial World '{editorial_world_id}' ist nicht verfügbar."));
+    }
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    project.editorial_world_id = Some(editorial_world_id);
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
 }
 
 #[tauri::command]
@@ -1241,6 +1263,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_nls_project,
             create_nls_project,
+            update_editorial_world,
             save_authoring_component,
             add_journey_place,
             update_journey_planning,
@@ -1428,6 +1451,24 @@ mod tests {
         assert_eq!(migrated.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
         assert!(migrated.page_manifest[0].components.contains(&"knowledge".to_string()));
         assert!(validate_project(&migrated).is_ok());
+    }
+
+
+    #[test]
+    fn supports_baltic_world_and_persists_world_switch() {
+        let root = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            root.path().to_string_lossy().into_owned(),
+            "Ostsee Test".into(),
+            BALTIC_WORLD_ID.into(),
+            "de".into(),
+        ).expect("create baltic");
+        assert_eq!(created.project.editorial_world_id.as_deref(), Some(BALTIC_WORLD_ID));
+        let switched = update_editorial_world(
+            created.project.project_path.clone(),
+            REFERENCE_WORLD_ID.into(),
+        ).expect("switch world");
+        assert_eq!(switched.project.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
     }
 
     #[test]

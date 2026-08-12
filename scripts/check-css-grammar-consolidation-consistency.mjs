@@ -30,4 +30,4 @@ const all = expected.map(f => fs.readFileSync(path.join(root,'src/styles',f),'ut
 for (const forbidden of ['--weites-title-gap: 20px', '1.08fr) minmax(0, .92fr']) {
   if (all.includes(forbidden)) throw new Error(`Historical override residue remains: ${forbidden}`);
 }
-console.log('CSS & Grammar Consolidation Consistency Gate: PASS');
+console.log('CSS & Grammar Consolidation Consistency Gate: \x1b[32mPASS\x1b[0m');

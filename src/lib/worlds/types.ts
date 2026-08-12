@@ -9,5 +9,7 @@ export interface EditorialWorldDefinition {
   designLanguage: readonly string[];
   companionId: string;
   layoutSystemId: string;
+  companionName: string;
+  layoutSystemName: string;
   pageGrammars: readonly PageGrammarId[];
 }

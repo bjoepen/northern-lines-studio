@@ -50,5 +50,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Travel Opening Consistency Gate: PASS');
+console.log('Travel Opening Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Studio Dialog → .nls Package Path → Shared Load Command ← Finder Open → Session → Frontend State → Page Selection');

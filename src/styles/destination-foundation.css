@@ -23,7 +23,7 @@
 .destination-subtitle {
   margin: 8px 0 11px;
   color: var(--world-accent);
-  font: italic 16px/1.28 Georgia, "Times New Roman", serif;
+  font: italic 16px/1.28 var(--world-body-family, Georgia, "Times New Roman", serif);
 }
 
 /* A compact semantic time input: the traveller enters only the time; Travel

@@ -34,7 +34,7 @@ for (const token of [
   'destination-introduction',
   '--weites-hero-height: 118px',
   '--weites-title-gap: 16px',
-  'border-left: 1px solid rgba(84, 113, 129, .38)',
+  'border-left: 1px solid color-mix(in srgb, var(--world-accent) 38%, transparent)',
   'destination-preview.destination-hero-banner .destination-story .page-rule',
   'grid-template-rows: var(--weites-hero-height) var(--weites-title-gap) auto auto',
   'grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr)',
@@ -104,15 +104,15 @@ if (!files.css.includes('.destination-preview.destination-hero-banner .destinati
   failures.push('Weite must compose title and introduction inside the protected Title Zone');
 }
 
-if (!files.css.includes('border-left: 1px solid rgba(84, 113, 129, .38)')) {
+if (!files.css.includes('border-left: 1px solid color-mix(in srgb, var(--world-accent) 38%, transparent)')) {
   failures.push('Weite title/introduction composition must keep its functional vertical divider');
 }
 
 if (failures.length) {
-  console.error('Destination Composition Consistency Gate: FAIL');
+  console.error('Destination Composition Consistency Gate: \x1b[31mFAIL\x1b[0m');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log('Destination Composition Consistency Gate: PASS');
+console.log('Destination Composition Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Image Composition → Module Grammar → Inspector Ergonomics → Local Preference → Product DNA → Tests');

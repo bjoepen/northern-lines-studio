@@ -84,5 +84,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Destination Imagery Consistency Gate: PASS');
+console.log('Destination Imagery Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Image Roles → Project Assets → Inspector → Geometry Help → Image Composition → White Fjord Surface → 15 mm Binding → Companion Invariance → Tests');

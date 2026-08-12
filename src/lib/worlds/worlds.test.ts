@@ -30,7 +30,9 @@ describe('editorial world library', () => {
     expect(() => requireEditorialWorld('unknown')).toThrow('Unbekannte Editorial World');
   });
 
-  it('ships only the approved Fjord reference world', () => {
-    expect(availableEditorialWorlds().map((world) => world.id)).toEqual(['fjord']);
+  it('ships Fjord and the approved Ostsee PoC world', () => {
+    expect(availableEditorialWorlds().map((world) => world.id)).toEqual(['fjord', 'baltic']);
+    expect(requireEditorialWorld('baltic').name).toBe('Ostsee');
+    expect(requireEditorialWorld('baltic').companionId).toBe('baltic-otter');
   });
 });

@@ -24,6 +24,12 @@ describe('editorial layout systems', () => {
     expect(requireLayoutSystem('fjord').companionLayoutId).toBe('fjord-companion-layout');
   });
 
+  it('loads the Ostsee layout language with the same destination vocabulary', () => {
+    const layout = requireLayoutSystem('baltic');
+    expect(layout.name).toBe('Ostsee Layout Language');
+    expect(layout.destinationLayouts.map((item) => item.label)).toEqual(['Weite', 'Bild links', 'Bild rechts']);
+  });
+
   it('does not invent layout languages for unknown worlds', () => {
     expect(layoutSystemForWorld('unknown')).toBeNull();
   });

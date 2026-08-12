@@ -46,4 +46,4 @@ if (!String(packageJson.scripts?.consistency ?? '').includes('check-editorial-ex
   throw new Error('Editorial Extension Zones gate is not wired into pnpm consistency.');
 }
 
-console.log('Editorial Extension Zones Consistency Gate: PASS');
+console.log('Editorial Extension Zones Consistency Gate: \x1b[32mPASS\x1b[0m');

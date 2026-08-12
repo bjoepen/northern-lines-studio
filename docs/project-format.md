@@ -180,3 +180,8 @@ Destination Profiles können ab 0.10.0 eine optionale Liste `editorialExtensions
 Erlaubte Foundation-Kinds: `knowledge`, `photo_spot`, `tip`, `souvenir`, `important`, `history`.
 
 Die Daten speichern Semantik und Inhalt, aber keine Farbe, Box-Geometrie, Koordinaten oder Signet-Dateipfade. Diese Expression gehört zur Editorial World und Layout Grammar.
+
+
+## Editorial Worlds · Build 025B
+
+`editorialWorldId` unterstützt `fjord` und `baltic`. Der World-Wechsel ändert keine Schema-Version und keine semantischen Reiseinhalte.
