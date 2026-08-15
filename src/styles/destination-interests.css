@@ -16,13 +16,13 @@
   margin: 0 0 22px;
   font-family: var(--world-body-family);
   font-size: 15px;
-  color: var(--world-quiet);
+  color: var(--interest-meta, var(--world-quiet));
 }
 
 .destination-interest-foundation-note {
   margin-top: 34px;
   padding: 18px 20px;
-  background: color-mix(in srgb, var(--world-accent) 8%, #ffffff 92%);
+  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #ffffff));
   border-radius: 2px;
   display: grid;
   gap: 6px;
@@ -41,10 +41,11 @@
   font-size: 14px;
   line-height: 1.45;
   font-weight: 500;
+  color: var(--interest-ink, var(--world-ink));
 }
 
 .destination-interest-foundation-note small {
-  color: var(--world-quiet);
+  color: var(--interest-quiet, var(--world-quiet));
   line-height: 1.45;
 }
 

@@ -1,10 +1,10 @@
-# APPLY-DROPIN · Build 026 – Destination Interest Pages Foundation
+# APPLY-DROPIN · Build 026 – Destination Interest Pages World Expression Polish
 
-**Baseline:** final Build 025C – Ostsee Warm Expression Polish
-**Target:** Build 026 – Destination Interest Pages Foundation
-**Project format:** `.nls` 0.10.0 → 0.11.0
+**Baseline:** Build 026 – Destination Interest Pages Foundation  
+**Target:** Build 026 – Destination Interest Pages World Expression Polish  
+**Project format:** `.nls` 0.11.0 → 0.11.0 (keine Migration)
 
-This Drop-in contains only new/changed files. No `--delete` is required.
+Dieser Drop-in enthält nur neue/geänderte Dateien. `--delete` ist nicht erforderlich.
 
 ## 1. Branch
 
@@ -12,28 +12,28 @@ This Drop-in contains only new/changed files. No `--delete` is required.
 cd ~/Projekte/northern-lines-studio
 git switch main
 git pull --ff-only
-git switch -c build/026-destination-interest-pages
+git switch -c fix/026-interest-world-expression
 ```
 
-Stop if `git status` is not clean unless the local changes are intentional and already backed up.
+Nur mit sauberem `git status` fortfahren, sofern lokale Änderungen nicht bewusst gesichert wurden.
 
 ## 2. Dry Run
 
-Assuming the extracted Drop-in is located in Downloads:
+Nach dem Entpacken des Drop-ins unter `~/Downloads`:
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-026-Destination-Interest-Pages-Foundation-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-026-Destination-Interest-World-Expression-Polish-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-Expected: only Build-026 files are listed. `.git/` is never touched.
+Erwartung: Nur die Polish-Dateien werden gelistet. `.git/` bleibt unangetastet.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-026-Destination-Interest-Pages-Foundation-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-026-Destination-Interest-World-Expression-Polish-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -44,13 +44,11 @@ cd ~/Projekte/northern-lines-studio
 pnpm consistency
 ```
 
-Expected new gate:
+Zusätzlich muss erscheinen:
 
 ```text
-Destination Interest Pages Consistency Gate: PASS
+Destination Interest World Expression Consistency Gate: PASS
 ```
-
-`PASS` is the positive status; no emoji/badge is required.
 
 ## 5. Full Gates
 
@@ -62,42 +60,55 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-All gates must pass before committing.
+Alle Gates müssen PASS sein, bevor committed wird.
 
-## 6. Real-World Test
+## 6. App bauen & installieren
 
-Use an existing Build-025 Travelbook such as the Norway/Bergen working project.
+Aus dem Repo-Root:
 
-1. Open the `.nls` and confirm migration from 0.10.0 to 0.11.0.
-2. Select **Bergen**.
-3. Under **Deine Interessen**, add **Fotografie**.
-4. Confirm the new page appears immediately after Bergen in **Deine Route**.
-5. Return to Bergen and add **Kultur & Geschichte**.
-6. Confirm both pages coexist before the next route destination.
-7. Open one interest page, edit **Titel** and **Einleitung**, save, close Studio and reopen the `.nls`.
-8. Confirm authoring and both interest pages persist.
-9. Switch **Fjord → Ostsee → Fjord** while an interest page is selected. Content must remain unchanged; typography/Companion/World Expression may change.
-10. Remove one interest page. The other interest and the main Bergen page must remain intact.
-11. Add a new route destination after interest pages already exist. Route and page ordering must remain coherent.
+```bash
+cd ~/Projekte/northern-lines-studio
+./scripts/install-macos-app.sh
+```
+
+Erwartetes Ergebnis:
+
+```text
+/Applications/Northern Lines Studio.app
+```
+
+Für den Real-World-Test immer die frisch installierte App verwenden.
+
+## 7. Real-World-Test
+
+1. Eine bestehende `.nls`-Reise im Format 0.11.0 öffnen.
+2. Bei Bergen mindestens eine Vertiefungsseite öffnen, idealerweise **Kultur & Geschichte**.
+3. In **Fjord** prüfen: weiße Seite, Fjord-Typografie/-Akzent und kühle, ruhige Vertiefungsfläche.
+4. Auf **Ostsee** wechseln.
+5. Prüfen: Seitenfläche bleibt weiß; Typografie, Meta-Akzente und die Fläche **Deine Vertiefung** wechseln sichtbar in die Ostsee-Expression.
+6. Ostsee-Fläche soll warm Hanse/Backstein/Sand zitieren, ohne Rahmen oder zusätzliche Dekoration.
+7. Companion muss World-konform wechseln und seine geschützte Zone behalten.
+8. Zurück auf **Fjord** wechseln. Titel, Einleitung, Destination-Zuordnung und Reihenfolge dürfen sich nicht ändern.
+9. Studio schließen, Reise erneut öffnen und Persistenz kontrollieren.
 
 ### GO
 
-The traveller can deepen a Destination in several directions without seeing technical page types or managing layout mechanics.
+Die Interest Page wirkt eindeutig wie dieselbe Northern-Lines-Seite in einer anderen Editorial World: Semantik bleibt, Expression wechselt.
 
 ### STOP
 
-Stop and do not commit if:
+Nicht committen, wenn:
 
-- a Build-025 project loses existing content during migration;
-- an interest page appears detached from its Destination;
-- duplicate copies of the same interest can be created for one Destination;
-- World switching changes the semantic interest or authored content;
-- removing one interest removes the Destination or another interest.
+- die Seitenfläche durch eine World eingefärbt wird;
+- Interest Pages nur die Typografie, aber nicht Akzente/Editorial-Flächen wechseln;
+- der World Switch Inhalt oder Destination-Zuordnung verändert;
+- Fjord oder Ostsee hardcodierte Neutralflächen verwenden, die die World Expression brechen;
+- Companion, Footer oder Safe Zones verändert werden.
 
-## 7. Commit
+## 8. Commit & Push
 
 ```bash
 git add .
-git commit -m "feat: add destination interest pages foundation"
-git push -u origin build/026-destination-interest-pages
+git commit -m "fix: apply world expression to destination interest pages"
+git push -u origin fix/026-interest-world-expression
 ```
