@@ -1,48 +1,46 @@
-# APPLY-DROPIN — Build 030 · Culinary & Local Experience
+# Northern Lines Studio · Build 030 Capacity Protection Regression Fix
 
-Baseline: final Build 029 Interest Page Header & Intro Fix  
-Target: Build 030 Culinary & Local Experience
+Ausgangsstand: **Build 030 · Content Fit & Composition Fix**  
+Ziel: Wiederherstellung der bereits freigegebenen Capacity Protection.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git status
-git switch -c feature/build-030-culinary-local-experience
+git switch -c fix/build-030-capacity-protection-regression
 ```
 
 ## 2. Dry Run
 
 ```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-030-Culinary-Local-Experience-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-030-Capacity-Protection-Regression-Fix-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
-Review the list. This Drop-in contains only new/changed Build-030 files and uses no `--delete`.
+Erwartung: geändert werden nur die in diesem Drop-in enthaltenen Source-, Gate- und Dokumentationsdateien.
 
 ## 3. Apply
 
 ```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-030-Culinary-Local-Experience-DropIn/ ~/Projekte/northern-lines-studio/
-cd ~/Projekte/northern-lines-studio
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-030-Capacity-Protection-Regression-Fix-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
 ## 4. Consistency Gate
 
 ```bash
+cd ~/Projekte/northern-lines-studio
 pnpm consistency
 ```
 
-Expected new output includes:
+Erwartung unter anderem:
 
 ```text
-Culinary & Local Experience Consistency Gate: PASS
-Native UI Consistency Gate: PASS
-Interest Page Header & Intro Consistency Gate: PASS
+Content Fit & Composition Consistency Gate: PASS
+Capacity Protection Regression Gate: PASS
 ```
 
-The word `PASS` must be green. Existing semantics remain: WARN amber, FAIL red.
+`PASS` muss in der sichtbaren Gate-Ausgabe grün erscheinen.
 
-## 5. Full Gates
+## 5. Vollständige Gates
 
 ```bash
 pnpm check
@@ -52,58 +50,58 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-Stop on any error.
+STOP bei jedem Fehler. Erst bei vollständig grünen Gates fortfahren.
 
-## 6. Build and install the macOS app
+## 6. macOS App bauen und installieren
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Expected target:
-
-```text
-/Applications/Northern Lines Studio.app
-```
-
-Manual alternative:
+Manuell alternativ:
 
 ```bash
 pnpm tauri build --bundles app
 ```
 
-Development run:
+Erwartetes Ziel:
 
-```bash
-pnpm tauri dev
+```text
+/Applications/Northern Lines Studio.app
 ```
 
-## 7. Real-world test
+## 7. Real-World-Test · Bergen / Kulinarik & Lokal
 
-Use an existing Destination and add **Kulinarik & Lokal**.
+Verwende die zwei bereits vorhandenen Empfehlungen:
 
-- Confirm the page header follows the shared Interest grammar: **KULINARIK & LOKAL → Ort → editable introduction**.
-- Add two entries through **+ Empfehlung hinzufügen**.
-- Recommendation 01: e.g. local dish or speciality with category, reason and **Probieren & entdecken**.
-- Recommendation 02: e.g. market, café or local shop with **Gut zu wissen**, optional **Zeit / Preis**, and optional map/place reference.
-- Confirm each recommendation retains its own details after save, page switch, app close/reopen.
-- Confirm Studio automatically chooses an appropriate single / two-up / grouped composition.
-- Confirm `comfortable` is the default; `tight` is only used under real capacity pressure.
-- Confirm no text clipping.
-- Confirm Companion and Footer stay fixed.
-- Confirm Fjord ↔ Ostsee changes expression, not content.
-- Confirm the local entry-editor action says **Zurück**.
-- Scan the visible flow for unintended browser/default HTML controls.
-- Confirm all visible PASS state words use the approved green status treatment.
+1. **Skillingsbolle bei Baker Brun**
+2. **Bergener Fischmarkt / Mathallen**
 
-## 8. Commit and Push
+Mit den ausführlichen Einordnungen, Probierhinweisen, Besuchshinweisen und Ortsbezügen aus dem Build-030-Test.
+
+### Erwartetes Verhalten
+
+Studio prüft alle für diesen Seitentyp freigegebenen Kompositionen:
+
+- 1/2–1/2
+- 1/3–2/3
+- 2/3–1/3
+- gestapelt
+- `comfortable`
+- anschließend maximal die feste Interest-Page-Stufe `tight`
+
+Wenn keine Variante vollständig innerhalb der Content-Zone bleibt, muss Studio **nicht weiter quetschen**, sondern anzeigen:
+
+> **Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.**
+
+Dabei müssen Companion und Footer vollständig in ihren Safe-Zonen bleiben. Kein Text darf geclippt oder außerhalb einer Box bzw. unter den Footer gerendert werden.
+
+## 8. Commit und Push
 
 ```bash
-cd ~/Projekte/northern-lines-studio
 git status
-git add -A
-git diff --cached --check
-git commit -m "feat: add culinary and local experience"
-git push -u origin feature/build-030-culinary-local-experience
+git add .
+git commit -m "fix: restore capacity protection after composition"
+git push -u origin fix/build-030-capacity-protection-regression
 ```

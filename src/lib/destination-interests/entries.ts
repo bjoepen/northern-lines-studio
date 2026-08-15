@@ -168,9 +168,14 @@ function compositionHeightEstimate(
 function pageHeightBudget(kind: DestinationInterestKind | undefined, introductionLength: number, density: InterestPageDensity): number {
   // This is intentionally a finite editorial heuristic, not browser geometry.
   // Intro pressure reduces the usable content band while Companion/Footer stay fixed.
-  const base = kind === 'culinary_local' ? 23.0 : 23.8;
+  // Capacity Protection is deliberately conservative: the budget ends before
+  // Companion/Footer safe zones, not at the visual page edge. Culinary cards
+  // carry more labelled sub-fields than the other archetypes, so their safe
+  // content band is smaller. `tight` is one bounded relief step, never a licence
+  // to consume the protected lower page.
+  const base = kind === 'culinary_local' ? 20.0 : 22.6;
   const introPenalty = Math.min(4.6, introductionLength / 78);
-  const tightRelief = density === 'tight' ? 3.0 : 0;
+  const tightRelief = density === 'tight' ? 1.5 : 0;
   return base - introPenalty + tightRelief;
 }
 

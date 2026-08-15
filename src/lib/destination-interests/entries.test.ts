@@ -10,19 +10,19 @@ const culinary = (id: string, title: string, fields: Record<string, string>): De
 });
 
 describe('Interest Page layout state', () => {
-  it('evaluates every approved two-entry composition before density or overflow', () => {
+  it('restores the Bergen culinary capacity warning after every approved composition is exhausted', () => {
     const entries = [
       culinary('skillingsbolle', 'Skillingsbolle bei Baker Brun', {
         category: 'lokale Spezialität / Bäckerei',
-        why: 'Die Skillingsbolle gilt als typische Bergener Spezialität und lokale Tradition.',
+        why: 'Die Skillingsbolle gilt als typische Bergener Spezialität; Visit Bergen hebt sie ausdrücklich als lokale Tradition hervor.',
         try: 'Frisch gebackene Skillingsbolle mit Zimt und Zucker',
         guidance: 'Baker Brun Svensgården liegt direkt in Bryggen.',
         placeReference: 'Bryggen 27, Bergen'
       }),
       culinary('fisketorget', 'Bergener Fischmarkt / Mathallen', {
         category: 'Markt / Seafood',
-        why: 'Der Fischmarkt ist ein historischer Handelsplatz und verbindet lokale Geschichte und heutige Esskultur.',
-        try: 'Frischer Fisch, Meeresfrüchte oder klassische Bergener Fischsuppe.',
+        why: 'Der Fischmarkt ist seit dem 13. Jahrhundert ein zentraler Handelsplatz Bergens und verbindet damit lokale Geschichte und heutige Esskultur.',
+        try: 'Frischer Fisch und Meeresfrüchte; alternativ klassische Bergener Fischsuppe. Fisch und Seafood gehören ohnehin stark zur lokalen Küche.',
         guidance: 'Die Markthallen sind ganzjährig geöffnet; der Außenmarkt ist saisonal.',
         placeReference: 'Torget, Bergen'
       })
@@ -37,7 +37,7 @@ describe('Interest Page layout state', () => {
     ]);
     expect(['two-up', 'one-third-two-thirds', 'two-thirds-one-third', 'stacked']).toContain(state.composition);
     expect(['comfortable', 'tight']).toContain(state.density);
-    expect(state.overflow).toBe(false);
+    expect(state.overflow).toBe(true);
     expect(interestEntryComposition(entries, true, 'culinary_local')).not.toBe('single');
   });
 

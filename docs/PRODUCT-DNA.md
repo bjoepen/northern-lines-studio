@@ -1924,3 +1924,12 @@ Die verbindliche Reihenfolge lautet:
 7. wenn keine zulässige Variante passt: `overflow` statt Clipping, Verdrängen oder weiterer Verkleinerung.
 
 Diese Regel ist kein Interest-Page-Sonderfall. Sie ist Teil der allgemeinen Northern-Lines-Layout-Grammatik.
+
+
+## Build 030 Regression Fix · Capacity Protection bleibt autoritativ
+
+Die adaptive Composition Engine darf die bestehende Capacity Protection niemals umgehen. Jede erlaubte Komposition wird gegen die geschützte Content-Zone geprüft. Wird in `comfortable` und der einmaligen Interest-Page-Stufe `tight` keine gültige Variante gefunden, wechselt Studio zwingend in `overflow`.
+
+> **Capacity Protection bleibt autoritativ.**
+
+Der bereits etablierte Travel-Language-Hinweis **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** ist der vorgesehene Endzustand. Companion und Footer bleiben frei; Clipping, weiteres Schrumpfen oder Rendern außerhalb der Content-Zone sind keine zulässigen Alternativen.
