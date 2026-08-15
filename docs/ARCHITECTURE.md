@@ -170,3 +170,6 @@ Interest Pages persist repeated semantic units as `StudioPage.interestEntries`. 
 The page model stores **what belongs together**; it does not store the chosen visual composition. One-box/two-box layout, density (`comfortable` / `tight`) and overflow remain derived Layout Grammar decisions.
 
 Legacy line-based Photography/Hiking authoring remains readable during migration but is no longer the primary editing model.
+
+## Build 029 · Structured Culture & History Interest Experience
+Culture & History uses the same structured `DestinationInterestEntry` foundation as Photography and Hiking. Page-specific field schemas live in the Interest Entry schema layer; persistence remains generic in Rust. Rendering is archetype-specific, while composition, density, World Expression, Companion/Footer protection and overflow behavior remain shared Interest Page grammar responsibilities. This keeps the architecture on **Model → Rust persistence → semantic entry schema → Inspector → adaptive preview → consistency tests**, without introducing a page-specific persistence command.

@@ -42,5 +42,5 @@ mustContain(format, '0.14.0', 'Project format documentation must mention 0.14.0.
 mustContain(dna, 'Ausschließlich Interest Pages', 'Product DNA must bound compact typography to Interest Pages only.');
 mustContain(dna, 'wiederholbaren semantischen Einträgen', 'Product DNA must document structured Interest authoring.');
 
-console.log('Hiking & Nature Experience Consistency Gate: PASS');
-console.log('Route Association & No-Clipping Gate: PASS');
+console.log('Hiking & Nature Experience Consistency Gate: \x1b[32mPASS\x1b[0m');
+console.log('Route Association & No-Clipping Gate: \x1b[32mPASS\x1b[0m');

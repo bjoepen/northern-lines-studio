@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.13.0
+**Current format:** `.nls` 0.14.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -276,3 +276,7 @@ Each entry stores semantic text only. One-box/two-box composition, `comfortable`
 ### Migration 0.13.0 → 0.14.0
 
 Opening a Build-028/0.13.0 project creates structured entries from the existing line-based Photography and Hiking authoring data. Matching rows are associated by their existing order. The legacy authoring content remains in the project for lossless compatibility; Studio does not invent new travel content. New edits use the structured entry model.
+
+
+## Build 029 – Culture & History Experience (`0.14.0`)
+No format migration is required. Build 029 uses the existing structured `interestEntries` model introduced with 0.14.0. `culture_history` entries use kind `culture_place`; their field map may contain `category`, `why`, `guidance`, `timeReference`, and `placeReference`. Missing optional fields remain absent/empty; Studio invents no cultural content.

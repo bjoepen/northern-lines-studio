@@ -621,3 +621,41 @@
 .interest-entry-grouped .interest-entry-card + .interest-entry-card {
   padding-top: 8px;
 }
+
+
+/* Build 029 · Culture & History Experience
+   Structured cultural places follow the shared Interest Entry grammar. */
+.a5-page.destination-interest-page.culture-history-interest-page {
+  padding-top: 40px;
+  padding-bottom: 42px;
+}
+.culture-history-experience { max-width: 445px; min-height: 0; }
+.culture-history-experience .culture-history-page-rule { width: 38px; height: 1px; margin-bottom: 12px; }
+.culture-history-experience .eyebrow { margin-bottom: 8px; }
+.culture-history-experience .preview-body { max-width: 390px; margin-top: 16px; margin-bottom: 14px; }
+.culture-history-section-label {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 9px;
+  color: var(--interest-meta, var(--world-accent));
+}
+.culture-history-places { margin-top: 16px; }
+.culture-history-entry-card .interest-entry-heading { grid-template-columns: 24px minmax(0, 1fr); }
+.culture-history-entry-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.interest-entry-two-up .culture-history-entry-details { grid-template-columns: minmax(0, 1fr); }
+.culture-history-capacity-stop { margin-top: 20px; }
+.culture-history-empty { font-size: 9.5px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
+
+/* Travel Language: secondary editor navigation is text-like, never a native-looking control. */
+.interest-entry-back {
+  border: 0;
+  background: transparent;
+  padding: 4px 2px;
+  color: #66777e;
+  font-size: 9px;
+  line-height: 1.25;
+  font-weight: 600;
+  cursor: pointer;
+}
+.interest-entry-back:hover:not(:disabled) { color: #314d58; }

@@ -1849,3 +1849,12 @@ Auch wiederholbare Interest-Einträge folgen derselben UX Language wie die übri
 
 Nicht editierbare Begleiter-Eigenschaften wie Platz, Pose und Spiegelung werden als ruhige Statuswerte dargestellt. Label und Wert verwenden dieselbe kleine UI-Schriftgröße; der Wert darf zur Erkennung fett gesetzt werden, erhält aber keine größere typografische Hierarchie und suggeriert keine Einstellbarkeit.
 
+
+
+## Interest Page Authoring & Native UI Consistency · Build 029
+- Interest Pages use repeatable semantic entries: the traveler adds a concrete place, route, photo spot or recommendation, then fills its dedicated mask.
+- Studio composes those entries automatically; layout variants are not user settings.
+- Culture & History uses **Ort / Station hinzufügen** and keeps category, editorial meaning, visit guidance, optional time reference and place/map reference attached to the same station.
+- Travel Language applies inside editorial authoring. Entry navigation says **Zurück**, while the global dirty-state system keeps **Verwerfen · Abbrechen · Speichern**.
+- Before release, visible Studio flows are checked for unintended browser/default HTML controls.
+- Visible gate states remain semantic: **PASS green, WARN amber, FAIL red**; only the status word carries the signal color.

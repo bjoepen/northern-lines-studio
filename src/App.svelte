@@ -1271,6 +1271,7 @@
               class:destination-interest-page={selectedPage?.type === 'destination_interest'}
               class:photography-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'}
               class:hiking-nature-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'}
+              class:culture-history-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culture_history'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1456,6 +1457,49 @@
                       {#if selectedPage.authoring?.hike_place_reference?.content && !interestHasPlaceReference}
                         <div class="hiking-place-reference interest-legacy-shared"><span>Ort & Karte</span><strong>{selectedPage.authoring.hike_place_reference.content}</strong></div>
                       {/if}
+                    {/if}
+                  </div>
+                {:else if selectedPage.destinationInterestKind === 'culture_history'}
+                  <div class="destination-interest-preview culture-history-experience" class:interest-density-tight={interestDensity === 'tight'}>
+                    <div class="page-rule culture-history-page-rule"></div>
+                    <p class="eyebrow">{destinationInterest.eyebrow}</p>
+                    <h1>{preview.heading}</h1>
+                    <p class="destination-interest-place">{journeyStage.title}</p>
+                    {#if preview.body}<p class="preview-body">{preview.body}</p>{/if}
+                    {#if interestOverflow}
+                      <div class="destination-capacity-stop culture-history-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
+                        <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
+                        <small>Kürze einzelne Stationen oder verteile die Vertiefung auf weitere Seiten.</small>
+                      </div>
+                    {:else}
+                      <section class="interest-entry-section culture-history-places" aria-label="Kulturelle Orte und Stationen">
+                        <span class="culture-history-section-label">Orte & Stationen</span>
+                        <div class={`interest-entry-grid interest-entry-${interestComposition}`}>
+                          {#if selectedInterestEntries.length}
+                            {#each selectedInterestEntries as entry, index (entry.id)}
+                              <article class="interest-entry-card culture-history-entry-card">
+                                <div class="interest-entry-heading">
+                                  <span class="interest-entry-number">{String(index + 1).padStart(2, '0')}</span>
+                                  <div>
+                                    <strong>{entry.title}</strong>
+                                    {#if entry.fields.category}<small>{entry.fields.category}</small>{/if}
+                                  </div>
+                                </div>
+                                {#if entry.fields.why || entry.fields.guidance || entry.fields.timeReference}
+                                  <div class="interest-entry-details culture-history-entry-details">
+                                    {#if entry.fields.why}<p class="interest-entry-wide"><span>Einordnung & Bedeutung</span>{entry.fields.why}</p>{/if}
+                                    {#if entry.fields.guidance}<p><span>Besuchshinweis</span>{entry.fields.guidance}</p>{/if}
+                                    {#if entry.fields.timeReference}<p><span>Zeitbezug</span>{entry.fields.timeReference}</p>{/if}
+                                  </div>
+                                {/if}
+                                {#if entry.fields.placeReference}<p class="interest-entry-place"><span>Ort & Karte</span>{entry.fields.placeReference}</p>{/if}
+                              </article>
+                            {/each}
+                          {:else}
+                            <small class="culture-history-empty">Noch keine Station angelegt.</small>
+                          {/if}
+                        </div>
+                      </section>
                     {/if}
                   </div>
                 {:else}
@@ -1840,7 +1884,7 @@
                 </label>
               {/each}
               <div class="interest-entry-editor-actions">
-                <button type="button" on:click={cancelInterestEntry}>Abbrechen</button>
+                <button type="button" class="interest-entry-back" on:click={cancelInterestEntry}>Zurück</button>
                 <button type="button" class="authoring-save" on:click={() => void saveInterestEntry()} disabled={interestEntrySaveState === 'saving'}>{interestEntrySaveState === 'saving' ? 'Sichern …' : 'Eintrag sichern'}</button>
               </div>
               {#if interestEntryDirty}<small class="saveDirty">● Nicht gesichert</small>{/if}

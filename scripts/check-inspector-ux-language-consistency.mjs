@@ -19,5 +19,5 @@ for (const [label, pattern] of checks) {
   }
 }
 
-console.log('Inspector UX Language Consistency Gate: PASS');
+console.log('Inspector UX Language Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Travel Language → calm entry actions → secondary removal → aligned companion status values');

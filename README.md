@@ -416,3 +416,7 @@ Die aktive Editorial World, die weiße Grundseite, Companion-/Footer-Safe-Zonen 
 
 Interest-Einträge folgen nun auch im Inspector der Northern-Lines-UX-Language: Einträge und „+ … hinzufügen“-Aktionen bleiben präsent, aber ruhig; Entfernen ist klar sekundär. Die Begleiter-Statuswerte Platz/Pose/Spiegelung sind auf Labelgröße reduziert, sauber ausgerichtet und nur über Fettschrift hervorgehoben. Keine Änderung am `.nls`-Format.
 
+
+
+## Build 029 – Culture & History Experience
+Build 029 expands the third Interest Page archetype using the shared structured-entry UX. Culture & History now supports repeatable **Orte / Stationen** with type, editorial meaning, visit guidance, optional time reference and optional place/map reference. Studio chooses the composition automatically and keeps World Expression, Interest-only adaptive density, Companion/Footer safe zones and capacity protection intact. The `.nls` format remains **0.14.0** because the structured entry model already stores extensible semantic fields. Build 029 also changes the entry-editor action from `Abbrechen` to the Travel-Language action `Zurück` and adds a Native UI Consistency gate.

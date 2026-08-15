@@ -1,55 +1,47 @@
-# Build 028 · Inspector UX Language Fix — Drop-in
+# APPLY-DROPIN — Build 029 · Culture & History Experience
 
-Ausgangsstand: **Build 028 Interest Entry Authoring Fix**  
-Ziel: ruhige Northern-Lines-UX-Language im Interest-Authoring und korrigierte Begleiter-Status-Typografie.
+Baseline: final Build 028 Inspector UX Language Fix
+Target: Build 029 Culture & History Experience
 
-## 1. In das produktive Repo wechseln
+## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-```
-
-Optionaler Arbeitsbranch:
-
-```bash
-git switch -c fix/build-028-inspector-ux-language
+git status
+git switch -c feature/build-029-culture-history-experience
 ```
 
 ## 2. Dry Run
 
 ```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-028-Inspector-UX-Language-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-029-Culture-History-Experience-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
-Erwartet werden Änderungen an:
-
-- `src/styles/destination-interests.css`
-- `src/styles/base-shell.css`
-- `scripts/check-inspector-ux-language-consistency.mjs`
-- `docs/PRODUCT-DNA.md`
-- `package.json`
-- `README.md`
+Review the list. This Drop-in contains only new/changed Build-029 files and uses no `--delete`.
 
 ## 3. Apply
 
 ```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-028-Inspector-UX-Language-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-029-Culture-History-Experience-DropIn/ ~/Projekte/northern-lines-studio/
+cd ~/Projekte/northern-lines-studio
 ```
 
 ## 4. Consistency Gate
 
 ```bash
-cd ~/Projekte/northern-lines-studio
 pnpm consistency
 ```
 
-Zusätzlich muss erscheinen:
+Expected new output includes:
 
 ```text
-Inspector UX Language Consistency Gate: PASS
+Culture & History Experience Consistency Gate: PASS
+Native UI Consistency Gate: PASS
 ```
 
-## 5. Vollständige Gates
+The word `PASS` must be green. Existing semantics remain: WARN amber, FAIL red.
+
+## 5. Full Gates
 
 ```bash
 pnpm check
@@ -59,50 +51,56 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-## 6. macOS-App installieren
+Stop on any error.
+
+## 6. Build and install the macOS app
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Manuell alternativ:
-
-```bash
-pnpm tauri build --bundles app
-```
-
-Ziel:
+Expected target:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
-## 7. Real-World-Test
-
-### Interest Authoring
-
-1. Geiranger → `Wandern & Natur` öffnen.
-2. Prüfen, dass vorhandene Routen wie ruhige redaktionelle Einträge wirken.
-3. `+ Route hinzufügen` muss klar auffindbar, aber nicht als breite dominante Buttonfläche erscheinen.
-4. `Entfernen` muss sichtbar, jedoch deutlich sekundärer sein.
-5. Dasselbe auf einer Fotografie-Seite mit `+ Fotospot hinzufügen` prüfen.
-
-### Reisebegleiter
-
-Im Inspector `Reisebegleiter` prüfen:
-
-- `Platz` / **`unten links`**
-- `Pose` / **`Standard`**
-- `Spiegelung` / **`aus`**
-
-Die Werte müssen dieselbe kleine Schriftgröße wie ihre Labels besitzen, auf derselben Grundlinie sitzen und nur durch **bold** hervorgehoben werden. Sie dürfen nicht wie bereits editierbare Controls wirken.
-
-## 8. Commit
+Manual alternative:
 
 ```bash
+pnpm tauri build --bundles app
+```
+
+Development run:
+
+```bash
+pnpm tauri dev
+```
+
+## 7. Real-world test
+
+Use an existing Destination and add **Kultur & Geschichte**.
+
+- Add two entries through **+ Ort / Station hinzufügen**.
+- Station 01: type `Museum`, editorial meaning, visit hint.
+- Station 02: type `Historischer Ort`, editorial meaning, optional time reference and map/place reference.
+- Confirm each station retains its own details after save, page switch, app close/reopen.
+- Confirm Studio automatically chooses an appropriate one/two/grouped composition.
+- Confirm `comfortable` is the default; `tight` is only used under real capacity pressure.
+- Confirm no text clipping.
+- Confirm Companion and Footer stay fixed.
+- Confirm Fjord ↔ Ostsee changes expression, not content.
+- Confirm the local entry-editor action says **Zurück**.
+- Scan the visible flow for unintended browser/default HTML controls.
+
+## 8. Commit and Push
+
+```bash
+cd ~/Projekte/northern-lines-studio
 git status
-git add src/styles/destination-interests.css src/styles/base-shell.css scripts/check-inspector-ux-language-consistency.mjs docs/PRODUCT-DNA.md package.json README.md
-git commit -m "fix: refine inspector UX language"
-git push
+git add -A
+git diff --cached --check
+git commit -m "feat: add culture and history experience"
+git push -u origin feature/build-029-culture-history-experience
 ```
