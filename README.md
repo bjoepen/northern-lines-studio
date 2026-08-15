@@ -1,3 +1,5 @@
+> **Build 028 · Hiking & Nature Polish:** Route, Start, Dauer, Schwierigkeit, Naturziel und Streckenhinweis bleiben jetzt als ein Tourenmodul zusammen. Companion und Footer sind harte Anker. Nur Interest Pages dürfen für dichte Praxisinhalte auf eine definierte kompakte Sekundärtypografie wechseln; alle anderen Seiten sind ausdrücklich ausgeschlossen.
+
 > **Build 026 · World Expression Polish:** Thematische Vertiefungsseiten erben jetzt die vollständige Editorial-World-Expression. Die Seite bleibt weiß; Fjord bzw. Ostsee prägen Typografie, Akzente und redaktionelle Flächen.
 
 # Northern Lines Studio
@@ -12,7 +14,7 @@
 
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 026 – Destination Interest Pages Foundation
+**Aktueller Stand:** Build 028 – Hiking & Nature Experience · Polish
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 
@@ -246,7 +248,7 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 026 aktualisiert das Format auf **0.11.0** und ergänzt semantische Destination Interest Pages. Build-025-Projekte im Format 0.10.0 werden beim Öffnen automatisch migriert; es werden dabei keine Interessen erfunden. Bestehende Journey-, Destination-, Bild- und Extension-Daten bleiben unverändert. Ältere bereits unterstützte Formate werden weiterhin normalisiert.
+Build 028 verwendet **`.nls` 0.13.0**. Build 028 ergänzt den fachlichen Wandern-&-Natur-Archetyp; der Polish verändert das Format nicht. Build-027-Projekte im Format 0.12.0 werden beim Öffnen automatisch migriert. Bestehende Journey-, Destination-, Bild-, Extension- und Interest-Daten bleiben erhalten; Studio erfindet keine Routen oder Interessen. Ältere bereits unterstützte Formate werden weiterhin normalisiert.
 Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
 redaktionelle Inhalte werden dabei bewusst nicht erfunden.
 

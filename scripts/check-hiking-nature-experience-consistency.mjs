@@ -25,14 +25,22 @@ mustContain(app, 'hiking-route-meta', 'Route, start, duration and difficulty mus
 mustContain(app, "hikingStartPointLines[index]", 'Start point must map directly to its route.');
 mustContain(app, "hikingDurationLines[index]", 'Duration must map directly to its route.');
 mustContain(app, "hikingDifficultyLines[index]", 'Difficulty must map directly to its route.');
+mustContain(app, "hikingHighlightLines[index]", 'Nature targets must map directly to their route.');
+mustContain(app, "hikingGuidanceLines[index]", 'Trail guidance must map directly to its route.');
+mustContain(app, 'class:hiking-interest-compact={hikingInterestCompact}', 'Dense Interest Pages need the bounded compact typography step.');
 mustContain(app, 'Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.', 'Capacity protection must remain active.');
 mustContain(css, '.hiking-nature-experience', 'Hiking & Nature layout is missing.');
+mustContain(css, '.hiking-route-details', 'Route-owned targets and guidance must stay visibly attached.');
+mustContain(css, '.hiking-interest-compact', 'Interest-only compact typography step is missing.');
+mustContain(css, 'position: absolute;', 'Hiking footer must be a hard page anchor.');
 mustContain(css, 'var(--interest-surface', 'Hiking & Nature must inherit World-owned surfaces.');
 mustContain(css, '.baltic-page.destination-interest-page .hiking-routes', 'Ostsee expression must reach Hiking & Nature.');
 mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.13.0";', 'Build 028 must use .nls 0.13.0.');
 mustContain(rust, 'const BUILD_027_FORMAT_VERSION: &str = "0.12.0";', '0.12.0 migration source must remain explicit.');
 mustContain(format, '0.13.0', 'Project format documentation must mention 0.13.0.');
 mustContain(dna, 'Semantische Nähe bleibt sichtbar', 'Product DNA must preserve the semantic-proximity rule.');
+mustContain(dna, 'Ausschließlich Interest Pages', 'Product DNA must bound compact typography to Interest Pages only.');
+mustContain(dna, 'Alle anderen Seitentypen', 'All non-Interest pages must remain excluded from compact typography.');
 
 console.log('Hiking & Nature Experience Consistency Gate: PASS');
 console.log('Destination → Hiking & Nature → Route + Start + Duration + Difficulty → World Expression → Capacity → Persistence');

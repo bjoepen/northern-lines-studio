@@ -304,26 +304,27 @@
 
 
 /* Build 028 · Hiking & Nature Experience
-   Route first: Start, duration and difficulty belong directly to the route. */
+   Route first: all practical details remain attached to their route.
+   Build 028 Polish adds the Interest-Page-only compact density step and hard
+   Companion/Footer protection. */
 .hiking-nature-experience {
   max-width: 445px;
+  min-height: 0;
+  max-height: 414px;
+  overflow: hidden;
 }
 
 .a5-page.destination-interest-page.hiking-nature-interest-page {
-  padding-top: 44px;
+  padding-top: 40px;
+  padding-bottom: 42px;
 }
 
-.hiking-nature-experience .hiking-page-rule {
-  width: 38px;
-  height: 1px;
-  margin-bottom: 14px;
-}
-
-.hiking-nature-experience .eyebrow { margin-bottom: 10px; }
-.hiking-nature-experience .preview-body { max-width: 390px; margin-bottom: 18px; }
+/* Interest Pages may become denser, but the primary hierarchy never shrinks. */
+.hiking-nature-experience .hiking-page-rule { width: 38px; height: 1px; margin-bottom: 12px; }
+.hiking-nature-experience .eyebrow { margin-bottom: 8px; }
+.hiking-nature-experience .preview-body { max-width: 390px; margin-top: 16px; margin-bottom: 14px; }
 
 .hiking-section-label,
-.hiking-experience-grid section > span,
 .hiking-place-reference > span {
   display: block;
   text-transform: uppercase;
@@ -333,27 +334,48 @@
 }
 
 .hiking-routes {
-  margin-top: 18px;
-  padding: 14px 16px 13px;
+  margin-top: 14px;
+  padding: 12px 14px 11px;
   background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
 }
-
-.hiking-route-list { display: grid; gap: 11px; margin-top: 9px; }
-.hiking-route-row { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start; }
-.hiking-route-number { font-family: var(--world-display-family); font-size: 11px; color: var(--interest-meta, var(--world-accent)); }
+.hiking-route-list { display: grid; gap: 10px; margin-top: 8px; }
+.hiking-route-row { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; }
+.hiking-route-number { font-family: var(--world-display-family); font-size: 10.5px; color: var(--interest-meta, var(--world-accent)); }
 .hiking-route-copy { display: grid; gap: 2px; min-width: 0; }
-.hiking-route-copy > strong { font-family: var(--world-body-family); font-size: 12px; line-height: 1.3; color: var(--interest-ink, var(--world-ink)); }
-.hiking-route-copy > small { font-size: 10px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
-.hiking-route-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
-.hiking-route-meta span { font-size: 9.5px; line-height: 1.3; font-weight: 550; color: var(--interest-meta, var(--world-accent)); }
-.hiking-route-meta span:not(:last-child)::after { content: '·'; padding-left: 12px; color: var(--interest-quiet, var(--world-quiet)); }
+.hiking-route-copy > strong { font-family: var(--world-body-family); font-size: 11.5px; line-height: 1.25; color: var(--interest-ink, var(--world-ink)); }
+.hiking-route-copy > small { font-size: 9.5px; line-height: 1.3; color: var(--interest-quiet, var(--world-quiet)); }
+.hiking-route-meta { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 3px; }
+.hiking-route-meta span { font-size: 9px; line-height: 1.25; font-weight: 550; color: var(--interest-meta, var(--world-accent)); }
+.hiking-route-meta span:not(:last-child)::after { content: '·'; padding-left: 10px; color: var(--interest-quiet, var(--world-quiet)); }
+.hiking-route-details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-top: 6px; }
+.hiking-route-details p { margin: 0; font-family: var(--world-body-family); font-size: 9.25px; line-height: 1.32; color: var(--interest-ink, var(--world-ink)); }
+.hiking-route-details p > span { display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .1em; font-size: 7.6px; line-height: 1.2; color: var(--interest-meta, var(--world-accent)); }
 
-.hiking-experience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 12px; }
-.hiking-experience-grid section { min-width: 0; padding: 10px 12px; background: color-mix(in srgb, var(--interest-surface) 64%, #fff); }
-.hiking-experience-grid p { margin: 5px 0 0; font-family: var(--world-body-family); font-size: 10.5px; line-height: 1.4; color: var(--interest-ink, var(--world-ink)); }
-.hiking-place-reference { margin-top: 10px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--interest-meta) 22%, transparent); display: grid; gap: 4px; }
-.hiking-place-reference strong { font-family: var(--world-body-family); font-size: 10.5px; line-height: 1.35; font-weight: 500; color: var(--interest-ink, var(--world-ink)); }
-.hiking-capacity-stop { margin-top: 24px; }
-.hiking-empty { font-size: 10px; line-height: 1.4; color: var(--interest-quiet, var(--world-quiet)); }
+/* Explicit, bounded exception: only Interest Pages may use this compact detail step. */
+.hiking-interest-compact .hiking-routes { padding-top: 10px; padding-bottom: 9px; }
+.hiking-interest-compact .hiking-route-list { gap: 8px; }
+.hiking-interest-compact .hiking-route-copy > strong { font-size: 10.75px; }
+.hiking-interest-compact .hiking-route-copy > small { font-size: 9px; }
+.hiking-interest-compact .hiking-route-meta span { font-size: 8.5px; }
+.hiking-interest-compact .hiking-route-details p { font-size: 8.6px; line-height: 1.28; }
+.hiking-interest-compact .hiking-route-details p > span { font-size: 7.2px; }
+
+.hiking-place-reference { margin-top: 8px; padding-top: 6px; border-top: 1px solid color-mix(in srgb, var(--interest-meta) 22%, transparent); display: grid; gap: 3px; }
+.hiking-place-reference strong { font-family: var(--world-body-family); font-size: 9.5px; line-height: 1.3; font-weight: 500; color: var(--interest-ink, var(--world-ink)); }
+.hiking-capacity-stop { margin-top: 20px; }
+.hiking-empty { font-size: 9.5px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
+
+/* Hard anchors for this dense Interest Page: content is never allowed to push
+   either invariant down or occupy the companion's protected room. */
+.a5-page.destination-interest-page.hiking-nature-interest-page .editorial-footer {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  bottom: 42px;
+  margin-top: 0;
+}
+.a5-page.destination-interest-page.hiking-nature-interest-page .companion-zone-bottom-left {
+  bottom: 51px;
+}
+
 .baltic-page.destination-interest-page .hiking-routes { background: color-mix(in srgb, var(--baltic-sand) 58%, #fff); }
-.baltic-page.destination-interest-page .hiking-experience-grid section { background: color-mix(in srgb, var(--baltic-amber) 7%, #fff); }
