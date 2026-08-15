@@ -38,7 +38,7 @@
   import type { DestinationImageRole } from './lib/destinations';
   import { EDITORIAL_EXTENSION_DEFINITIONS, editorialExtensionDefinition, editorialExtensionLabel } from './lib/editorial-extensions';
   import { DESTINATION_INTEREST_DEFINITIONS, destinationInterestDefinition, destinationInterestKindsForStage, destinationInterestLabel } from './lib/destination-interests';
-  import { emptyInterestEntry, interestEntryComposition, interestEntryContentLength, interestEntrySchema } from './lib/destination-interests/entries';
+  import { emptyInterestEntry, interestEntryContentLength, interestEntrySchema, interestPageLayoutState } from './lib/destination-interests/entries';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
 
   type PendingAction =
@@ -1071,13 +1071,17 @@
   $: interestEntriesContentLength = selectedInterestEntries.reduce((sum, entry) => sum + interestEntryContentLength(entry), 0)
     + (selectedPage?.authoring?.introduction?.content?.trim().length ?? 0);
   $: interestHasPlaceReference = selectedInterestEntries.some((entry) => Boolean(entry.fields.placeReference?.trim()));
-  $: interestComposition = interestEntryComposition(selectedInterestEntries, interestHasPlaceReference);
-  // Interest Pages alone may use a bounded compact density step. It is an adaptive
-  // capacity state, never the default. Primary hierarchy remains unchanged.
-  $: interestDensity = interestEntriesContentLength > 850 || (interestHasPlaceReference && interestEntriesContentLength > 650) || selectedInterestEntries.length > 2
-    ? 'tight'
-    : 'comfortable';
-  $: interestOverflow = interestEntriesContentLength > 1250 || selectedInterestEntries.length > 3;
+  $: interestLayoutState = interestPageLayoutState(
+    selectedPage?.type === 'destination_interest' ? selectedPage.destinationInterestKind : undefined,
+    selectedInterestEntries,
+    selectedPage?.authoring?.introduction?.content?.trim().length ?? 0
+  );
+  $: interestComposition = interestLayoutState.composition;
+  // Interest Pages alone may use exactly one bounded compact density step.
+  // If that fixed step is insufficient, capacity becomes overflow instead of
+  // shrinking typography or entering the Companion/Footer safe zones.
+  $: interestDensity = interestLayoutState.density;
+  $: interestOverflow = interestLayoutState.overflow;
   $: interestEntryDirty = interestEntryDraft !== null && JSON.stringify(interestEntryDraft) !== interestEntryOriginalSignature;
   $: structuredInterestPage = selectedPage?.type === 'destination_interest' && ['photography', 'hiking_nature', 'culture_history', 'culinary_local'].includes(selectedPage.destinationInterestKind ?? '');
   $: structuredLegacyIds = selectedPage?.destinationInterestKind === 'photography'
