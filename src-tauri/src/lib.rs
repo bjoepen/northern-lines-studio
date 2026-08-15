@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.10.0";
+const CURRENT_FORMAT_VERSION: &str = "0.11.0";
+const BUILD_025_FORMAT_VERSION: &str = "0.10.0";
 const BUILD_023_FORMAT_VERSION: &str = "0.9.0";
 const BUILD_021_FORMAT_VERSION: &str = "0.8.0";
 const BUILD_019_FORMAT_VERSION: &str = "0.7.0";
@@ -204,6 +205,8 @@ struct StudioPage {
     #[serde(default)]
     journey_stage: Option<String>,
     #[serde(default)]
+    destination_interest_kind: Option<String>,
+    #[serde(default)]
     knowledge_type: Option<String>,
     #[serde(default)]
     components: Vec<String>,
@@ -278,7 +281,7 @@ fn infer_role(page_type: &str) -> &'static str {
     match page_type {
         "cover" | "welcome" | "contents" => "front_matter",
         "planning" => "journey_planning",
-        "destination" => "destination",
+        "destination" | "destination_interest" => "destination",
         "knowledge" => "journey_knowledge",
         "workflow" => "workflow",
         "closing" => "closing_memory",
@@ -294,6 +297,7 @@ fn infer_components(page: &StudioPage) -> Vec<String> {
         "contents" => &["title", "contents"],
         "planning" => &["title", "introduction"],
         "destination" => &["hero", "title", "introduction", "history", "photography", "knowledge", "souvenirs", "qr"],
+        "destination_interest" => &["title", "introduction"],
         "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
         "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
         "workflow" => &["title", "workflow_steps", "workflow_tip"],
@@ -328,6 +332,7 @@ fn ensure_journey_planning_page(project: &mut StudioProject) {
         content: "content/pages/004-planning.md".into(),
         layout: "planning".into(),
         journey_stage: None,
+        destination_interest_kind: None,
         knowledge_type: None,
         components: Vec::new(),
         authoring: BTreeMap::new(),
@@ -428,6 +433,13 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_025_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_025_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_components(&mut project);
+            ensure_journey_planning_page(&mut project);
+            ensure_destination_profiles(&mut project);
+        }
         BUILD_023_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_023_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -658,6 +670,7 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
     }
 
     let mut page_ids = HashSet::new();
+    let mut interest_keys = HashSet::new();
     for (index, page) in project.page_manifest.iter().enumerate() {
         if page.id.trim().is_empty() || page.title.trim().is_empty() {
             return Err(format!("Seite {} besitzt keine gültige ID oder keinen Titel.", index + 1));
@@ -684,6 +697,16 @@ fn validate_project(project: &StudioProject) -> Result<(), String> {
             }
             if !matches!(entry.status.as_str(), "empty" | "draft" | "revised" | "approved" | "final") {
                 return Err(format!("Authoring-Eintrag '{}' auf Seite '{}' besitzt einen ungültigen Status.", component_id, page.title));
+            }
+        }
+        if page.page_type == "destination_interest" {
+            let kind = page.destination_interest_kind.as_deref().ok_or_else(|| format!("Vertiefungsseite '{}' besitzt kein Interesse.", page.title))?;
+            if !matches!(kind, "photography" | "hiking_nature" | "culture_history" | "culinary_local") {
+                return Err(format!("Vertiefungsseite '{}' besitzt ein unbekanntes Interesse '{}'.", page.title, kind));
+            }
+            let stage = page.journey_stage.as_deref().ok_or_else(|| format!("Vertiefungsseite '{}' gehört zu keinem Reiseziel.", page.title))?;
+            if !interest_keys.insert(format!("{stage}:{kind}")) {
+                return Err(format!("{} ist für dieses Reiseziel bereits als Vertiefung vorhanden.", page.title));
             }
         }
         if let Some(stage) = &page.journey_stage {
@@ -726,6 +749,7 @@ fn starter_page(id: &str, order: u32, page_type: &str, role: &str, title: &str, 
     let mut page = StudioPage {
         id: id.into(), order, page_type: page_type.into(), role: Some(role.into()), title: title.into(),
         content: content.into(), layout: layout.into(), journey_stage: None,
+        destination_interest_kind: None,
         knowledge_type: knowledge_type.map(str::to_string), components: Vec::new(), authoring: BTreeMap::new(),
     };
     page.components = infer_components(&page);
@@ -897,12 +921,12 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
         images: DestinationImages::default(),
         editorial: default_destination_editorial(),
     });
-    let destination_count = project.page_manifest.iter().filter(|page| page.page_type == "destination").count() as u32;
-    let order = 5 + destination_count;
+    let order = project.page_manifest.iter().map(|page| page.order).max().unwrap_or(4) + 1;
     let content = format!("content/pages/{:03}-{}.md", order, base);
     let mut page = StudioPage {
         id: format!("page-{base}"), order, page_type: "destination".into(), role: Some("destination".into()),
         title: title.into(), content: content.clone(), layout: default_destination_layout(), journey_stage: Some(base),
+        destination_interest_kind: None,
         knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
     };
     page.components = infer_components(&page);
@@ -915,6 +939,69 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
     Ok(project_session(project, project_path))
 }
 
+
+
+fn destination_interest_label(kind: &str) -> Option<&'static str> {
+    match kind {
+        "photography" => Some("Fotografie"),
+        "hiking_nature" => Some("Wandern & Natur"),
+        "culture_history" => Some("Kultur & Geschichte"),
+        "culinary_local" => Some("Kulinarik & Lokal"),
+        _ => None,
+    }
+}
+
+#[tauri::command]
+fn add_destination_interest(path: String, stage_id: String, kind: String) -> Result<ProjectSession, String> {
+    let label = destination_interest_label(&kind).ok_or_else(|| "Dieses Interesse ist noch nicht Teil von Northern Lines Studio.".to_string())?;
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let journey = project.journey.as_ref().ok_or_else(|| "Diese Reise besitzt noch keine Reisestruktur.".to_string())?;
+    let stage_title = journey.stages.iter().find(|stage| stage.id == stage_id && stage.kind == "destination")
+        .map(|stage| stage.title.clone())
+        .ok_or_else(|| "Dieses Reiseziel wurde nicht gefunden.".to_string())?;
+    if project.page_manifest.iter().any(|page| page.page_type == "destination_interest" && page.journey_stage.as_deref() == Some(stage_id.as_str()) && page.destination_interest_kind.as_deref() == Some(kind.as_str())) {
+        return Err(format!("{} gehört bereits zu {}.", label, stage_title));
+    }
+
+    let interest_slug = kind.replace('_', "-");
+    let id = format!("page-{}-{}", stage_id, interest_slug);
+    let order = project.page_manifest.iter().map(|page| page.order).max().unwrap_or(0) + 1;
+    let content = format!("content/pages/{:03}-{}-{}.md", order, stage_id, interest_slug);
+    let mut page = StudioPage {
+        id: id.clone(), order, page_type: "destination_interest".into(), role: Some("destination".into()),
+        title: label.into(), content: content.clone(), layout: "destination-interest".into(), journey_stage: Some(stage_id.clone()),
+        destination_interest_kind: Some(kind), knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
+    };
+    page.components = infer_components(&page);
+    fs::write(project_path.join(&content), format!("# {} in {}\n", label, stage_title))
+        .map_err(|e| format!("Die Vertiefungsseite konnte nicht angelegt werden: {e}"))?;
+    project.page_manifest.push(page);
+    project.page_manifest.sort_by_key(|page| page.order);
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+#[tauri::command]
+fn remove_destination_interest(path: String, page_id: String) -> Result<ProjectSession, String> {
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let index = project.page_manifest.iter().position(|page| page.id == page_id && page.page_type == "destination_interest")
+        .ok_or_else(|| "Diese Vertiefungsseite wurde nicht gefunden.".to_string())?;
+    let page = project.page_manifest.remove(index);
+    let content_path = project_path.join(&page.content);
+    if content_path.exists() {
+        fs::remove_file(&content_path).map_err(|e| format!("Die Vertiefungsseite konnte nicht entfernt werden: {e}"))?;
+    }
+    project.migrated_from_version = None;
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
 
 fn optional_text(value: String) -> Option<String> {
     let value = value.trim().to_string();
@@ -1037,8 +1124,8 @@ fn update_journey_place(
     let page = project
         .page_manifest
         .iter_mut()
-        .find(|page| page.journey_stage.as_deref() == Some(stage_id.as_str()))
-        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Seite gefunden."))?;
+        .find(|page| page.page_type == "destination" && page.journey_stage.as_deref() == Some(stage_id.as_str()))
+        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Ortsseite gefunden."))?;
 
     page.title = title.to_string();
     if let Some(entry) = page.authoring.get_mut("title") {
@@ -1116,8 +1203,8 @@ fn update_destination_profile(
     }).collect();
     destination.editorial.layout_variant = layout_variant.clone();
 
-    let page = project.page_manifest.iter_mut().find(|page| page.journey_stage.as_deref() == Some(stage_id.as_str()))
-        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Seite gefunden."))?;
+    let page = project.page_manifest.iter_mut().find(|page| page.page_type == "destination" && page.journey_stage.as_deref() == Some(stage_id.as_str()))
+        .ok_or_else(|| format!("Für den Ort '{stage_id}' wurde keine Ortsseite gefunden."))?;
     page.title = name.to_string();
     page.layout = layout_variant;
     if let Some(entry) = page.authoring.get_mut("title") { entry.content = name.to_string(); }
@@ -1266,6 +1353,8 @@ pub fn run() {
             update_editorial_world,
             save_authoring_component,
             add_journey_place,
+            add_destination_interest,
+            remove_destination_interest,
             update_journey_planning,
             move_journey_place,
             update_journey_place,
@@ -1317,6 +1406,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
@@ -1330,6 +1420,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
                 || version == BUILD_019_FORMAT_VERSION
@@ -1367,13 +1458,13 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
-                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
                 None
             },
-            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
+            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
                 vec![Destination {
                     id: "destination-bergen".into(),
                     name: "Bergen".into(),
@@ -1399,10 +1490,11 @@ mod tests {
                 role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
-                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
+                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
+                destination_interest_kind: None,
                 knowledge_type: None,
-                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
+                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
                 authoring: BTreeMap::new(),
             }],
             project_path: String::new(),
@@ -1453,6 +1545,15 @@ mod tests {
         assert!(validate_project(&migrated).is_ok());
     }
 
+
+    #[test]
+    fn migrates_build_025_without_inventing_interest_pages() {
+        let migrated = migrate_project(sample_project(BUILD_025_FORMAT_VERSION)).expect("migrate build 025");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_025_FORMAT_VERSION));
+        assert!(!migrated.page_manifest.iter().any(|page| page.page_type == "destination_interest"));
+        validate_project(&migrated).expect("migrated Build 025 must validate");
+    }
 
     #[test]
     fn supports_baltic_world_and_persists_world_switch() {
@@ -1658,6 +1759,42 @@ mod tests {
         assert!(destination.reasons.is_empty());
         assert_eq!(destination.editorial.layout_variant, "destination-hero-banner");
         validate_project(&migrated).expect("migrated destination must validate");
+    }
+
+    #[test]
+    fn adds_multiple_destination_interests_and_removes_one() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Interest Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        ).expect("new journey");
+        let with_bergen = add_journey_place(created.project_path.clone(), "Bergen".into(), "Norwegen".into()).expect("bergen");
+        let stage_id = with_bergen.project.journey.as_ref().expect("journey").stages[0].id.clone();
+
+        let photography = add_destination_interest(created.project_path.clone(), stage_id.clone(), "photography".into()).expect("photography interest");
+        assert!(photography.project.page_manifest.iter().any(|page| page.page_type == "destination_interest" && page.destination_interest_kind.as_deref() == Some("photography")));
+
+        let culture = add_destination_interest(created.project_path.clone(), stage_id.clone(), "culture_history".into()).expect("culture interest");
+        let interest_pages: Vec<_> = culture.project.page_manifest.iter().filter(|page| page.page_type == "destination_interest" && page.journey_stage.as_deref() == Some(stage_id.as_str())).collect();
+        assert_eq!(interest_pages.len(), 2);
+
+        let photography_page = interest_pages.iter().find(|page| page.destination_interest_kind.as_deref() == Some("photography")).expect("photography page");
+        let removed = remove_destination_interest(created.project_path.clone(), photography_page.id.clone()).expect("remove interest");
+        assert!(!removed.project.page_manifest.iter().any(|page| page.destination_interest_kind.as_deref() == Some("photography")));
+        assert!(removed.project.page_manifest.iter().any(|page| page.destination_interest_kind.as_deref() == Some("culture_history")));
+    }
+
+    #[test]
+    fn rejects_duplicate_interest_kind_for_same_destination() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(temp.path().to_string_lossy().into_owned(), "Duplicate Interest".into(), REFERENCE_WORLD_ID.into(), "de".into()).expect("new journey");
+        let with_bergen = add_journey_place(created.project_path.clone(), "Bergen".into(), "Norwegen".into()).expect("bergen");
+        let stage_id = with_bergen.project.journey.as_ref().expect("journey").stages[0].id.clone();
+        add_destination_interest(created.project_path.clone(), stage_id.clone(), "photography".into()).expect("first photography");
+        let duplicate = add_destination_interest(created.project_path.clone(), stage_id, "photography".into());
+        assert!(duplicate.is_err());
     }
 
     #[test]

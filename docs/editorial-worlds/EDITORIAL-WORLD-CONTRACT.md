@@ -30,3 +30,7 @@ Semantik bleibt world-übergreifend stabil. Signets wie Wissen, Fotospot, Tipp, 
 ## World Assets
 
 World Assets sind semantisch oder charakteristisch. Es gibt keine frei wachsende Asset-Bibliothek. Reiseinhalt wie Ortsfotos oder QR-Ziele gehört nicht zur World.
+
+## Destination Interest Pages · Build 026
+
+Every released Editorial World must support the shared `destination_interest` grammar. Interest semantics are World-independent: **Fotografie**, **Wandern & Natur**, **Kultur & Geschichte** and **Kulinarik & Lokal** remain the same when a Travelbook changes World. Typography, Companion, accents and Editorial Treatments may change through World Expression; authored content and interest kind do not.

@@ -5,8 +5,8 @@ import { availableGrammars, evaluateGrammar, grammarForPage, requireGrammar } fr
 const destination: StudioPage = { id: 'bergen', order: 10, type: 'destination', role: 'destination', title: 'Bergen', content: 'content/pages/010-bergen.md', layout: 'destination-standard', components: ['hero', 'title', 'introduction', 'history', 'photography', 'knowledge', 'souvenirs', 'qr'] };
 
 describe('editorial grammar library', () => {
-  it('ships the ten Fjord reference grammars', () => {
-    expect(availableGrammars().map((grammar) => grammar.id)).toEqual(['cover', 'welcome', 'contents', 'planning', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']);
+  it('ships the shared Northern Lines grammars including destination interests', () => {
+    expect(availableGrammars().map((grammar) => grammar.id)).toEqual(['cover', 'welcome', 'contents', 'planning', 'destination', 'destination_interest', 'light', 'weather', 'workflow', 'notes', 'closing']);
   });
 
   it('resolves Reiseplanung to the Journey Planning grammar', () => {
@@ -25,6 +25,16 @@ describe('editorial grammar library', () => {
 
   it('resolves a destination page to the Destination grammar', () => {
     expect(grammarForPage(destination)?.id).toBe('destination');
+  });
+
+
+  it('resolves a destination interest page to the shared interest grammar', () => {
+    const interest: StudioPage = {
+      id: 'bergen-photo', order: 11, type: 'destination_interest', role: 'destination', title: 'Fotografie',
+      content: 'content/pages/011-bergen-photography.md', layout: 'destination-interest', journeyStage: 'bergen',
+      destinationInterestKind: 'photography', components: ['title', 'introduction']
+    };
+    expect(grammarForPage(interest)?.id).toBe('destination_interest');
   });
 
   it('resolves knowledge pages by their semantic knowledge type', () => {

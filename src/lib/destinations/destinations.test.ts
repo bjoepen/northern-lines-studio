@@ -4,7 +4,7 @@ import { destinationDraft, destinationForPage, destinationImageGeometry, destina
 
 const project: StudioProject = {
   format: 'northern-lines-studio-project',
-  formatVersion: '0.10.0',
+  formatVersion: '0.11.0',
   projectId: 'norway',
   title: 'Norway',
   language: 'de',

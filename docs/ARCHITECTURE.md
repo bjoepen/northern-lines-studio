@@ -147,3 +147,18 @@ Der Companion bleibt außerhalb des Content-Flows. Extension Zones müssen seine
 ## Build 025B · Editorial World Contract
 
 Editorial Worlds are resolved through a registry and a shared contract. World-specific expression is kept separate from semantic project data and adaptive Layout Grammar. See `docs/editorial-worlds/EDITORIAL-WORLD-CONTRACT.md`.
+
+## Build 026 – Destination Interest Pages boundary
+
+A Destination remains the semantic centre of a place. The main Destination Profile is not duplicated when the traveller adds a thematic deep-dive page.
+
+Build 026 models a thematic deep-dive as a `destination_interest` page in `pageManifest` with two semantic links:
+
+- `journeyStage` binds the page to the existing Destination/Journey Stage;
+- `destinationInterestKind` identifies one of the four curated interests.
+
+The page therefore owns editorial page state while the Destination continues to own shared place data such as name, journey context, imagery and Editorial Extensions. World Expression, Companion placement, Footer and safe-zone geometry remain derived responsibilities of Editorial World / Layout Grammar and are not persisted per interest page.
+
+This keeps the architecture aligned with the product rule:
+
+> **Die Destination bleibt das Zentrum. Die Vertiefung folgt dem Interesse der Reise.**

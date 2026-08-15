@@ -21,3 +21,7 @@ Ruhig, weit, nordisch, fotografisch, reflektiert.
 ## Companion
 
 Papageientaucher. Eigene geschützte Zone, invariant innerhalb der World.
+
+## Destination Interest Pages
+
+Build 026 uses the shared destination-interest grammar in Fjord. Interest pages keep Fjord typography, Papageientaucher, Footer and the white page surface; their specialist content modules are intentionally deferred.

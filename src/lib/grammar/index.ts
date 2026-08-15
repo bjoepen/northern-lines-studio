@@ -28,6 +28,7 @@ export function grammarIdForPage(page: StudioPage | null): PageGrammarId | null 
     case 'contents':
     case 'planning':
     case 'destination':
+    case 'destination_interest':
     case 'workflow':
     case 'notes':
     case 'closing':

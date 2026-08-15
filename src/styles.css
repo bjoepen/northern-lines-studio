@@ -1,4 +1,4 @@
-/* Northern Lines Studio · Build 025A
+/* Northern Lines Studio · Build 026
    CSS is intentionally split by responsibility. Import order is the cascade contract.
    025A changes structure, not the approved Build 024 visual result. */
 @import './styles/base-shell.css';
@@ -9,3 +9,4 @@
 @import './styles/editorial-extensions.css';
 
 @import './styles/editorial-worlds.css';
+@import './styles/destination-interests.css';

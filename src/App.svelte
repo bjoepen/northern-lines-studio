@@ -4,7 +4,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { open } from '@tauri-apps/plugin-dialog';
-  import type { DestinationEditorialExtension, DestinationHighlight, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
+  import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
@@ -37,6 +37,7 @@
   } from './lib/destinations';
   import type { DestinationImageRole } from './lib/destinations';
   import { EDITORIAL_EXTENSION_DEFINITIONS, editorialExtensionDefinition, editorialExtensionLabel } from './lib/editorial-extensions';
+  import { DESTINATION_INTEREST_DEFINITIONS, destinationInterestDefinition, destinationInterestKindsForStage, destinationInterestLabel } from './lib/destination-interests';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
 
   type PendingAction =
@@ -213,6 +214,42 @@
       placeBeginningOpen = false;
     } catch (error) { errorMessage = String(error); }
     finally { isLoading = false; }
+  }
+
+
+  async function addDestinationInterest(kind: DestinationInterestKind) {
+    if (!project || !journeyStage || destinationDirty) return;
+    isLoading = true;
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const updated = await invoke<StudioProject>('add_destination_interest', { path: projectPath, stageId: journeyStage.id, kind });
+      project = { ...updated, projectPath };
+      const created = project.pageManifest.find((page) => page.type === 'destination_interest' && page.journeyStage === journeyStage?.id && page.destinationInterestKind === kind) ?? null;
+      if (created) selectPageNow(created);
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  async function removeSelectedDestinationInterest() {
+    if (!project || selectedPage?.type !== 'destination_interest') return;
+    const stageId = selectedPage.journeyStage;
+    isLoading = true;
+    errorMessage = '';
+    try {
+      const projectPath = project.projectPath;
+      const updated = await invoke<StudioProject>('remove_destination_interest', { path: projectPath, pageId: selectedPage.id });
+      project = { ...updated, projectPath };
+      const destinationPage = project.pageManifest.find((page) => page.type === 'destination' && page.journeyStage === stageId) ?? project.pageManifest[0] ?? null;
+      if (destinationPage) selectPageNow(destinationPage);
+    } catch (error) {
+      errorMessage = String(error);
+    } finally {
+      isLoading = false;
+    }
   }
 
   function handlePlaceBeginningKeydown(event: KeyboardEvent) {
@@ -920,6 +957,8 @@
   $: statusText = projectStatus(project);
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
+  $: destinationInterest = selectedPage?.type === 'destination_interest' ? destinationInterestDefinition(selectedPage.destinationInterestKind) : null;
+  $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
   $: journeyRoutePosition = journeyStage ? routePosition(journeyStage.id) : 0;
@@ -1059,12 +1098,13 @@
               {#each section.pages as page}
                 <button
                   class:active={selectedPage?.id === page.id}
+                  class:interest-page-nav={page.type === 'destination_interest'}
                   on:click={() => requestPageSelection(page)}
                 >
                   <span class="page-order">{String(visiblePageNumber(page)).padStart(2, '0')}</span>
                   <span>
                     <strong>{page.title}</strong>
-                    <small>{pageRoleLabel(page.role)}</small>
+                    <small>{page.type === 'destination_interest' ? 'Vertiefung' : pageRoleLabel(page.role)}</small>
                   </span>
                 </button>
               {/each}
@@ -1095,7 +1135,9 @@
         <small>{editorialWorld
           ? `${editorialWorld.name} · ${selectedPage?.type === 'destination'
               ? (editorialLayout?.destinationLayouts.find((layout) => layout.id === destinationLayoutVariant)?.label ?? 'Ortsseite')
-              : pageRoleLabel(selectedPage?.role)}`
+              : selectedPage?.type === 'destination_interest'
+                ? (destinationInterest?.label ?? 'Vertiefung')
+                : pageRoleLabel(selectedPage?.role)}`
           : pageRoleLabel(selectedPage?.role)}</small>
       </div>
 
@@ -1108,6 +1150,7 @@
               class:fjord-page={editorialWorld?.id === 'fjord'}
               class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
+              class:destination-interest-page={selectedPage?.type === 'destination_interest'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1183,6 +1226,19 @@
                       </div>
                     {/if}
                   {/if}
+                </div>
+              {:else if selectedPage?.type === 'destination_interest' && destinationInterest && journeyStage}
+                <div class="destination-interest-preview">
+                  <div class="page-rule"></div>
+                  <p class="eyebrow">{destinationInterest.eyebrow}</p>
+                  <h1>{preview.heading}</h1>
+                  <p class="destination-interest-place">{journeyStage.title}</p>
+                  <p class="preview-body">{preview.body || destinationInterest.description}</p>
+                  <div class="destination-interest-foundation-note">
+                    <span>Deine Vertiefung</span>
+                    <strong>{destinationInterest.description}</strong>
+                    <small>Build 026 schafft die Seitenstruktur. Die fachspezifischen Module folgen in den nächsten Builds.</small>
+                  </div>
                 </div>
               {:else}
                 <div class="page-rule"></div>
@@ -1360,10 +1416,32 @@
             </div>
 
             <label class="destination-editorial-question">
-              <span>Was möchtest du erleben?</span>
+              <span>Warum dieser Ort?</span>
               <textarea rows="3" value={destinationReasons.join('\n')} on:input={(event) => updateDestinationReasonText(event.currentTarget.value)} placeholder="Zum Beispiel: Bryggen am Morgen&#10;Blick vom Fløyen&#10;Maritime Atmosphäre"></textarea>
               <small>Ein Gedanke pro Zeile.</small>
             </label>
+
+            <div class="destination-interest-selector">
+              <div class="destination-interest-selector-heading">
+                <span>Deine Interessen</span>
+                <strong>Was möchtest du in {destinationName || journeyStage.title} erleben?</strong>
+                <small>Wähle nur, was für diese Reise Bedeutung hat. Mehrere Vertiefungen dürfen zusammengehören.</small>
+              </div>
+              <div class="destination-interest-options">
+                {#each DESTINATION_INTEREST_DEFINITIONS as interest}
+                  <button
+                    type="button"
+                    class:active={destinationInterestKinds.includes(interest.kind)}
+                    disabled={destinationInterestKinds.includes(interest.kind) || destinationDirty || isLoading}
+                    on:click={() => void addDestinationInterest(interest.kind)}
+                  >
+                    <strong>{interest.questionLabel}</strong>
+                    <small>{destinationInterestKinds.includes(interest.kind) ? 'Hinzugefügt' : '+ Interesse'}</small>
+                  </button>
+                {/each}
+              </div>
+              {#if destinationDirty}<small class="destination-interest-save-hint">Sichere zuerst dein Ortsprofil, bevor du eine Vertiefung hinzufügst.</small>{/if}
+            </div>
 
             <div class="destination-section-title destination-quiet-section"><span>Reise vor Ort</span><strong>Für deinen Aufenthalt</strong></div>
             <div class="planning-field-row">
@@ -1478,6 +1556,16 @@
           </button>
           {#if destinationSaveState === 'saved'}<small class="planning-save-state">Ortsprofil gesichert.</small>{/if}
           {#if destinationSaveState === 'error'}<small class="planning-save-state planning-save-error">Ortsprofil konnte nicht gesichert werden.</small>{/if}
+        </section>
+      {/if}
+
+      {#if selectedPage?.type === 'destination_interest' && destinationInterest && journeyStage}
+        <section class="inspector-card destination-interest-card" aria-label="Thematische Vertiefung">
+          <span class="inspector-label">Deine Vertiefung</span>
+          <strong>{destinationInterest.label}</strong>
+          <small>{journeyStage.title} · {destinationInterest.description}</small>
+          <button type="button" class="destination-interest-remove" on:click={() => void removeSelectedDestinationInterest()} disabled={isLoading || authoringDirty}>Vertiefung entfernen</button>
+          {#if authoringDirty}<small>Sichere oder verwirf deine Änderungen, bevor du die Vertiefung entfernst.</small>{/if}
         </section>
       {/if}
 
@@ -1681,7 +1769,8 @@
       <dl>
         <dt>Seitentitel</dt><dd>{selectedPage?.title ?? '–'}</dd>
         <dt>Rolle</dt><dd>{pageRoleLabel(selectedPage?.role)}</dd>
-        <dt>Seitentyp</dt><dd>{selectedPage?.type ?? '–'}</dd>
+        <dt>Seitentyp</dt><dd>{selectedPage?.type === 'destination_interest' ? 'Thematische Vertiefung' : (selectedPage?.type ?? '–')}</dd>
+        {#if selectedPage?.destinationInterestKind}<dt>Interesse</dt><dd>{destinationInterestLabel(selectedPage.destinationInterestKind)}</dd>{/if}
         {#if journeyStage}
           <dt>Etappe</dt><dd>{journeyStage.title}</dd>
           <dt>Etappentyp</dt><dd>{journeyStage.kind}</dd>

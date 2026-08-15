@@ -42,3 +42,7 @@ Der PoC hat bestätigt, dass Semantik und Grammar beim World-Wechsel stabil blei
 - Baltic, Steel, Fog, Sand und Amber werden in Typografie, Extension-Flächen, Practical-Info-Akzent, Signets und Footer deutlicher eingesetzt.
 
 Die Layout Grammar bleibt identisch zu Fjord. Ostsee erhält keine eigene Sondergeometrie.
+
+## Destination Interest Pages
+
+Build 026 uses the same destination-interest grammar in Ostsee. Interest semantics stay identical to Fjord while Ostsee contributes its typography, Fischotter and warm Hanse/Backstein/Bernstein expression on the same white page surface.

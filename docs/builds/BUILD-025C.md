@@ -12,3 +12,7 @@ Build 025C ist der gezielte traveller-visible Korrekturbuild zum Editorial-World
 - `.nls` bleibt 0.10.0.
 
 > Gleiche Sprache. Andere Farbe. Diese Welt.
+
+## Milestone
+
+Build 025C ist offiziell als **Milestone Build** freigegeben. Der Fjord ↔ Ostsee PoC hat bestätigt, dass Editorial Worlds dieselbe semantische und adaptive Grammar teilen können, während Typografie, Companion, Signets und Editorial-Flächen world-spezifisch wechseln. Die Seitenfläche bleibt dabei weiß.

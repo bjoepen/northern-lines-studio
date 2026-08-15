@@ -1,19 +1,23 @@
 # Northern Lines Studio
 
+> **Build 026 · Destination Interest Pages Foundation:** Eine Destination kann jetzt mehrere thematische Vertiefungen erhalten. Studio fragt in Travel Language „Was möchtest du in [Ort] erleben?“ und bietet bewusst nur **Fotografie · Wandern & Natur · Kultur & Geschichte · Kulinarik & Lokal**. Die Zusatzseiten bleiben an den Ort gebunden, übernehmen automatisch die aktive Editorial World und werden direkt nach ihrer Destination in der Reisestruktur geführt.
+
+> **Milestone Build 025C:** Fjord ↔ Ostsee hat bewiesen, dass Editorial Worlds echte Architektur sind: gleiche Semantik und Grammar, aber eigene Typografie, Companion und World Expression auf einer weißen Seitenfläche.
+
 > **Build 025C · Warm Expression Polish:** Die A5-Seite bleibt jetzt auch technisch echtes Weiß. Ostsee zeigt Hanse, Backstein, Bernstein und Sand gezielt über Extension-/Expression-Flächen, Signets und Akzente – ohne Seitenhintergrund, Rahmen oder zusätzliche Dekoration.
 
 > **Build 025C · Ostsee Expression & Companion Fix:** Der Editorial-World-PoC bleibt semantisch und grammatisch unverändert, erhält aber die fehlende visuelle Konsequenz: Der Fischotter wird aus dem öffentlichen Design-Library-Pfad geladen und die Ostsee-Expression nutzt Baltic, Steel, Fog, Sand und Amber deutlich erkennbarer. Keine neue Layoutvariante, kein Theme-Editor, keine Inhaltsduplikation.
 
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 025C – Ostsee Warm Expression Polish
+**Aktueller Stand:** Build 026 – Destination Interest Pages Foundation
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
-**Studio:** 0.25.0-alpha.3
-**Projektformat:** `.nls` 0.10.0
+**Studio:** 0.26.0-alpha.1
+**Projektformat:** `.nls` 0.11.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -30,6 +34,7 @@ im Hintergrund:
 - **Neue Reise beginnen** statt Projekt anlegen
 - **Reiseplanung** statt Journey-Metadaten
 - **Ort hinzufügen** statt Destination Page erzeugen
+- **Was möchtest du in [Ort] erleben?** statt Archetyp oder Unterseite konfigurieren
 - **Deine Route** statt Manifest-Reihenfolge
 - **Deine Geschichte** statt Textblock-Editor
 - `.nls` im Finder doppelklicken statt Projektordner auswählen
@@ -166,6 +171,26 @@ Extension Zones sind rahmenlos. Ein gemeinsames semantisches Signet wird durch d
 
 Extensions dürfen deshalb weder Hero/Title noch Companion/Footer kolonisieren. Sie werden ausschließlich in einer definierten Layout-Grammar-Zone komponiert.
 
+
+## Thematische Vertiefungen einer Destination
+
+Build 026 macht aus der Destination ein semantisches Zentrum mit optionalen Zusatzseiten. Die Haupt-Ortsseite bleibt allgemein und ruhig; Vertiefungen folgen dem Interesse der konkreten Reise.
+
+Verbindlich vorbereitet sind genau vier Archetypen:
+
+- **Fotografie**
+- **Wandern & Natur**
+- **Kultur & Geschichte** – inklusive Museen, Architektur und historischen/antiken Stätten
+- **Kulinarik & Lokal**
+
+Mehrere Interessen dürfen zu demselben Ort gehören. Studio spricht dabei nicht von Seitentypen oder Archetypen, sondern fragt beispielsweise:
+
+> **Was möchtest du in Bergen erleben?**
+
+Die neue Seite bleibt mit Bergen verbunden, erscheint direkt bei diesem Ort in **Deine Route** und übernimmt automatisch die aktive Editorial World. Build 026 schafft bewusst nur die Foundation für Struktur, Navigation, Persistenz und gemeinsame World-Sprache; fachspezifische Module folgen später.
+
+> **Die Destination bleibt das Zentrum. Die Vertiefung folgt dem Interesse der Reise.**
+
 ## Reisewelten
 
 Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv verfügbar sind **Fjord** und **Ostsee**. Beide teilen dieselbe semantische und adaptive Layout Grammar; Typografie, Palette, Extension Expression und Companion gehören zur jeweiligen World.
@@ -219,7 +244,7 @@ Für Fjord gilt aktuell:
 `.nls` ist ein offenes Northern-Lines-Studio-Package. Seit Build 016 ist es unter macOS
 als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-Build 024 aktualisiert das Format auf **0.10.0** und ergänzt semantische Editorial Extension Zones für Ortsprofile. Build 023 / 0.9.0 wird beim Öffnen automatisch migriert; bestehende Orte erhalten dabei eine leere Extension-Liste. Projekte im Format 0.8.0 sowie die bereits unterstützten älteren Formate werden beim Öffnen automatisch normalisiert.
+Build 026 aktualisiert das Format auf **0.11.0** und ergänzt semantische Destination Interest Pages. Build-025-Projekte im Format 0.10.0 werden beim Öffnen automatisch migriert; es werden dabei keine Interessen erfunden. Bestehende Journey-, Destination-, Bild- und Extension-Daten bleiben unverändert. Ältere bereits unterstützte Formate werden weiterhin normalisiert.
 Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut; fehlende
 redaktionelle Inhalte werden dabei bewusst nicht erfunden.
 

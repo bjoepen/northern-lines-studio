@@ -86,7 +86,13 @@ export function groupPages(pages: StudioPage[], routeStageIds: readonly string[]
     destinations.sort((a, b) => {
       const aRoute = a.journeyStage ? routeOrder.get(a.journeyStage) : undefined;
       const bRoute = b.journeyStage ? routeOrder.get(b.journeyStage) : undefined;
-      if (aRoute !== undefined && bRoute !== undefined) return aRoute - bRoute;
+      if (aRoute !== undefined && bRoute !== undefined) {
+        if (aRoute !== bRoute) return aRoute - bRoute;
+        const aPriority = a.type === 'destination' ? 0 : 1;
+        const bPriority = b.type === 'destination' ? 0 : 1;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        return a.order - b.order;
+      }
       if (aRoute !== undefined) return -1;
       if (bRoute !== undefined) return 1;
       return a.order - b.order;

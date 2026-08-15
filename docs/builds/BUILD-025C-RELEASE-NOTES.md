@@ -18,3 +18,7 @@
 - adaptive Layout Grammar
 - Safe Zones und Extension Capacity Protection
 - Fjord Expression
+
+## Milestone status
+
+Build 025C wurde nach visueller Validierung als Meilenstein freigegeben: zweite Editorial World erfolgreich, World-Wechsel persistent, Companion-Wechsel bestätigt und World Expression ohne flächigen Seitenhintergrund bewiesen.

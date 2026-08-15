@@ -25,6 +25,7 @@ export type PageGrammarId =
   | 'contents'
   | 'planning'
   | 'destination'
+  | 'destination_interest'
   | 'light'
   | 'weather'
   | 'workflow'
