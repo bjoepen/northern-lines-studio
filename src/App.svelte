@@ -975,6 +975,18 @@
     return content.match(/\b\d{1,3}\s*(?:[–-]\s*\d{1,3}\s*)?mm\b/gi) ?? [content];
   })();
   $: photographyInterestOverflow = photographyInterestContentLength > 980;
+  $: selectedHikingAuthoring = selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'
+    ? selectedPage.authoring
+    : null;
+  $: hikingInterestContentLength = selectedHikingAuthoring
+    ? ['introduction', 'hike_routes', 'hike_start_points', 'hike_durations', 'hike_difficulties', 'hike_highlights', 'hike_guidance', 'hike_place_reference']
+        .reduce((sum, key) => sum + ((selectedHikingAuthoring as any)?.[key]?.content?.trim().length ?? 0), 0)
+    : 0;
+  $: hikingRouteLines = (selectedHikingAuthoring?.hike_routes?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  $: hikingStartPointLines = (selectedHikingAuthoring?.hike_start_points?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  $: hikingDurationLines = (selectedHikingAuthoring?.hike_durations?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  $: hikingDifficultyLines = (selectedHikingAuthoring?.hike_difficulties?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  $: hikingInterestOverflow = hikingInterestContentLength > 1050;
   $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -1169,6 +1181,7 @@
               class:destination-page={selectedPage?.type === 'destination'}
               class:destination-interest-page={selectedPage?.type === 'destination_interest'}
               class:photography-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'}
+              class:hiking-nature-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1300,6 +1313,65 @@
                         <strong>{selectedPage.authoring.photo_place_reference.content}</strong>
                       </div>
                     {/if}
+                    {/if}
+                  </div>
+                {:else if selectedPage.destinationInterestKind === 'hiking_nature'}
+                  <div class="destination-interest-preview hiking-nature-experience">
+                    <div class="page-rule hiking-page-rule"></div>
+                    <p class="eyebrow">Draußen unterwegs</p>
+                    <h1>{preview.heading}</h1>
+                    <p class="destination-interest-place">{journeyStage.title}</p>
+                    <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Routen, Naturziele und praktische Orientierung für deine Zeit draußen.'}</p>
+
+                    {#if hikingInterestOverflow}
+                      <div class="destination-capacity-stop hiking-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
+                        <span>Mehr Raum nötig</span>
+                        <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
+                        <small>Kürze die Vertiefung oder verteile sie später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
+                      </div>
+                    {:else}
+                      <section class="hiking-routes" aria-label="Routen und Touren">
+                        <span class="hiking-section-label">Routen & Touren</span>
+                        <div class="hiking-route-list">
+                          {#if hikingRouteLines.length}
+                            {#each hikingRouteLines as route, index}
+                              {@const startPoint = hikingStartPointLines[index] || ''}
+                              {@const duration = hikingDurationLines[index] || ''}
+                              {@const difficulty = hikingDifficultyLines[index] || ''}
+                              <article class="hiking-route-row">
+                                <span class="hiking-route-number">{String(index + 1).padStart(2, '0')}</span>
+                                <div class="hiking-route-copy">
+                                  <strong>{route.split('—')[0]?.trim()}</strong>
+                                  {#if route.includes('—')}<small>{route.split('—').slice(1).join('—').trim()}</small>{/if}
+                                  <div class="hiking-route-meta">
+                                    <span>{startPoint || 'Start offen'}</span>
+                                    <span>{duration || 'Dauer offen'}</span>
+                                    <span>{difficulty || 'Schwierigkeit offen'}</span>
+                                  </div>
+                                </div>
+                              </article>
+                            {/each}
+                          {:else}
+                            <small class="hiking-empty">Noch keine Route notiert.</small>
+                          {/if}
+                        </div>
+                      </section>
+
+                      <div class="hiking-experience-grid">
+                        {#if selectedPage.authoring?.hike_highlights?.content}
+                          <section><span>Aussicht & Naturziele</span><p>{selectedPage.authoring.hike_highlights.content}</p></section>
+                        {/if}
+                        {#if selectedPage.authoring?.hike_guidance?.content}
+                          <section><span>Hinweise zur Strecke</span><p>{selectedPage.authoring.hike_guidance.content}</p></section>
+                        {/if}
+                      </div>
+
+                      {#if selectedPage.authoring?.hike_place_reference?.content}
+                        <div class="hiking-place-reference">
+                          <span>Ort & Karte</span>
+                          <strong>{selectedPage.authoring.hike_place_reference.content}</strong>
+                        </div>
+                      {/if}
                     {/if}
                   </div>
                 {:else}
@@ -1780,6 +1852,9 @@
               ></textarea>
               {#if activeAuthoring.componentId === 'photo_focal_lengths'}
                 <small class="authoring-context-hint">Eine Brennweite pro Zeile. Die Reihenfolge entspricht direkt deiner Fotospot-Liste.</small>
+              {/if}
+              {#if ['hike_start_points', 'hike_durations', 'hike_difficulties'].includes(activeAuthoring.componentId)}
+                <small class="authoring-context-hint">Ein Eintrag pro Zeile. Die Reihenfolge entspricht direkt deiner Liste „Routen & Touren“.</small>
               {/if}
               <div class="authoring-controls">
                 <label>

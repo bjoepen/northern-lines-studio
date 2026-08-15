@@ -301,3 +301,59 @@
   line-height: 1.4;
   color: var(--interest-quiet, var(--world-quiet));
 }
+
+
+/* Build 028 · Hiking & Nature Experience
+   Route first: Start, duration and difficulty belong directly to the route. */
+.hiking-nature-experience {
+  max-width: 445px;
+}
+
+.a5-page.destination-interest-page.hiking-nature-interest-page {
+  padding-top: 44px;
+}
+
+.hiking-nature-experience .hiking-page-rule {
+  width: 38px;
+  height: 1px;
+  margin-bottom: 14px;
+}
+
+.hiking-nature-experience .eyebrow { margin-bottom: 10px; }
+.hiking-nature-experience .preview-body { max-width: 390px; margin-bottom: 18px; }
+
+.hiking-section-label,
+.hiking-experience-grid section > span,
+.hiking-place-reference > span {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 9px;
+  color: var(--interest-meta, var(--world-accent));
+}
+
+.hiking-routes {
+  margin-top: 18px;
+  padding: 14px 16px 13px;
+  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
+}
+
+.hiking-route-list { display: grid; gap: 11px; margin-top: 9px; }
+.hiking-route-row { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start; }
+.hiking-route-number { font-family: var(--world-display-family); font-size: 11px; color: var(--interest-meta, var(--world-accent)); }
+.hiking-route-copy { display: grid; gap: 2px; min-width: 0; }
+.hiking-route-copy > strong { font-family: var(--world-body-family); font-size: 12px; line-height: 1.3; color: var(--interest-ink, var(--world-ink)); }
+.hiking-route-copy > small { font-size: 10px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
+.hiking-route-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+.hiking-route-meta span { font-size: 9.5px; line-height: 1.3; font-weight: 550; color: var(--interest-meta, var(--world-accent)); }
+.hiking-route-meta span:not(:last-child)::after { content: '·'; padding-left: 12px; color: var(--interest-quiet, var(--world-quiet)); }
+
+.hiking-experience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 12px; }
+.hiking-experience-grid section { min-width: 0; padding: 10px 12px; background: color-mix(in srgb, var(--interest-surface) 64%, #fff); }
+.hiking-experience-grid p { margin: 5px 0 0; font-family: var(--world-body-family); font-size: 10.5px; line-height: 1.4; color: var(--interest-ink, var(--world-ink)); }
+.hiking-place-reference { margin-top: 10px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--interest-meta) 22%, transparent); display: grid; gap: 4px; }
+.hiking-place-reference strong { font-family: var(--world-body-family); font-size: 10.5px; line-height: 1.35; font-weight: 500; color: var(--interest-ink, var(--world-ink)); }
+.hiking-capacity-stop { margin-top: 24px; }
+.hiking-empty { font-size: 10px; line-height: 1.4; color: var(--interest-quiet, var(--world-quiet)); }
+.baltic-page.destination-interest-page .hiking-routes { background: color-mix(in srgb, var(--baltic-sand) 58%, #fff); }
+.baltic-page.destination-interest-page .hiking-experience-grid section { background: color-mix(in srgb, var(--baltic-amber) 7%, #fff); }

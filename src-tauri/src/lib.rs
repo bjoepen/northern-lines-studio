@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.12.0";
+const CURRENT_FORMAT_VERSION: &str = "0.13.0";
+const BUILD_027_FORMAT_VERSION: &str = "0.12.0";
 const BUILD_026_FORMAT_VERSION: &str = "0.11.0";
 const BUILD_025_FORMAT_VERSION: &str = "0.10.0";
 const BUILD_023_FORMAT_VERSION: &str = "0.9.0";
@@ -299,6 +300,7 @@ fn infer_components(page: &StudioPage) -> Vec<String> {
         "planning" => &["title", "introduction"],
         "destination" => &["hero", "title", "introduction", "history", "photography", "knowledge", "souvenirs", "qr"],
         "destination_interest" if page.destination_interest_kind.as_deref() == Some("photography") => &["title", "introduction", "photo_spots", "photo_light", "photo_motifs", "photo_guidance", "photo_focal_lengths", "photo_place_reference"],
+        "destination_interest" if page.destination_interest_kind.as_deref() == Some("hiking_nature") => &["title", "introduction", "hike_routes", "hike_start_points", "hike_durations", "hike_difficulties", "hike_highlights", "hike_guidance", "hike_place_reference"],
         "destination_interest" => &["title", "introduction"],
         "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
         "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
@@ -435,10 +437,17 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_027_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_027_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination_interest" && page.destination_interest_kind.as_deref() == Some("hiking_nature")) {
+                page.components = infer_components(page);
+            }
+        }
         BUILD_026_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_026_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
-            for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination_interest" && page.destination_interest_kind.as_deref() == Some("photography")) {
+            for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination_interest" && matches!(page.destination_interest_kind.as_deref(), Some("photography") | Some("hiking_nature"))) {
                 page.components = infer_components(page);
             }
         }

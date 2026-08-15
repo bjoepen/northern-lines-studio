@@ -22,6 +22,25 @@ const photographyInterestGrammar: PageGrammarDefinition = {
 };
 
 
+
+const hikingNatureInterestGrammar: PageGrammarDefinition = {
+  id: 'destination_interest',
+  name: 'Hiking & Nature Experience',
+  purpose: 'Vertieft einen Ort draußen: Route, Start, Dauer und Schwierigkeit bleiben direkt miteinander verbunden; Naturziele und Streckenhinweise begleiten die Reise, ohne Studio zum Outdoor-Navigator zu machen.',
+  story: [
+    { id: 'title', label: 'Titel', required: true },
+    { id: 'introduction', label: 'Einleitung', required: true },
+    { id: 'hike_routes', label: 'Routen & Touren', required: true },
+    { id: 'hike_start_points', label: 'Startpunkt je Route', required: false },
+    { id: 'hike_durations', label: 'Dauer je Route', required: false },
+    { id: 'hike_difficulties', label: 'Schwierigkeit je Route', required: false },
+    { id: 'hike_highlights', label: 'Aussicht & Naturziele', required: false },
+    { id: 'hike_guidance', label: 'Hinweise zur Strecke', required: false },
+    { id: 'hike_place_reference', label: 'Karten- / Ortsbezug', required: false }
+  ],
+  editorialFrame: ['header', 'footer', 'page_number', 'companion']
+};
+
 export function loadGrammar(id: PageGrammarId | undefined): PageGrammarDefinition | null {
   if (!id) return null;
   return registry.get(id) ?? null;
@@ -58,6 +77,7 @@ export function grammarIdForPage(page: StudioPage | null): PageGrammarId | null 
 
 export function grammarForPage(page: StudioPage | null): PageGrammarDefinition | null {
   if (page?.type === 'destination_interest' && page.destinationInterestKind === 'photography') return photographyInterestGrammar;
+  if (page?.type === 'destination_interest' && page.destinationInterestKind === 'hiking_nature') return hikingNatureInterestGrammar;
   const id = grammarIdForPage(page);
   return id ? loadGrammar(id) : null;
 }
