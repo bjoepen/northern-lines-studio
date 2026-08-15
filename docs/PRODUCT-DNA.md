@@ -1791,3 +1791,12 @@ Studio spricht dabei Travel Language. Die Oberfläche fragt nicht nach einem tec
 > **Was möchtest du in Bergen erleben?**
 
 Der Reisende wählt das Interesse; Studio erzeugt und ordnet die passende Zusatzseite innerhalb der Destination. Alle Zusatzseiten erben dieselbe Editorial World, dieselben Companion-/Footer-Invarianten und dieselbe Northern-Lines-Sprache. Build 026 legt zunächst Struktur, Navigation, Persistenz und World-Vererbung fest. Fachspezifische Module der vier Archetypen folgen in späteren Builds.
+
+
+## 64. Destination Interest Pages erben die vollständige World Expression
+
+Thematische Vertiefungsseiten übernehmen nicht nur die Typografie der aktiven Editorial World, sondern deren vollständige kuratierte Expression. Dazu gehören Akzentfarben, Signets, Meta-Typografie und gezielte Editorial-/Content-Flächen.
+
+Die physische Seitenfläche bleibt weiß bzw. neutral-weiß. Interest Pages dürfen keine eigenen hardcodierten Neutralfarben einführen, die Fjord oder Ostsee visuell entkoppeln.
+
+> **Die Semantik gehört zur Destination. Die Expression gehört zur World.**

@@ -10,7 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "tauri": "tauri",
     "test": "vitest run",
-    "consistency": "node scripts/check-journey-planning-consistency.mjs && node scripts/check-destination-profile-consistency.mjs && node scripts/check-layout-resilience-consistency.mjs && node scripts/check-destination-imagery-consistency.mjs && node scripts/check-open-travel-consistency.mjs && node scripts/check-destination-composition-consistency.mjs && node scripts/check-editorial-extension-zones-consistency.mjs && node scripts/check-adaptive-layout-grammar-consistency.mjs && node scripts/check-extension-capacity-protection-consistency.mjs && node scripts/check-css-grammar-consolidation-consistency.mjs && node scripts/check-editorial-world-poc-consistency.mjs && node scripts/check-editorial-world-expression-consistency.mjs && node scripts/check-destination-interest-pages-consistency.mjs",
+    "consistency": "node scripts/check-journey-planning-consistency.mjs && node scripts/check-destination-profile-consistency.mjs && node scripts/check-layout-resilience-consistency.mjs && node scripts/check-destination-imagery-consistency.mjs && node scripts/check-open-travel-consistency.mjs && node scripts/check-destination-composition-consistency.mjs && node scripts/check-editorial-extension-zones-consistency.mjs && node scripts/check-adaptive-layout-grammar-consistency.mjs && node scripts/check-extension-capacity-protection-consistency.mjs && node scripts/check-css-grammar-consolidation-consistency.mjs && node scripts/check-editorial-world-poc-consistency.mjs && node scripts/check-editorial-world-expression-consistency.mjs && node scripts/check-destination-interest-pages-consistency.mjs && node scripts/check-destination-interest-world-expression-consistency.mjs",
     "consistency:journey": "node scripts/check-journey-planning-consistency.mjs",
     "consistency:destination": "node scripts/check-destination-profile-consistency.mjs",
     "consistency:layout": "node scripts/check-layout-resilience-consistency.mjs",
@@ -23,7 +23,8 @@
     "consistency:css-grammar": "node scripts/check-css-grammar-consolidation-consistency.mjs",
     "consistency:world-poc": "node scripts/check-editorial-world-poc-consistency.mjs",
     "consistency:world-expression": "node scripts/check-editorial-world-expression-consistency.mjs",
-    "consistency:interests": "node scripts/check-destination-interest-pages-consistency.mjs"
+    "consistency:interests": "node scripts/check-destination-interest-pages-consistency.mjs",
+    "consistency:interest-world-expression": "node scripts/check-destination-interest-world-expression-consistency.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

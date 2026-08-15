@@ -1,3 +1,5 @@
+> **Build 026 · World Expression Polish:** Thematische Vertiefungsseiten erben jetzt die vollständige Editorial-World-Expression. Die Seite bleibt weiß; Fjord bzw. Ostsee prägen Typografie, Akzente und redaktionelle Flächen.
+
 # Northern Lines Studio
 
 > **Build 026 · Destination Interest Pages Foundation:** Eine Destination kann jetzt mehrere thematische Vertiefungen erhalten. Studio fragt in Travel Language „Was möchtest du in [Ort] erleben?“ und bietet bewusst nur **Fotografie · Wandern & Natur · Kultur & Geschichte · Kulinarik & Lokal**. Die Zusatzseiten bleiben an den Ort gebunden, übernehmen automatisch die aktive Editorial World und werden direkt nach ihrer Destination in der Reisestruktur geführt.

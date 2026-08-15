@@ -113,6 +113,33 @@
   stroke: var(--baltic-steel);
 }
 
+
+/* Destination Interest Pages inherit the complete World Expression.
+   The page remains white; world identity lives in typography, accents and
+   editorial content surfaces. */
+.fjord-page.destination-interest-page {
+  --interest-surface: color-mix(in srgb, var(--world-accent) 11%, #ffffff);
+  --interest-ink: var(--world-ink);
+  --interest-meta: var(--world-accent);
+  --interest-quiet: var(--world-quiet);
+}
+
+.baltic-page.destination-interest-page {
+  --interest-surface: color-mix(in srgb, var(--baltic-brick) 10%, var(--baltic-warm-paper));
+  --interest-ink: var(--baltic-deep);
+  --interest-meta: var(--baltic-brick);
+  --interest-quiet: color-mix(in srgb, var(--baltic-deep) 54%, #8e8075);
+}
+.baltic-page.destination-interest-page .destination-interest-place {
+  color: color-mix(in srgb, var(--baltic-steel) 78%, #7f959d);
+}
+.baltic-page.destination-interest-page .preview-body {
+  color: color-mix(in srgb, var(--baltic-deep) 76%, #667a82);
+}
+.baltic-page.destination-interest-page .page-rule {
+  background: var(--baltic-brick);
+}
+
 /* The Otter owns the same protected companion room as every World companion.
    Its visual proportions are world-specific, but it never participates in Content Fit. */
 .a5-page.baltic-page.destination-page .companion-zone-bottom-left {
