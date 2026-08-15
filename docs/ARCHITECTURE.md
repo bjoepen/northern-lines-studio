@@ -162,3 +162,11 @@ The page therefore owns editorial page state while the Destination continues to 
 This keeps the architecture aligned with the product rule:
 
 > **Die Destination bleibt das Zentrum. Die Vertiefung folgt dem Interesse der Reise.**
+
+## Structured Interest Entry Authoring · Build 028 Fix
+
+Interest Pages persist repeated semantic units as `StudioPage.interestEntries`. The frontend provides archetype-specific forms, while Rust remains authoritative for persistence and 0.13.0 → 0.14.0 migration.
+
+The page model stores **what belongs together**; it does not store the chosen visual composition. One-box/two-box layout, density (`comfortable` / `tight`) and overflow remain derived Layout Grammar decisions.
+
+Legacy line-based Photography/Hiking authoring remains readable during migration but is no longer the primary editing model.

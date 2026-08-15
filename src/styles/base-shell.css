@@ -510,21 +510,32 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 
 .companion-layout-facts {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 62px minmax(0, 1fr);
   gap: 4px 10px;
+  align-items: baseline;
   margin-top: 10px;
   padding-top: 9px;
   border-top: 1px solid #e5ebed;
   font-size: 9px;
+  line-height: 1.35;
 }
 
 .companion-layout-facts span {
+  margin: 0;
   color: #7a8a91;
+  font-size: 9px;
+  line-height: 1.35;
 }
 
+/* These are status values, not editable controls yet. Keep them aligned with the
+   labels and only use weight—not size—to make the value recognisable. */
 .companion-layout-facts strong {
+  margin: 0;
   color: #425962;
-  font-weight: 500;
+  font-family: inherit;
+  font-size: 9px;
+  line-height: 1.35;
+  font-weight: 700;
 }
 
 /* The companion sits above the Travel Language footer, never inside it. */

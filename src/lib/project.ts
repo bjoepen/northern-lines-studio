@@ -30,6 +30,20 @@ export type DestinationInterestKind =
   | 'culture_history'
   | 'culinary_local';
 
+
+export type DestinationInterestEntryKind =
+  | 'photo_spot'
+  | 'hiking_route'
+  | 'culture_place'
+  | 'culinary_recommendation';
+
+export interface DestinationInterestEntry {
+  id: string;
+  kind: DestinationInterestEntryKind;
+  title: string;
+  fields: Record<string, string>;
+}
+
 export interface StudioPage {
   id: string;
   order: number;
@@ -43,6 +57,7 @@ export interface StudioPage {
   knowledgeType?: string;
   components?: EditorialComponentId[];
   authoring?: Partial<Record<EditorialComponentId, AuthoringEntry>>;
+  interestEntries?: DestinationInterestEntry[];
 }
 
 export interface JourneyStage {

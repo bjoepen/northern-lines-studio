@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.13.0";
+const CURRENT_FORMAT_VERSION: &str = "0.14.0";
+const BUILD_028_FORMAT_VERSION: &str = "0.13.0";
 const BUILD_027_FORMAT_VERSION: &str = "0.12.0";
 const BUILD_026_FORMAT_VERSION: &str = "0.11.0";
 const BUILD_025_FORMAT_VERSION: &str = "0.10.0";
@@ -194,6 +195,16 @@ struct AuthoringEntry {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+struct DestinationInterestEntry {
+    id: String,
+    kind: String,
+    title: String,
+    #[serde(default)]
+    fields: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct StudioPage {
     id: String,
     order: u32,
@@ -214,6 +225,8 @@ struct StudioPage {
     components: Vec<String>,
     #[serde(default)]
     authoring: BTreeMap<String, AuthoringEntry>,
+    #[serde(default)]
+    interest_entries: Vec<DestinationInterestEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -339,7 +352,7 @@ fn ensure_journey_planning_page(project: &mut StudioProject) {
         destination_interest_kind: None,
         knowledge_type: None,
         components: Vec::new(),
-        authoring: BTreeMap::new(),
+        authoring: BTreeMap::new(), interest_entries: Vec::new(),
     };
     planning.components = infer_components(&planning);
     project.page_manifest.push(planning);
@@ -434,9 +447,83 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
     }
 }
 
+
+fn authoring_lines(page: &StudioPage, component_id: &str) -> Vec<String> {
+    page.authoring
+        .get(component_id)
+        .map(|entry| entry.content.lines().map(str::trim).filter(|line| !line.is_empty()).map(str::to_string).collect())
+        .unwrap_or_default()
+}
+
+fn split_interest_title(value: &str) -> (String, String) {
+    if let Some((title, detail)) = value.split_once('—') {
+        (title.trim().to_string(), detail.trim().to_string())
+    } else {
+        (value.trim().to_string(), String::new())
+    }
+}
+
+fn migrate_interest_entries(page: &mut StudioPage) {
+    if page.page_type != "destination_interest" || !page.interest_entries.is_empty() { return; }
+    match page.destination_interest_kind.as_deref() {
+        Some("photography") => {
+            let spots = authoring_lines(page, "photo_spots");
+            let focal = authoring_lines(page, "photo_focal_lengths");
+            let light = authoring_lines(page, "photo_light");
+            let motifs = authoring_lines(page, "photo_motifs");
+            let guidance = authoring_lines(page, "photo_guidance");
+            for (index, spot) in spots.iter().enumerate() {
+                let (title, detail) = split_interest_title(spot);
+                let mut fields = BTreeMap::new();
+                if !detail.is_empty() { fields.insert("description".into(), detail); }
+                if let Some(value) = focal.get(index) { fields.insert("focalLength".into(), value.clone()); }
+                if light.len() == spots.len() { if let Some(value) = light.get(index) { fields.insert("light".into(), value.clone()); } }
+                if motifs.len() == spots.len() { if let Some(value) = motifs.get(index) { fields.insert("motifs".into(), value.clone()); } }
+                if guidance.len() == spots.len() { if let Some(value) = guidance.get(index) { fields.insert("guidance".into(), value.clone()); } }
+                page.interest_entries.push(DestinationInterestEntry {
+                    id: format!("{}-photo-{}", page.id, index + 1), kind: "photo_spot".into(), title, fields
+                });
+            }
+        }
+        Some("hiking_nature") => {
+            let routes = authoring_lines(page, "hike_routes");
+            let starts = authoring_lines(page, "hike_start_points");
+            let durations = authoring_lines(page, "hike_durations");
+            let difficulties = authoring_lines(page, "hike_difficulties");
+            let highlights = authoring_lines(page, "hike_highlights");
+            let guidance = authoring_lines(page, "hike_guidance");
+            for (index, route) in routes.iter().enumerate() {
+                let (title, detail) = split_interest_title(route);
+                let mut fields = BTreeMap::new();
+                if !detail.is_empty() { fields.insert("description".into(), detail); }
+                if let Some(value) = starts.get(index) { fields.insert("startPoint".into(), value.clone()); }
+                if let Some(value) = durations.get(index) { fields.insert("duration".into(), value.clone()); }
+                if let Some(value) = difficulties.get(index) { fields.insert("difficulty".into(), value.clone()); }
+                if let Some(value) = highlights.get(index) { fields.insert("highlights".into(), value.clone()); }
+                if let Some(value) = guidance.get(index) { fields.insert("guidance".into(), value.clone()); }
+                page.interest_entries.push(DestinationInterestEntry {
+                    id: format!("{}-hike-{}", page.id, index + 1), kind: "hiking_route".into(), title, fields
+                });
+            }
+        }
+        _ => {}
+    }
+}
+
+fn ensure_interest_entries(project: &mut StudioProject) {
+    for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination_interest") {
+        migrate_interest_entries(page);
+    }
+}
+
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
-        CURRENT_FORMAT_VERSION => {}
+        CURRENT_FORMAT_VERSION => { ensure_interest_entries(&mut project); }
+        BUILD_028_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_028_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_interest_entries(&mut project);
+        }
         BUILD_027_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_027_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -551,6 +638,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
     }
     ensure_journey_planning_page(&mut project);
     ensure_destination_profiles(&mut project);
+    ensure_interest_entries(&mut project);
     project.legacy_editorial_world = None;
     Ok(project)
 }
@@ -768,7 +856,7 @@ fn starter_page(id: &str, order: u32, page_type: &str, role: &str, title: &str, 
         id: id.into(), order, page_type: page_type.into(), role: Some(role.into()), title: title.into(),
         content: content.into(), layout: layout.into(), journey_stage: None,
         destination_interest_kind: None,
-        knowledge_type: knowledge_type.map(str::to_string), components: Vec::new(), authoring: BTreeMap::new(),
+        knowledge_type: knowledge_type.map(str::to_string), components: Vec::new(), authoring: BTreeMap::new(), interest_entries: Vec::new(),
     };
     page.components = infer_components(&page);
     page
@@ -837,6 +925,35 @@ fn update_editorial_world(path: String, editorial_world_id: String) -> Result<Pr
     let project_path = Path::new(&path);
     let mut project = read_project(project_path)?;
     project.editorial_world_id = Some(editorial_world_id);
+    validate_project(&project)?;
+    write_project(project_path, &project)?;
+    let project = read_project(project_path)?;
+    Ok(project_session(project, project_path))
+}
+
+
+#[tauri::command]
+fn save_interest_entries(
+    path: String,
+    page_id: String,
+    entries: Vec<DestinationInterestEntry>,
+) -> Result<ProjectSession, String> {
+    let project_path = Path::new(&path);
+    let mut project = read_project(project_path)?;
+    let page = project.page_manifest.iter_mut().find(|page| page.id == page_id && page.page_type == "destination_interest")
+        .ok_or_else(|| "Diese Vertiefungsseite wurde nicht gefunden.".to_string())?;
+    let expected_kind = match page.destination_interest_kind.as_deref() {
+        Some("photography") => "photo_spot",
+        Some("hiking_nature") => "hiking_route",
+        Some("culture_history") => "culture_place",
+        Some("culinary_local") => "culinary_recommendation",
+        _ => return Err("Unbekannter Interest-Page-Archetyp.".into()),
+    };
+    if entries.iter().any(|entry| entry.kind != expected_kind || entry.title.trim().is_empty()) {
+        return Err("Ein Interest-Eintrag braucht einen Titel und muss zum Seitentyp passen.".into());
+    }
+    page.interest_entries = entries;
+    project.migrated_from_version = None;
     validate_project(&project)?;
     write_project(project_path, &project)?;
     let project = read_project(project_path)?;
@@ -945,7 +1062,7 @@ fn add_journey_place(path: String, title: String, country: String) -> Result<Pro
         id: format!("page-{base}"), order, page_type: "destination".into(), role: Some("destination".into()),
         title: title.into(), content: content.clone(), layout: default_destination_layout(), journey_stage: Some(base),
         destination_interest_kind: None,
-        knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
+        knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(), interest_entries: Vec::new(),
     };
     page.components = infer_components(&page);
     fs::write(project_path.join(&content), format!("# {title}\n")).map_err(|e| format!("Der Ort konnte nicht angelegt werden: {e}"))?;
@@ -989,7 +1106,7 @@ fn add_destination_interest(path: String, stage_id: String, kind: String) -> Res
     let mut page = StudioPage {
         id: id.clone(), order, page_type: "destination_interest".into(), role: Some("destination".into()),
         title: label.into(), content: content.clone(), layout: "destination-interest".into(), journey_stage: Some(stage_id.clone()),
-        destination_interest_kind: Some(kind), knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(),
+        destination_interest_kind: Some(kind), knowledge_type: None, components: Vec::new(), authoring: BTreeMap::new(), interest_entries: Vec::new(),
     };
     page.components = infer_components(&page);
     fs::write(project_path.join(&content), format!("# {} in {}\n", label, stage_title))
@@ -1370,6 +1487,7 @@ pub fn run() {
             create_nls_project,
             update_editorial_world,
             save_authoring_component,
+            save_interest_entries,
             add_journey_place,
             add_destination_interest,
             remove_destination_interest,
@@ -1516,6 +1634,7 @@ mod tests {
                 knowledge_type: None,
                 components: if version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
                 authoring: BTreeMap::new(),
+                interest_entries: Vec::new(),
             }],
             project_path: String::new(),
             migrated_from_version: None,
@@ -1804,6 +1923,62 @@ mod tests {
         let removed = remove_destination_interest(created.project_path.clone(), photography_page.id.clone()).expect("remove interest");
         assert!(!removed.project.page_manifest.iter().any(|page| page.destination_interest_kind.as_deref() == Some("photography")));
         assert!(removed.project.page_manifest.iter().any(|page| page.destination_interest_kind.as_deref() == Some("culture_history")));
+    }
+
+    #[test]
+    fn migrates_build_028_line_authoring_to_structured_interest_entries() {
+        let mut build_028 = sample_project(BUILD_028_FORMAT_VERSION);
+        let mut authoring = BTreeMap::new();
+        for (component_id, content) in [
+            ("hike_routes", "Fosseråsa – Storsæterfossen\nSkagehola – Skageflå – Homlong"),
+            ("hike_start_points", "Geiranger Zentrum\nSkagehola, per Boot"),
+            ("hike_durations", "ca. 4 h\nca. 3–4 h"),
+            ("hike_difficulties", "Mittel\nAnspruchsvoll"),
+            ("hike_highlights", "Storsæterfossen\nSkageflå und Sieben Schwestern"),
+            ("hike_guidance", "Bei Nässe vorsichtig.\nSehr steil; Trittsicherheit erforderlich."),
+        ] {
+            authoring.insert(component_id.into(), AuthoringEntry {
+                component_id: component_id.into(), content: content.into(), status: "revised".into(), updated_at: None,
+            });
+        }
+        build_028.page_manifest.push(StudioPage {
+            id: "page-bergen-hiking-nature".into(), order: 11, page_type: "destination_interest".into(), role: Some("destination".into()),
+            title: "Wandern & Natur".into(), content: "content/pages/011-bergen-hiking-nature.md".into(), layout: "destination-interest".into(),
+            journey_stage: Some("bergen".into()), destination_interest_kind: Some("hiking_nature".into()), knowledge_type: None,
+            components: vec!["title".into(), "introduction".into(), "hike_routes".into(), "hike_start_points".into(), "hike_durations".into(), "hike_difficulties".into(), "hike_highlights".into(), "hike_guidance".into(), "hike_place_reference".into()],
+            authoring, interest_entries: Vec::new(),
+        });
+
+        let migrated = migrate_project(build_028).expect("Build-028 structured Interest migration");
+        assert_eq!(migrated.format_version, CURRENT_FORMAT_VERSION);
+        assert_eq!(migrated.migrated_from_version.as_deref(), Some(BUILD_028_FORMAT_VERSION));
+        let page = migrated.page_manifest.iter().find(|page| page.destination_interest_kind.as_deref() == Some("hiking_nature")).expect("hiking page");
+        assert_eq!(page.interest_entries.len(), 2);
+        assert_eq!(page.interest_entries[0].title, "Fosseråsa – Storsæterfossen");
+        assert_eq!(page.interest_entries[0].fields.get("startPoint").map(String::as_str), Some("Geiranger Zentrum"));
+        assert_eq!(page.interest_entries[1].fields.get("guidance").map(String::as_str), Some("Sehr steil; Trittsicherheit erforderlich."));
+        assert!(page.authoring.contains_key("hike_routes"), "legacy content remains for lossless compatibility");
+    }
+
+    #[test]
+    fn saves_structured_interest_entries_as_semantic_units() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(temp.path().to_string_lossy().into_owned(), "Structured Interest".into(), REFERENCE_WORLD_ID.into(), "de".into()).expect("new journey");
+        let with_geiranger = add_journey_place(created.project_path.clone(), "Geiranger".into(), "Norwegen".into()).expect("geiranger");
+        let stage_id = with_geiranger.project.journey.as_ref().expect("journey").stages[0].id.clone();
+        let with_hiking = add_destination_interest(created.project_path.clone(), stage_id, "hiking_nature".into()).expect("hiking interest");
+        let page_id = with_hiking.project.page_manifest.iter().find(|page| page.destination_interest_kind.as_deref() == Some("hiking_nature")).expect("hiking page").id.clone();
+        let mut fields = BTreeMap::new();
+        fields.insert("startPoint".into(), "Geiranger Zentrum".into());
+        fields.insert("duration".into(), "ca. 4 h".into());
+        fields.insert("difficulty".into(), "Mittel".into());
+        fields.insert("guidance".into(), "Bei Nässe vorsichtig.".into());
+        let saved = save_interest_entries(created.project_path, page_id, vec![DestinationInterestEntry {
+            id: "route-fosserasa".into(), kind: "hiking_route".into(), title: "Fosseråsa – Storsæterfossen".into(), fields,
+        }]).expect("save Interest entry");
+        let page = saved.project.page_manifest.iter().find(|page| page.destination_interest_kind.as_deref() == Some("hiking_nature")).expect("hiking page");
+        assert_eq!(page.interest_entries.len(), 1);
+        assert_eq!(page.interest_entries[0].fields.get("difficulty").map(String::as_str), Some("Mittel"));
     }
 
     #[test]

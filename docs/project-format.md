@@ -237,3 +237,42 @@ The `hiking_nature` destination-interest archetype gains dedicated Story Compone
 ### Migration 0.12.0 → 0.13.0
 
 Opening a Build-027 project updates `formatVersion` to 0.13.0. Existing `hiking_nature` interest pages receive the Build-028 component declarations. Existing content, Photography pages, Journey, Destination data, World selection and extensions remain unchanged; the migration invents no hiking content.
+
+## Build 028 Structured Interest Entry Authoring Fix (`0.14.0`)
+
+Interest Pages persist repeated semantic entries directly on the page as `interestEntries`. The entry owns the fields that belong together; layout geometry is not stored.
+
+Example for Wandern & Natur:
+
+```json
+{
+  "destinationInterestKind": "hiking_nature",
+  "interestEntries": [
+    {
+      "id": "page-geiranger-hiking-nature-hike-1",
+      "kind": "hiking_route",
+      "title": "Fosseråsa – Storsæterfossen",
+      "fields": {
+        "startPoint": "Geiranger Zentrum",
+        "duration": "ca. 4 h",
+        "difficulty": "Mittel",
+        "highlights": "Storsæterfossen, Wald- und Kulturlandschaft",
+        "guidance": "Längerer Anstieg; bei Nässe vorsichtig."
+      }
+    }
+  ]
+}
+```
+
+Allowed entry kinds in the shared Foundation are:
+
+- `photo_spot`
+- `hiking_route`
+- `culture_place`
+- `culinary_recommendation`
+
+Each entry stores semantic text only. One-box/two-box composition, `comfortable`/`tight` density, World colours, Companion position and Footer geometry remain derived Grammar/World responsibilities.
+
+### Migration 0.13.0 → 0.14.0
+
+Opening a Build-028/0.13.0 project creates structured entries from the existing line-based Photography and Hiking authoring data. Matching rows are associated by their existing order. The legacy authoring content remains in the project for lossless compatibility; Studio does not invent new travel content. New edits use the structured entry model.

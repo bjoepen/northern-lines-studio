@@ -379,3 +379,245 @@
 }
 
 .baltic-page.destination-interest-page .hiking-routes { background: color-mix(in srgb, var(--baltic-sand) 58%, #fff); }
+
+/* Build 028 · Interest Entry Authoring Fix
+   The author describes semantic entries; Studio composes one or two editorial boxes.
+   Compact typography is an Interest-Page-only capacity state, never the default. */
+.hiking-nature-experience,
+.photography-place-experience {
+  max-height: none;
+  overflow: visible;
+}
+
+.interest-entry-section.photography-spots,
+.interest-entry-section.hiking-routes {
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.interest-entry-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.interest-entry-grid.interest-entry-single,
+.interest-entry-grid.interest-entry-stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.interest-entry-grid.interest-entry-two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.interest-entry-card {
+  min-width: 0;
+  padding: 13px 14px 12px;
+  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
+  break-inside: avoid;
+}
+
+.baltic-page.destination-interest-page .interest-entry-card {
+  background: color-mix(in srgb, var(--baltic-sand) 58%, #fff);
+}
+
+.interest-entry-heading {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.hiking-entry-card .interest-entry-heading {
+  grid-template-columns: 24px minmax(0, 1fr);
+}
+
+.interest-entry-number {
+  font-family: var(--world-display-family);
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--interest-meta, var(--world-accent));
+}
+
+.interest-entry-heading > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.interest-entry-heading strong {
+  font-family: var(--world-body-family);
+  font-size: 11.75px;
+  line-height: 1.28;
+  color: var(--interest-ink, var(--world-ink));
+}
+
+.interest-entry-heading small {
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: var(--interest-quiet, var(--world-quiet));
+}
+
+.interest-entry-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+  margin-top: 8px;
+}
+
+.interest-entry-details p,
+.interest-entry-place {
+  margin: 0;
+  font-family: var(--world-body-family);
+  font-size: 9.4px;
+  line-height: 1.38;
+  color: var(--interest-ink, var(--world-ink));
+  overflow-wrap: anywhere;
+}
+
+.interest-entry-details p > span,
+.interest-entry-place > span {
+  display: block;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-size: 7.5px;
+  line-height: 1.2;
+  color: var(--interest-meta, var(--world-accent));
+}
+
+.interest-entry-wide { grid-column: 1 / -1; }
+.interest-entry-place { margin-top: 8px; padding-top: 6px; border-top: 1px solid color-mix(in srgb, var(--interest-meta) 18%, transparent); }
+
+/* Two concise entries may live side by side. Longer entries are stacked by the grammar. */
+.interest-entry-two-up .interest-entry-heading {
+  grid-template-columns: 20px minmax(0, 1fr);
+}
+.interest-entry-two-up .photography-spot-focal {
+  grid-column: 2;
+  justify-self: start;
+  padding-left: 0;
+}
+.interest-entry-two-up .interest-entry-details { grid-template-columns: minmax(0, 1fr); }
+.interest-entry-two-up .interest-entry-wide { grid-column: auto; }
+
+/* Bounded compact step: only secondary practice information shrinks. */
+.interest-density-tight .interest-entry-card { padding: 10px 12px; }
+.interest-density-tight .interest-entry-grid { gap: 8px; }
+.interest-density-tight .interest-entry-heading strong { font-size: 10.8px; }
+.interest-density-tight .interest-entry-heading small { font-size: 8.9px; }
+.interest-density-tight .hiking-route-meta span { font-size: 8.4px; }
+.interest-density-tight .interest-entry-details p,
+.interest-density-tight .interest-entry-place { font-size: 8.6px; line-height: 1.32; }
+.interest-density-tight .interest-entry-details p > span,
+.interest-density-tight .interest-entry-place > span { font-size: 7.1px; }
+
+/* Footer and companion are invariants on every Interest Page. */
+.a5-page.destination-interest-page .editorial-footer {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  bottom: 42px;
+  margin-top: 0;
+}
+.a5-page.destination-interest-page .companion-zone-bottom-left { bottom: 51px; }
+
+/* Structured Interest authoring: object first, fields second.
+   Travel Language stays present but calm: entries read like editorial content,
+   while add/remove actions remain deliberately secondary. */
+.interest-entry-authoring-card { display: grid; gap: 10px; }
+.interest-entry-authoring-list { display: grid; gap: 2px; }
+.interest-entry-authoring-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(113, 137, 146, .11);
+}
+.interest-entry-authoring-row:last-child { border-bottom: 0; }
+.interest-entry-authoring-row > button:first-child {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #405963;
+  text-align: left;
+  cursor: pointer;
+}
+.interest-entry-authoring-row > button:first-child:hover:not(:disabled) { background: rgba(82, 118, 132, .055); }
+.interest-entry-authoring-row > button:first-child span {
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: .04em;
+  color: #8a9aa0;
+  opacity: 1;
+}
+.interest-entry-authoring-row > button:first-child strong {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #314d58;
+}
+.interest-entry-remove {
+  padding: 3px 2px;
+  border: 0;
+  background: transparent;
+  color: #8b7770;
+  font-size: 8px;
+  line-height: 1.2;
+  opacity: .66;
+  cursor: pointer;
+}
+.interest-entry-remove:hover:not(:disabled) { opacity: 1; }
+.interest-entry-add {
+  justify-self: start;
+  width: auto;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  color: #456b79;
+  font-size: 9px;
+  line-height: 1.25;
+  font-weight: 600;
+  cursor: pointer;
+}
+.interest-entry-add:hover:not(:disabled) { color: #284f5e; }
+.interest-entry-add:disabled,
+.interest-entry-remove:disabled,
+.interest-entry-authoring-row > button:first-child:disabled { cursor: default; opacity: .45; }
+.interest-entry-editor { display: grid; gap: 9px; padding-top: 4px; }
+.interest-entry-editor label { display: grid; gap: 4px; }
+.interest-entry-editor label > span { font-size: 10px; color: var(--ui-muted, #667085); }
+.interest-entry-editor input,
+.interest-entry-editor textarea { width: 100%; box-sizing: border-box; }
+.interest-entry-editor-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* One shared box versus two boxes is a Studio decision, not a user setting. */
+.interest-entry-grid.interest-entry-grouped {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 4px 0;
+  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
+}
+.baltic-page.destination-interest-page .interest-entry-grid.interest-entry-grouped {
+  background: color-mix(in srgb, var(--baltic-sand) 58%, #fff);
+}
+.interest-entry-grouped .interest-entry-card {
+  background: transparent;
+}
+.interest-entry-grouped .interest-entry-card + .interest-entry-card {
+  padding-top: 8px;
+}

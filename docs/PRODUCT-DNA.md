@@ -1822,3 +1822,30 @@ Die Ausnahme gilt nur für sekundäre Praxisinformationen wie Route, Startpunkt,
 > **Interest Pages dürfen dichter erzählen. Alle anderen Seiten bleiben bei der bisherigen Typografie-Regel.**
 
 Companion- und Footer-Safe-Zonen bleiben auch bei kompakter Interest-Typografie harte Grenzen. Wenn der Inhalt trotz erlaubter Verdichtung nicht ruhig passt, greift Capacity Protection statt weiterer Verkleinerung.
+
+## Interest Pages · Structured Entry Authoring
+
+Interest Pages werden nicht als Sammel-Textfelder authoriert. Sie bestehen aus **wiederholbaren semantischen Einträgen**. Der Reisende fügt zuerst einen konkreten Eintrag hinzu und beschreibt anschließend genau diesen Eintrag in einer passenden Maske.
+
+Beispiele:
+
+- Fotografie: **Fotospot hinzufügen** → Ort, Brennweite, Licht, Motive, Hinweis, Kartenbezug.
+- Wandern & Natur: **Route hinzufügen** → Route, Startpunkt, Dauer, Schwierigkeit, Naturziele, Streckenhinweis, Kartenbezug.
+- Kultur & Geschichte und Kulinarik & Lokal nutzen dieselbe Foundation mit archetypspezifischen Eintragsmasken.
+
+> **Der Nutzer beschreibt den Eintrag. Studio komponiert die Darstellung.**
+
+Die Layoutentscheidung bleibt bei Studio. Abhängig von Anzahl, Textmenge, Kartenbezug und verfügbarer Seitenkapazität kann Studio eine gemeinsame Editorial-Fläche oder zwei getrennte Boxen wählen. Der Reisende wählt keine Spaltenzahl und keine Box-Geometrie.
+
+Die kompaktere Typografie bleibt dabei eine **adaptive Kapazitätsstufe ausschließlich für Interest Pages**. `comfortable` ist der Normalzustand; `tight` wird erst bei realem Platzdruck verwendet. Reicht auch `tight` nicht aus, greift `overflow`. Text wird niemals abgeschnitten. Companion und Footer bleiben harte Invarianten.
+
+Für alle anderen Seitentypen bleibt die allgemeine Northern-Lines-Regel unverändert: Schrift wird nicht verkleinert, um ein Layoutproblem zu retten.
+
+## Inspector UX Language · ruhige redaktionelle Aktionen
+
+Auch wiederholbare Interest-Einträge folgen derselben UX Language wie die übrige Reisebearbeitung. **„Route hinzufügen“**, **„Fotospot hinzufügen“** und spätere vergleichbare Aktionen bleiben klar auffindbar, dürfen aber nicht wie dominante Verwaltungsbuttons wirken. Bestehende Einträge lesen sich im Inspector wie redaktioneller Inhalt; Entfernen bleibt eine sekundäre Aktion.
+
+> **Der Inspector begleitet die Gestaltung. Er verwaltet keine Datensätze.**
+
+Nicht editierbare Begleiter-Eigenschaften wie Platz, Pose und Spiegelung werden als ruhige Statuswerte dargestellt. Label und Wert verwenden dieselbe kleine UI-Schriftgröße; der Wert darf zur Erkennung fett gesetzt werden, erhält aber keine größere typografische Hierarchie und suggeriert keine Einstellbarkeit.
+
