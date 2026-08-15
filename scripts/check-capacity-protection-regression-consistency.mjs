@@ -7,10 +7,13 @@ const app = read('src/App.svelte');
 const dna = read('docs/PRODUCT-DNA.md');
 const must = (condition, message) => { if (!condition) throw new Error(message); };
 
-must(entries.includes("kind === 'culinary_local' ? 20.0"), 'Capacity regression gate failed: protected culinary content budget is missing.');
+must(entries.includes("kind === 'culinary_local' ? 16.5"), 'Capacity regression gate failed: calibrated culinary safe content budget is missing.');
 must(entries.includes("tightRelief = density === 'tight' ? 1.5 : 0"), 'Capacity regression gate failed: bounded tight relief is missing.');
 must(tests.includes('restores the Bergen culinary capacity warning'), 'Capacity regression gate failed: Bergen regression test is missing.');
 must(tests.includes('expect(state.overflow).toBe(true)'), 'Capacity regression gate failed: Bergen regression no longer expects overflow.');
+must(tests.includes('keeps the Geiranger two-route page renderable when the full Skageflå safety note is present'), 'Capacity regression gate failed: Geiranger false-positive regression test is missing.');
+must(tests.includes("expect(state.composition).toBe('two-up')"), 'Capacity regression gate failed: Geiranger no longer verifies the valid two-up composition.');
+must(entries.includes('No candidate is rejected from raw character'), 'Capacity regression gate failed: raw character-count rejection is still part of the fit contract.');
 must(app.includes('Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.'), 'Capacity regression gate failed: Travel Language overflow warning is missing.');
 must(dna.includes('Capacity Protection bleibt autoritativ'), 'Capacity regression gate failed: Product DNA regression rule is missing.');
 

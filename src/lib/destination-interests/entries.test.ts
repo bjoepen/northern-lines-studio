@@ -9,6 +9,14 @@ const culinary = (id: string, title: string, fields: Record<string, string>): De
   fields
 });
 
+
+const hiking = (id: string, title: string, fields: Record<string, string>): DestinationInterestEntry => ({
+  id,
+  kind: 'hiking_route',
+  title,
+  fields
+});
+
 describe('Interest Page layout state', () => {
   it('restores the Bergen culinary capacity warning after every approved composition is exhausted', () => {
     const entries = [
@@ -39,6 +47,30 @@ describe('Interest Page layout state', () => {
     expect(['comfortable', 'tight']).toContain(state.density);
     expect(state.overflow).toBe(true);
     expect(interestEntryComposition(entries, true, 'culinary_local')).not.toBe('single');
+  });
+
+  it('keeps the Geiranger two-route page renderable when the full Skageflå safety note is present', () => {
+    const entries = [
+      hiking('fosserasa', 'Fosseråsa → Storsæterfossen', {
+        startPoint: 'Geiranger Zentrum / Norwegian Fjord Centre',
+        duration: 'ca. 4 h hin und zurück ab Fjord Centre',
+        difficulty: 'Mittel',
+        highlights: 'Storsæterfossen, Wasserfall, Wald- und Kulturlandschaft',
+        guidance: 'längerer Anstieg; stellenweise Steinstufen, bei Nässe vorsichtig'
+      }),
+      hiking('skagefla', 'Skagehola → Skageflå → Homlong', {
+        startPoint: 'Skagehola, nur per Boot erreichbar',
+        duration: 'etwa 3–4 h Wanderzeit plus Bootstransfer',
+        difficulty: 'Anspruchsvoll',
+        highlights: 'Skageflå, Geirangerfjord, Blick zu den Sieben Schwestern',
+        guidance: 'Sehr steile und teilweise ausgesetzte Abschnitte; Trittsicherheit erforderlich.'
+      })
+    ];
+
+    const state = interestPageLayoutState('hiking_nature', entries, 83);
+    expect(state.overflow).toBe(false);
+    expect(state.composition).toBe('two-up');
+    expect(state.density).toBe('comfortable');
   });
 
   it('can prefer an asymmetric pair when the second entry needs materially more width', () => {

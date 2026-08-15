@@ -1,46 +1,47 @@
-# Northern Lines Studio · Build 030 Capacity Protection Regression Fix
+# APPLY-DROPIN · Build 030 Geometric Content Fit False-Positive Fix
 
-Ausgangsstand: **Build 030 · Content Fit & Composition Fix**  
-Ziel: Wiederherstellung der bereits freigegebenen Capacity Protection.
+Dieser Drop-in setzt auf dem **Build 030 Capacity Protection Regression Fix** auf.
 
-## 1. Branch
-
-```bash
-cd ~/Projekte/northern-lines-studio
-git switch -c fix/build-030-capacity-protection-regression
-```
-
-## 2. Dry Run
-
-```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-030-Capacity-Protection-Regression-Fix-DropIn/ ~/Projekte/northern-lines-studio/
-```
-
-Erwartung: geändert werden nur die in diesem Drop-in enthaltenen Source-, Gate- und Dokumentationsdateien.
-
-## 3. Apply
-
-```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-030-Capacity-Protection-Regression-Fix-DropIn/ ~/Projekte/northern-lines-studio/
-```
-
-## 4. Consistency Gate
+## 1 · Branch anlegen
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm consistency
+git switch -c fix/build-030-geometric-content-fit
 ```
 
-Erwartung unter anderem:
+## 2 · Dry Run
+
+Entpacke den Drop-in nach `~/Downloads/Northern-Lines-Studio-Build-030-Geometric-Content-Fit-Fix-DropIn/` und prüfe zuerst:
+
+```bash
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-030-Geometric-Content-Fit-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+```
+
+Der Dry Run darf nur die in diesem Fix enthaltenen Dateien zeigen.
+
+## 3 · Apply
+
+```bash
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-030-Geometric-Content-Fit-Fix-DropIn/ ~/Projekte/northern-lines-studio/
+```
+
+## 4 · Consistency Gate
+
+```bash
+cd ~/Projekte/northern-lines-studio
+npm run consistency
+```
+
+Erwartet unter anderem:
 
 ```text
-Content Fit & Composition Consistency Gate: PASS
 Capacity Protection Regression Gate: PASS
+Geometric Content Fit Regression Gate: PASS
 ```
 
-`PASS` muss in der sichtbaren Gate-Ausgabe grün erscheinen.
+Alle `PASS`-Statuswörter müssen grün dargestellt werden.
 
-## 5. Vollständige Gates
+## 5 · Vollständige Gates
 
 ```bash
 pnpm check
@@ -50,58 +51,49 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-STOP bei jedem Fehler. Erst bei vollständig grünen Gates fortfahren.
-
-## 6. macOS App bauen und installieren
+## 6 · macOS-App bauen und installieren
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Manuell alternativ:
-
-```bash
-pnpm tauri build --bundles app
-```
-
-Erwartetes Ziel:
+Das Script baut die Tauri-v2-App und installiert:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
-## 7. Real-World-Test · Bergen / Kulinarik & Lokal
-
-Verwende die zwei bereits vorhandenen Empfehlungen:
-
-1. **Skillingsbolle bei Baker Brun**
-2. **Bergener Fischmarkt / Mathallen**
-
-Mit den ausführlichen Einordnungen, Probierhinweisen, Besuchshinweisen und Ortsbezügen aus dem Build-030-Test.
-
-### Erwartetes Verhalten
-
-Studio prüft alle für diesen Seitentyp freigegebenen Kompositionen:
-
-- 1/2–1/2
-- 1/3–2/3
-- 2/3–1/3
-- gestapelt
-- `comfortable`
-- anschließend maximal die feste Interest-Page-Stufe `tight`
-
-Wenn keine Variante vollständig innerhalb der Content-Zone bleibt, muss Studio **nicht weiter quetschen**, sondern anzeigen:
-
-> **Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.**
-
-Dabei müssen Companion und Footer vollständig in ihren Safe-Zonen bleiben. Kein Text darf geclippt oder außerhalb einer Box bzw. unter den Footer gerendert werden.
-
-## 8. Commit und Push
+Manueller Build bei Bedarf:
 
 ```bash
-git status
+pnpm tauri build --bundles app
+```
+
+## 7 · Real-World-Test · Geiranger
+
+Öffne `Wandern & Natur · Geiranger` mit zwei Routen:
+
+1. `Fosseråsa → Storsæterfossen`
+2. `Skagehola → Skageflå → Homlong`
+
+Für Route 02 muss vollständig eingetragen sein:
+
+```text
+Sehr steile und teilweise ausgesetzte Abschnitte; Trittsicherheit erforderlich.
+```
+
+Erwartung:
+
+- die Seite bleibt renderbar und zeigt **nicht** allein wegen dieses Satzes den Overflow-Hinweis;
+- der vollständige Hinweis ist sichtbar;
+- Companion und Footer bleiben in ihren Safe-Zonen;
+- erst bei tatsächlich nicht mehr passender Geometrie erscheint:
+  `Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.`
+
+## 8 · Commit
+
+```bash
 git add .
-git commit -m "fix: restore capacity protection after composition"
-git push -u origin fix/build-030-capacity-protection-regression
+git commit -m "fix: prevent false positive interest overflow"
 ```
