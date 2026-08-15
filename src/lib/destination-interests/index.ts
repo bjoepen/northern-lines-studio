@@ -20,7 +20,7 @@ export const DESTINATION_INTEREST_DEFINITIONS: readonly DestinationInterestDefin
     kind: 'hiking_nature',
     label: 'Wandern & Natur',
     questionLabel: 'Wandern & Natur',
-    eyebrow: 'Draußen unterwegs',
+    eyebrow: 'Wandern & Natur',
     description: 'Wege, Landschaft und Naturerlebnisse – für Zeit draußen und neue Perspektiven.'
   },
   {
@@ -34,7 +34,7 @@ export const DESTINATION_INTEREST_DEFINITIONS: readonly DestinationInterestDefin
     kind: 'culinary_local',
     label: 'Kulinarik & Lokal',
     questionLabel: 'Kulinarik & Lokal',
-    eyebrow: 'Lokal erleben',
+    eyebrow: 'Kulinarik & Lokal',
     description: 'Regionale Küche, Märkte und lokale Besonderheiten – für den Geschmack des Ortes.'
   }
 ] as const;

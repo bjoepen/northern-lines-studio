@@ -750,6 +750,21 @@
     selectPageNow(page);
   }
 
+  function destinationInterestIntroduction(kind: string | undefined, place: string): string {
+    switch (kind) {
+      case 'photography':
+        return `Motive, Licht und Fotospots für deinen Blick auf ${place}.`;
+      case 'hiking_nature':
+        return `Routen, Naturziele und praktische Orientierung für deine Zeit draußen in ${place}.`;
+      case 'culture_history':
+        return `Orte und Geschichten, die ${place} bis heute prägen.`;
+      case 'culinary_local':
+        return `Aromen, Märkte und lokale Besonderheiten, die ${place} ihren eigenen Geschmack geben.`;
+      default:
+        return `Eine persönliche Vertiefung für deine Zeit in ${place}.`;
+    }
+  }
+
   function editStoryComponent(componentId: EditorialComponentId) {
     if (activeAuthoringComponent === componentId) return;
     if (interestEntryDraft && !interestEntryDirty) cancelInterestEntry();
@@ -1352,10 +1367,9 @@
                 {#if selectedPage.destinationInterestKind === 'photography'}
                   <div class="destination-interest-preview photography-place-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule photography-page-rule"></div>
-                    <p class="eyebrow">Fotografie</p>
-                    <h1>{preview.heading}</h1>
-                    <p class="destination-interest-place">{journeyStage.title}</p>
-                    <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Fotografische Orientierung für das, was du an diesem Ort festhalten möchtest.'}</p>
+                    <p class="eyebrow">{destinationInterest.label}</p>
+                    <h1>{journeyStage.title}</h1>
+                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
 
                     {#if interestOverflow}
                       <div class="destination-capacity-stop photography-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
@@ -1410,10 +1424,9 @@
                 {:else if selectedPage.destinationInterestKind === 'hiking_nature'}
                   <div class="destination-interest-preview hiking-nature-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule hiking-page-rule"></div>
-                    <p class="eyebrow">Draußen unterwegs</p>
-                    <h1>{preview.heading}</h1>
-                    <p class="destination-interest-place">{journeyStage.title}</p>
-                    <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Routen, Naturziele und praktische Orientierung für deine Zeit draußen.'}</p>
+                    <p class="eyebrow">{destinationInterest.label}</p>
+                    <h1>{journeyStage.title}</h1>
+                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
 
                     {#if interestOverflow}
                       <div class="destination-capacity-stop hiking-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
@@ -1462,10 +1475,9 @@
                 {:else if selectedPage.destinationInterestKind === 'culture_history'}
                   <div class="destination-interest-preview culture-history-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule culture-history-page-rule"></div>
-                    <p class="eyebrow">{destinationInterest.eyebrow}</p>
-                    <h1>{preview.heading}</h1>
-                    <p class="destination-interest-place">{journeyStage.title}</p>
-                    {#if preview.body}<p class="preview-body">{preview.body}</p>{/if}
+                    <p class="eyebrow">{destinationInterest.label}</p>
+                    <h1>{journeyStage.title}</h1>
+                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
                     {#if interestOverflow}
                       <div class="destination-capacity-stop culture-history-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
                         <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
@@ -1505,10 +1517,9 @@
                 {:else}
                   <div class="destination-interest-preview">
                     <div class="page-rule"></div>
-                    <p class="eyebrow">{destinationInterest.eyebrow}</p>
-                    <h1>{preview.heading}</h1>
-                    <p class="destination-interest-place">{journeyStage.title}</p>
-                    <p class="preview-body">{preview.body || destinationInterest.description}</p>
+                    <p class="eyebrow">{destinationInterest.label}</p>
+                    <h1>{journeyStage.title}</h1>
+                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
                     <div class="destination-interest-foundation-note">
                       <span>Deine Vertiefung</span>
                       <strong>{destinationInterest.description}</strong>
@@ -1840,6 +1851,23 @@
           <span class="inspector-label">Deine Vertiefung</span>
           <strong>{destinationInterest.label}</strong>
           <small>{journeyStage.title} · {destinationInterest.description}</small>
+          <div class="interest-introduction-authoring">
+            <div class="interest-introduction-heading">
+              <span>Einleitung</span>
+              {#if activeAuthoringComponent !== 'introduction'}
+                <button type="button" class="interest-introduction-edit" on:click={() => editStoryComponent('introduction')} disabled={interestEntryDirty || destinationDirty}>Bearbeiten</button>
+              {/if}
+            </div>
+            {#if activeAuthoringComponent === 'introduction'}
+              <textarea bind:value={authoringDraft} rows="3" placeholder={destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)} aria-label="Einleitung dieser Vertiefung"></textarea>
+              <div class="interest-introduction-actions">
+                <button type="button" class="authoring-save" on:click={saveAuthoring} disabled={authoringSaveState === 'saving'}>{authoringSaveState === 'saving' ? 'Sichern …' : 'Einleitung sichern'}</button>
+              </div>
+              <small class:saveOk={authoringSaveState === 'saved'} class:saveDirty={authoringDirty}>{authoringDirty ? '● Nicht gesichert' : authoringSaveState === 'saved' ? 'Gespeichert' : 'Bereit zum Bearbeiten'}</small>
+            {:else}
+              <p>{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+            {/if}
+          </div>
           <button type="button" class="destination-interest-remove" on:click={() => void removeSelectedDestinationInterest()} disabled={isLoading || authoringDirty || interestEntryDirty}>Vertiefung entfernen</button>
           {#if authoringDirty || interestEntryDirty}<small>Sichere oder verwirf deine Änderungen, bevor du die Vertiefung entfernst.</small>{/if}
         </section>
@@ -1982,7 +2010,7 @@
         </section>
       {/if}
 
-      {#if storyStructure && selectedPage?.type !== 'destination'}
+      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
           <strong>Deine Geschichte</strong>

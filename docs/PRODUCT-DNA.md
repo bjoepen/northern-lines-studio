@@ -1858,3 +1858,16 @@ Nicht editierbare Begleiter-Eigenschaften wie Platz, Pose und Spiegelung werden 
 - Travel Language applies inside editorial authoring. Entry navigation says **Zurück**, while the global dirty-state system keeps **Verwerfen · Abbrechen · Speichern**.
 - Before release, visible Studio flows are checked for unintended browser/default HTML controls.
 - Visible gate states remain semantic: **PASS green, WARN amber, FAIL red**; only the status word carries the signal color.
+
+
+## 68. Interest Pages · Seitenanker, Ort und Einleitung
+
+Für alle Destination Interest Pages gilt verbindlich eine reduzierte Kopf-Grammatik:
+
+> **Das Interest wird einmal als blauer Seitenanker genannt. Der Ort ist der Seitentitel. Die Einleitung eröffnet die Vertiefung redaktionell.**
+
+Damit entfällt die frühere doppelte Nennung des Interests als Seitenanker und großer Titel. Die vier kanonischen Anker lauten **Fotografie**, **Wandern & Natur**, **Kultur & Geschichte** und **Kulinarik & Lokal**. Der große Seitentitel ist immer der zugehörige Ort.
+
+Die Einleitung ist kein fest verdrahteter Foundation-Text. Sie ist pro Interest Page editierbar und typografisch klar vom Seitentitel unterschieden. Studio darf einen ruhigen archetypspezifischen Vorschlag anzeigen, der Reisende kann ihn jedoch jederzeit ersetzen.
+
+Diese Regel gilt ausschließlich für Interest Pages und verändert weder Destination Pages noch andere Seitengattungen.

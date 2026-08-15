@@ -659,3 +659,79 @@
   cursor: pointer;
 }
 .interest-entry-back:hover:not(:disabled) { color: #314d58; }
+
+
+/* Build 029 · Interest Page Header & Intro Fix
+   Interest is named once as the blue page anchor; place is the page title.
+   The introduction is an editable editorial opening, not a duplicate title. */
+.destination-interest-preview .destination-interest-introduction {
+  max-width: 390px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  font-family: var(--world-body-family);
+  font-size: 14px;
+  line-height: 1.48;
+  font-weight: 400;
+  color: var(--interest-quiet, var(--world-quiet));
+}
+
+.destination-interest-preview > h1 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.interest-introduction-authoring {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid color-mix(in srgb, var(--ui-border, #ccd6da) 72%, transparent);
+  display: grid;
+  gap: 6px;
+}
+
+.interest-introduction-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.interest-introduction-heading > span {
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: 8.5px;
+  color: var(--ui-muted, #738087);
+}
+
+.interest-introduction-authoring > p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--ui-muted, #738087);
+}
+
+.interest-introduction-authoring textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 58px;
+  border: 1px solid var(--ui-border, #d6dfe3);
+  border-radius: 5px;
+  background: #fff;
+  padding: 7px 8px;
+  color: var(--ui-ink, #24333b);
+  font: inherit;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.interest-introduction-edit {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ui-muted, #738087);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.interest-introduction-edit:hover { color: var(--fjord-blue); }
+.interest-introduction-edit:disabled { opacity: .45; cursor: default; }
+.interest-introduction-actions { display: flex; justify-content: flex-end; }
