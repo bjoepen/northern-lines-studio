@@ -34,7 +34,7 @@ mustContain(app, 'Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.', '
 mustContain(css, '.hiking-nature-experience', 'Hiking & Nature layout is missing.');
 mustContain(css, 'max-height: none', 'Structured routes must not be clipped by a fixed preview height.');
 mustContain(css, '.interest-entry-two-up', 'Studio must support a two-box composition.');
-mustContain(css, '.interest-entry-grouped', 'Studio must support a one-box grouped composition.');
+mustContain(css, '.interest-entry-grid.interest-entry-stacked', 'Studio must support separate stacked route composition.');
 mustContain(css, '.a5-page.destination-interest-page .editorial-footer', 'Interest-page footer must remain a hard page anchor.');
 mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.14.0";', 'Structured entry persistence requires .nls 0.14.0.');
 mustContain(rust, 'const BUILD_028_FORMAT_VERSION: &str = "0.13.0";', '0.13.0 migration source must remain explicit.');

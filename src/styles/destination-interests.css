@@ -412,6 +412,16 @@
   gap: 10px;
 }
 
+.interest-entry-grid.interest-entry-one-third-two-thirds {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 10px;
+}
+
+.interest-entry-grid.interest-entry-two-thirds-one-third {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
 .interest-entry-card {
   min-width: 0;
   padding: 13px 14px 12px;
@@ -492,16 +502,16 @@
 .interest-entry-place { margin-top: 8px; padding-top: 6px; border-top: 1px solid color-mix(in srgb, var(--interest-meta) 18%, transparent); }
 
 /* Two concise entries may live side by side. Longer entries are stacked by the grammar. */
-.interest-entry-two-up .interest-entry-heading {
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .interest-entry-heading {
   grid-template-columns: 20px minmax(0, 1fr);
 }
-.interest-entry-two-up .photography-spot-focal {
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .photography-spot-focal {
   grid-column: 2;
   justify-self: start;
   padding-left: 0;
 }
-.interest-entry-two-up .interest-entry-details { grid-template-columns: minmax(0, 1fr); }
-.interest-entry-two-up .interest-entry-wide { grid-column: auto; }
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .interest-entry-details { grid-template-columns: minmax(0, 1fr); }
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .interest-entry-wide { grid-column: auto; }
 
 /* Bounded compact step: Interest Pages have exactly two fixed typography states.
    Tight is not a free scale and never descends below these values. */
@@ -606,22 +616,9 @@
 .interest-entry-editor textarea { width: 100%; box-sizing: border-box; }
 .interest-entry-editor-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
-/* One shared box versus two boxes is a Studio decision, not a user setting. */
-.interest-entry-grid.interest-entry-grouped {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  padding: 4px 0;
-  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
-}
-.baltic-page.destination-interest-page .interest-entry-grid.interest-entry-grouped {
-  background: color-mix(in srgb, var(--baltic-sand) 58%, #fff);
-}
-.interest-entry-grouped .interest-entry-card {
-  background: transparent;
-}
-.interest-entry-grouped .interest-entry-card + .interest-entry-card {
-  padding-top: 8px;
-}
+/* Structured entries remain separate semantic units. Studio may compose them
+   balanced, asymmetric or stacked, but never collapse heterogeneous entries
+   into one catch-all content box. */
 
 
 /* Build 029 · Culture & History Experience
@@ -644,7 +641,7 @@
 .culture-history-places { margin-top: 16px; }
 .culture-history-entry-card .interest-entry-heading { grid-template-columns: 24px minmax(0, 1fr); }
 .culture-history-entry-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.interest-entry-two-up .culture-history-entry-details { grid-template-columns: minmax(0, 1fr); }
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .culture-history-entry-details { grid-template-columns: minmax(0, 1fr); }
 .culture-history-capacity-stop { margin-top: 20px; }
 .culture-history-empty { font-size: 9.5px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
 
@@ -759,7 +756,7 @@
 .culinary-local-recommendations { margin-top: 16px; }
 .culinary-local-entry-card .interest-entry-heading { grid-template-columns: 24px minmax(0, 1fr); }
 .culinary-local-entry-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.interest-entry-two-up .culinary-local-entry-details { grid-template-columns: minmax(0, 1fr); }
+:is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .culinary-local-entry-details { grid-template-columns: minmax(0, 1fr); }
 .culinary-time-price { color: var(--interest-meta, var(--world-accent)); }
 .culinary-local-capacity-stop { margin-top: 20px; }
 .culinary-local-empty { font-size: 9.5px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }
@@ -772,12 +769,17 @@
   margin-top: 12px;
   margin-bottom: 12px;
 }
-.culinary-local-experience .interest-entry-two-up .culinary-local-entry-details {
+.culinary-local-experience :is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .culinary-local-entry-details {
   grid-template-columns: minmax(0, 1fr);
 }
-.culinary-local-experience .interest-entry-two-up .interest-entry-place {
+.culinary-local-experience :is(.interest-entry-two-up, .interest-entry-one-third-two-thirds, .interest-entry-two-thirds-one-third) .interest-entry-place {
   margin-top: 7px;
 }
 .culinary-local-experience .destination-capacity-stop {
   max-width: 360px;
 }
+
+/* Build 030 Composition Contract Fix · Content Fit before composition
+   All approved two-entry layouts are finite candidates: 1/2–1/2, 1/3–2/3,
+   2/3–1/3 and stacked. Each entry keeps its own semantic surface. */
+.interest-entry-stacked { gap: 9px; }

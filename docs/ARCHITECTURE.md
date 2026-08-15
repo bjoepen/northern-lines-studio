@@ -176,3 +176,13 @@ Culture & History uses the same structured `DestinationInterestEntry` foundation
 
 ## Build 030 · Structured Culinary & Local Interest Experience
 Kulinarik & Lokal uses the same generic `DestinationInterestEntry` persistence foundation as the other Interest archetypes. The specialist schema lives in the Interest Entry definition layer, while rendering remains archetype-specific and composition/density/capacity remain shared grammar responsibilities. This completes the four-archetype proof that the Interest Page architecture is semantic rather than photography-specific.
+
+## Build 030 Fix · Content Fit before Composition
+
+Layout selection is a finite search, not a single early choice. Every page type owns an explicit set of allowed compositions. Studio evaluates the complete allowed candidate set against the page's semantic content and protected zones before it chooses the final preview composition.
+
+For structured two-entry content the shared Interest grammar evaluates balanced `1/2–1/2`, asymmetric `1/3–2/3` and `2/3–1/3`, plus stacked full-width composition. Destination grammar keeps its own finite candidates, including balanced/asymmetric extension layouts and adaptive title ratios. Page types may expose different candidate sets, but they all follow the same global contract: **Content Fit before Composition**.
+
+A layout candidate is invalid if it requires clipping, arbitrary typography scaling, content overflow beyond its editorial surface, or borrowing Companion/Footer safe zones. Density is evaluated only after candidate composition. If the finite grammar is exhausted, the page reports overflow.
+
+Structured semantic entries remain separate layout units. The renderer must not collapse unrelated entries into one generic catch-all box merely to simplify placement. This implements the editorial rule: **Nicht sammeln, sondern erzählen.**

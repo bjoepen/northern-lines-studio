@@ -429,3 +429,6 @@ Build 030 completes the fourth approved Destination Interest archetype. **Kulina
 
 ### Build 030 Polish – Culinary Density & Safe-Zone Correction
 The Culinary & Local Interest Page now follows the same bounded capacity grammar as the other Interest archetypes: exactly two fixed typography states (`comfortable` and `tight`), adaptive one-/two-box composition before density reduction, and `overflow` instead of arbitrary type scaling or Companion/Footer intrusion. Textual place references do not reserve map geometry until an actual map is rendered.
+
+### Build 030 – Global Content Fit & Composition Contract
+Studio entscheidet Layoutvarianten jetzt nach Content Fit: alle für einen Seitentyp erlaubten Kompositionen werden geprüft, bevor verdichtet oder `overflow` gemeldet wird. Semantisch unterschiedliche Inhalte werden nicht in generische Sammelboxen gepresst. Die globale Regel lautet: **Content Fit entscheidet über die Komposition. Nicht sammeln, sondern erzählen.**
