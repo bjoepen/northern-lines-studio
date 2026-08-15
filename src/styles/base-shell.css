@@ -182,6 +182,7 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 .authoring-save:hover { background: #dee9ec; }
 .authoring-save:disabled { opacity: .55; cursor: default; }
 .authoring-panel > small { margin-top: 6px; font-size: 8px; color: #8a989e; }
+.authoring-panel > small.authoring-context-hint { margin-top: 5px; line-height: 1.4; color: #687c85; }
 .authoring-panel > small.saveOk { color: #4f7665; }
 .authoring-progress { margin-top: 9px; display: flex; justify-content: space-between; gap: 8px; color: #71828a; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
 .authoring-progress strong { margin: 0; font-family: inherit; font-size: 8px; color: #516870; font-weight: 600; text-transform: none; letter-spacing: 0; }

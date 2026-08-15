@@ -15,7 +15,7 @@ const photographyInterestGrammar: PageGrammarDefinition = {
     { id: 'photo_light', label: 'Licht & Tageszeit', required: false },
     { id: 'photo_motifs', label: 'Motive', required: false },
     { id: 'photo_guidance', label: 'Fotografische Hinweise', required: false },
-    { id: 'photo_focal_lengths', label: 'Brennweiten & Praxis', required: false },
+    { id: 'photo_focal_lengths', label: 'Brennweite je Fotospot', required: false },
     { id: 'photo_place_reference', label: 'Karten- / Ortsbezug', required: false }
   ],
   editorialFrame: ['header', 'footer', 'page_number', 'companion']
