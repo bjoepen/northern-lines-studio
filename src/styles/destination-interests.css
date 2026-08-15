@@ -203,7 +203,7 @@
 .photography-spot-row {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) auto;
-  gap: 9px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -235,8 +235,7 @@
 .photography-spot-focal {
   align-self: center;
   white-space: nowrap;
-  padding: 3px 6px;
-  border-left: 1px solid color-mix(in srgb, var(--interest-meta) 22%, transparent);
+  padding: 3px 0 3px 8px;
   font-family: var(--world-body-family);
   font-size: 9.5px;
   line-height: 1.25;
