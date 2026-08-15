@@ -22,5 +22,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Destination Interest World Expression Consistency Gate: PASS');
+console.log('Destination Interest World Expression Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('White Page → Shared Interest Grammar → World Typography → World Accent → World Editorial Surface');

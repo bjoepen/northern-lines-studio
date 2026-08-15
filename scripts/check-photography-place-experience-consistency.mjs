@@ -29,5 +29,5 @@ mustContain(css, '.photography-page-rule', 'Photography page opening must keep t
 if (/\.photography-spot-focal\s*\{[^}]*border-left:/s.test(css)) throw new Error('Spot/focal pairing must not use a table-like vertical divider.');
 mustContain(rust, 'const BUILD_027_FORMAT_VERSION: &str = "0.12.0"', 'Build 027 / .nls 0.12.0 must remain supported.');
 mustContain(format, 'Photography & Place Experience (`0.12.0`)', 'Project format docs must retain Build 027 history.');
-console.log('Photography & Place Experience Consistency Gate: PASS');
-console.log('Photography Structured Entry Gate: PASS');
+console.log('Photography & Place Experience Consistency Gate: \x1b[32mPASS\x1b[0m');
+console.log('Photography Structured Entry Gate: \x1b[32mPASS\x1b[0m');

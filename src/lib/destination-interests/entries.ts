@@ -57,7 +57,8 @@ const SCHEMAS: Readonly<Record<DestinationInterestKind, InterestEntrySchema>> = 
     fields: [
       { id: 'category', label: 'Art', placeholder: 'z. B. Museum, Architektur, Geschichte' },
       { id: 'why', label: 'Warum lohnt es sich?', placeholder: 'Kurze redaktionelle Einordnung', multiline: true },
-      { id: 'guidance', label: 'Hinweis', placeholder: 'Optionaler Praxis-Hinweis', multiline: true },
+      { id: 'guidance', label: 'Besuchshinweis', placeholder: 'Was sollte man für den Besuch wissen?', multiline: true },
+      { id: 'timeReference', label: 'Zeitbezug', placeholder: 'Optional, z. B. morgens, 1–2 h oder saisonal' },
       { id: 'placeReference', label: 'Ort / Kartenbezug', placeholder: 'Optionaler Karten- oder Ortsbezug' }
     ]
   },
