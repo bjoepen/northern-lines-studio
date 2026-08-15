@@ -18,7 +18,7 @@ for (const kind of ['photography', 'hiking_nature', 'culture_history', 'culinary
   mustContain(interests, `kind: '${kind}'`, `Missing curated interest definition ${kind}.`);
   mustContain(rust, `\"${kind}\"`, `Rust must validate interest kind ${kind}.`);
 }
-mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.11.0"', 'Build 026 must use .nls 0.11.0.');
+mustContain(rust, 'const BUILD_026_FORMAT_VERSION: &str = "0.11.0"', 'Build 026 compatibility must retain .nls 0.11.0.');
 mustContain(rust, 'fn add_destination_interest', 'Rust add command is missing.');
 mustContain(rust, 'fn remove_destination_interest', 'Rust remove command is missing.');
 mustContain(app, 'Was möchtest du in {destinationName || journeyStage.title} erleben?', 'Travel Language question is missing.');

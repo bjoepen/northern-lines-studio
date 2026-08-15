@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.11.0
+**Current format:** `.nls` 0.12.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -219,3 +219,12 @@ The page does **not** persist World colours, typography, Companion position or f
 ### Migration 0.10.0 → 0.11.0
 
 Opening a Build-025/0.10.0 project updates `formatVersion` to 0.11.0. Existing Journey, Destination, imagery, Editorial Extensions and page content remain unchanged. No interest page is invented during migration. New interest pages exist only after an explicit author action in Studio.
+
+
+## Build 027 – Photography & Place Experience (`0.12.0`)
+
+Photography destination-interest pages expand their Story Components with `photo_spots`, `photo_light`, `photo_motifs`, `photo_guidance`, `photo_focal_lengths` and `photo_place_reference`. The content continues to use the existing page authoring map, so photography depth stays attached to the destination-interest page and inherits the active Editorial World.
+
+### Migration 0.11.0 → 0.12.0
+
+Opening a Build-026 project updates `formatVersion` to 0.12.0. Existing photography-interest pages receive the new component declarations, but no photography content is invented. Other interest pages, Journey, Destination, imagery, Editorial Extensions and World selection remain unchanged.

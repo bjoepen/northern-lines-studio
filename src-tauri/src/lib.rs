@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.11.0";
+const CURRENT_FORMAT_VERSION: &str = "0.12.0";
+const BUILD_026_FORMAT_VERSION: &str = "0.11.0";
 const BUILD_025_FORMAT_VERSION: &str = "0.10.0";
 const BUILD_023_FORMAT_VERSION: &str = "0.9.0";
 const BUILD_021_FORMAT_VERSION: &str = "0.8.0";
@@ -297,6 +298,7 @@ fn infer_components(page: &StudioPage) -> Vec<String> {
         "contents" => &["title", "contents"],
         "planning" => &["title", "introduction"],
         "destination" => &["hero", "title", "introduction", "history", "photography", "knowledge", "souvenirs", "qr"],
+        "destination_interest" if page.destination_interest_kind.as_deref() == Some("photography") => &["title", "introduction", "photo_spots", "photo_light", "photo_motifs", "photo_guidance", "photo_focal_lengths", "photo_place_reference"],
         "destination_interest" => &["title", "introduction"],
         "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
         "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
@@ -433,6 +435,13 @@ fn ensure_destination_profiles(project: &mut StudioProject) {
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => {}
+        BUILD_026_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_026_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "destination_interest" && page.destination_interest_kind.as_deref() == Some("photography")) {
+                page.components = infer_components(page);
+            }
+        }
         BUILD_025_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_025_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -1406,6 +1415,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_026_FORMAT_VERSION
                 || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
@@ -1420,6 +1430,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_026_FORMAT_VERSION
                 || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
                 || version == BUILD_021_FORMAT_VERSION
@@ -1458,13 +1469,13 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
-                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
                 None
             },
-            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
+            destinations: if version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION {
                 vec![Destination {
                     id: "destination-bergen".into(),
                     name: "Bergen".into(),
@@ -1490,11 +1501,11 @@ mod tests {
                 role: if version != LEGACY_FORMAT_VERSION { Some("destination".into()) } else { None },
                 title: "Bergen".into(),
                 content: "content/pages/010-bergen.md".into(),
-                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
+                layout: if version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { "destination-hero-banner".into() } else { "destination-standard".into() },
                 journey_stage: if version != LEGACY_FORMAT_VERSION { Some("bergen".into()) } else { None },
                 destination_interest_kind: None,
                 knowledge_type: None,
-                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
+                components: if version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION { vec!["hero".into(), "title".into(), "introduction".into(), "history".into(), "photography".into(), "knowledge".into(), "souvenirs".into(), "qr".into()] } else { vec![] },
                 authoring: BTreeMap::new(),
             }],
             project_path: String::new(),

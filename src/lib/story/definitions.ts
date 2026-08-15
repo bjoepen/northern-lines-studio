@@ -18,7 +18,13 @@ export const storyComponentDefinitions: Readonly<Record<EditorialComponentId, St
   workflow_tip: { type: 'workflow_tip', role: 'workflow', description: 'Ergänzt einen kurzen praxiserprobten Hinweis zum Workflow.' },
   notes_area: { type: 'notes_area', role: 'memory', description: 'Gibt eigenen Beobachtungen und Erinnerungen bewusst Raum.' },
   quote: { type: 'quote', role: 'memory', description: 'Verdichtet die emotionale Aussage einer Seite.' },
-  closing_text: { type: 'closing_text', role: 'memory', description: 'Schließt eine Reise oder Etappe redaktionell ab.' }
+  closing_text: { type: 'closing_text', role: 'memory', description: 'Schließt eine Reise oder Etappe redaktionell ab.' },
+  photo_spots: { type: 'photo_spots', role: 'photography', description: 'Sammelt konkrete Fotospots als ortsbezogene fotografische Stationen.' },
+  photo_light: { type: 'photo_light', role: 'photography', description: 'Ordnet Licht und Tageszeit als praktische Orientierung für diesen Ort ein.' },
+  photo_motifs: { type: 'photo_motifs', role: 'photography', description: 'Benennt Motive und Bildideen, die den Charakter des Ortes sichtbar machen.' },
+  photo_guidance: { type: 'photo_guidance', role: 'photography', description: 'Gibt kurze fotografische Hinweise, ohne die Reise in Technik zu verwandeln.' },
+  photo_focal_lengths: { type: 'photo_focal_lengths', role: 'photography', description: 'Hält Brennweiten- und Praxisempfehlungen als freiwillige Orientierung fest.' },
+  photo_place_reference: { type: 'photo_place_reference', role: 'orientation', description: 'Verknüpft die Fotografie mit einem konkreten Karten-, Orts- oder Routenbezug.' }
 };
 
 const frameDefinitions: Readonly<Record<EditorialFrameComponentId, EditorialFrameComponentView>> = {

@@ -1800,3 +1800,9 @@ Thematische Vertiefungsseiten übernehmen nicht nur die Typografie der aktiven E
 Die physische Seitenfläche bleibt weiß bzw. neutral-weiß. Interest Pages dürfen keine eigenen hardcodierten Neutralfarben einführen, die Fjord oder Ostsee visuell entkoppeln.
 
 > **Die Semantik gehört zur Destination. Die Expression gehört zur World.**
+
+## Photography & Place Experience
+
+Fotografie ist in Northern Lines Studio eine mögliche Vertiefung eines Ortes, nicht die Voraussetzung für eine Reise. Die Destination bleibt das semantische Zentrum. Eine Fotografie-Seite darf Fotospots, Licht, Motive, Hinweise, Brennweitenorientierung und Ortsbezug vertiefen, ohne zur Kamera-, EXIF- oder Produktdatenbank zu werden.
+
+> **Fotografie vertieft den Ort. Sie ersetzt ihn nicht.**
