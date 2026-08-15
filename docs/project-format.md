@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.12.0
+**Current format:** `.nls` 0.13.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -228,3 +228,12 @@ Photography destination-interest pages expand their Story Components with `photo
 ### Migration 0.11.0 → 0.12.0
 
 Opening a Build-026 project updates `formatVersion` to 0.12.0. Existing photography-interest pages receive the new component declarations, but no photography content is invented. Other interest pages, Journey, Destination, imagery, Editorial Extensions and World selection remain unchanged.
+
+
+## Build 028 – Hiking & Nature Experience (`0.13.0`)
+
+The `hiking_nature` destination-interest archetype gains dedicated Story Components: `hike_routes`, `hike_start_points`, `hike_durations`, `hike_difficulties`, `hike_highlights`, `hike_guidance`, and `hike_place_reference`. The route remains the semantic anchor; start, duration and difficulty are rendered by matching line position to the corresponding route. No GPX geometry, navigation state, or external route service is stored.
+
+### Migration 0.12.0 → 0.13.0
+
+Opening a Build-027 project updates `formatVersion` to 0.13.0. Existing `hiking_nature` interest pages receive the Build-028 component declarations. Existing content, Photography pages, Journey, Destination data, World selection and extensions remain unchanged; the migration invents no hiking content.

@@ -1,35 +1,28 @@
-# APPLY-DROPIN · Build 027 – Photography Editorial Pairing Polish
+# APPLY-DROPIN · Build 028 – Hiking & Nature Experience
 
-**Baseline:** Build 027 – Photography Layout Polish  
-**Target:** Build 027 – Photography Editorial Pairing Polish  
-**Project format:** `.nls` 0.12.0 → 0.12.0 (keine Migration)
+Ausgangsbasis: finaler **Build 027 – Photography Editorial Pairing Polish**.
 
-Dieser Mini-Polish entfernt die tabellenartige vertikale Trennlinie zwischen Fotospot und Brennweitenempfehlung. Die semantische Paarung bleibt unverändert und wird ausschließlich durch Ausrichtung, Abstand und Typografie getragen.
-
-## 1. Branch
+## 1. Branch anlegen
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git status
-git switch main
-git pull --ff-only
-git switch -c fix/027-photography-editorial-pairing
+git switch -c build-028-hiking-nature-experience
 ```
 
 ## 2. Dry Run
 
+Passe den Download-Pfad bei Bedarf an.
+
 ```bash
-rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-027-Photography-No-Table-Divider-Fix-DropIn/ \
-  ~/Projekte/northern-lines-studio/
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-028-Hiking-Nature-Experience-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
-## 3. Apply
+Prüfe die Liste. Es dürfen nur Build-028-Dateien ergänzt oder ersetzt werden. Kein `--delete`.
+
+## 3. Drop-in anwenden
 
 ```bash
-rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-027-Photography-No-Table-Divider-Fix-DropIn/ \
-  ~/Projekte/northern-lines-studio/
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-028-Hiking-Nature-Experience-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
 ## 4. Consistency Gate
@@ -39,15 +32,13 @@ cd ~/Projekte/northern-lines-studio
 pnpm consistency
 ```
 
-Erwartung unter anderem:
+Erwartet unter anderem:
 
 ```text
-Photography & Place Experience Consistency Gate: PASS
-Photography Layout Polish Gate: PASS
-Photography Editorial Pairing Polish Gate: PASS
+Hiking & Nature Experience Consistency Gate: PASS
 ```
 
-## 5. Full Gates
+## 5. Vollständige Gates
 
 ```bash
 pnpm check
@@ -57,43 +48,43 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-## 6. App bauen & installieren
+**STOP**, sobald ein Gate fehlschlägt. Erst korrigieren, dann weiter.
+
+## 6. macOS-App bauen und installieren
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Erwartetes Ziel:
+Ziel:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
+Manuell alternativ:
+
+```bash
+pnpm tauri build --bundles app
+```
+
 ## 7. Real-World-Test
 
-Bergen → **Fotografie** öffnen und prüfen:
+1. Bestehende Build-027-Reise öffnen; Migration `.nls` 0.12.0 → 0.13.0 prüfen.
+2. Bei Bergen oder einer anderen Destination **Wandern & Natur** öffnen/anlegen.
+3. Zwei Routen eintragen, zum Beispiel `Fløyen Rundweg` und `Ulriken – Montana`.
+4. Je Route Startpunkt, Dauer und Schwierigkeit zeilengleich ergänzen.
+5. Prüfen: Route → Start → Dauer → Schwierigkeit wird als **ein Routeneintrag** gelesen, nicht als Tabelle.
+6. Aussicht/Naturziele sowie Streckenhinweis ergänzen.
+7. Fjord ↔ Ostsee wechseln: Inhalt bleibt gleich, Expression wechselt.
+8. Projekt schließen und erneut öffnen: Persistenz prüfen.
+9. Capacity-Stresstest: Companion und Footer müssen geschützt bleiben.
 
-1. `Bryggen / Vågen` → `18–35 mm`
-2. `Fløyen Aussichtspunkt` → `18–50 mm`
-3. `Ulriken` → `50–230 mm`
-4. Spot und Brennweite bleiben eindeutig als Paar lesbar.
-5. Zwischen Ort und Brennweite erscheint **keine vertikale Trennlinie** mehr.
-6. Die Komponente wirkt redaktionell, nicht tabellarisch.
-7. Fjord ↔ Ostsee bleibt korrekt.
-
-### GO
-
-Paarung eindeutig, keine Tabellenkante, alle Gates grün.
-
-### STOP
-
-Nicht committen, wenn Zuordnung unklar wird, Layout verrutscht oder ein Gate fehlschlägt.
-
-## 8. Commit & Push
+## 8. Commit
 
 ```bash
 git add .
-git commit -m "fix: remove photography spot focal divider"
-git push -u origin fix/027-photography-editorial-pairing
+git commit -m "feat: add hiking and nature experience"
+git push
 ```

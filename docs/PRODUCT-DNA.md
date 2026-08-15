@@ -1806,3 +1806,8 @@ Die physische Seitenfläche bleibt weiß bzw. neutral-weiß. Interest Pages dür
 Fotografie ist in Northern Lines Studio eine mögliche Vertiefung eines Ortes, nicht die Voraussetzung für eine Reise. Die Destination bleibt das semantische Zentrum. Eine Fotografie-Seite darf Fotospots, Licht, Motive, Hinweise, Brennweitenorientierung und Ortsbezug vertiefen, ohne zur Kamera-, EXIF- oder Produktdatenbank zu werden.
 
 > **Fotografie vertieft den Ort. Sie ersetzt ihn nicht.**
+
+
+## Semantische Nähe bleibt sichtbar
+
+Informationen, die inhaltlich zusammengehören, werden auch in der Seitenkomposition unmittelbar zusammen erzählt. Ein Routeneintrag trennt daher nicht künstlich Route, Startpunkt, Dauer und Schwierigkeit voneinander. Studio darf Daten intern getrennt speichern; für den Reisenden bleibt ihre Beziehung selbstverständlich sichtbar.

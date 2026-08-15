@@ -24,7 +24,14 @@ export const storyComponentDefinitions: Readonly<Record<EditorialComponentId, St
   photo_motifs: { type: 'photo_motifs', role: 'photography', description: 'Benennt Motive und Bildideen, die den Charakter des Ortes sichtbar machen.' },
   photo_guidance: { type: 'photo_guidance', role: 'photography', description: 'Gibt kurze fotografische Hinweise, ohne die Reise in Technik zu verwandeln.' },
   photo_focal_lengths: { type: 'photo_focal_lengths', role: 'photography', description: 'Hält Brennweiten- und Praxisempfehlungen als freiwillige Orientierung fest.' },
-  photo_place_reference: { type: 'photo_place_reference', role: 'orientation', description: 'Verknüpft die Fotografie mit einem konkreten Karten-, Orts- oder Routenbezug.' }
+  photo_place_reference: { type: 'photo_place_reference', role: 'orientation', description: 'Verknüpft die Fotografie mit einem konkreten Karten-, Orts- oder Routenbezug.' },
+  hike_routes: { type: 'hike_routes', role: 'orientation', description: 'Sammelt konkrete Routen und Touren als Ausgangspunkt für das Naturerlebnis.' },
+  hike_start_points: { type: 'hike_start_points', role: 'orientation', description: 'Ordnet jeder Route ihren praktischen Startpunkt zu.' },
+  hike_durations: { type: 'hike_durations', role: 'practical', description: 'Ordnet jeder Route eine realistische Dauer als Reiseorientierung zu.' },
+  hike_difficulties: { type: 'hike_difficulties', role: 'practical', description: 'Ordnet jeder Route eine verständliche Schwierigkeit zu.' },
+  hike_highlights: { type: 'hike_highlights', role: 'place_knowledge', description: 'Benennt Aussichtspunkte, Naturziele und besondere Wegmomente.' },
+  hike_guidance: { type: 'hike_guidance', role: 'practical', description: 'Bewahrt kurze Hinweise zur Strecke, ohne die Seite in einen Outdoor-Navigator zu verwandeln.' },
+  hike_place_reference: { type: 'hike_place_reference', role: 'orientation', description: 'Verknüpft Wandern und Natur mit einem optionalen Karten- oder Ortsbezug.' }
 };
 
 const frameDefinitions: Readonly<Record<EditorialFrameComponentId, EditorialFrameComponentView>> = {

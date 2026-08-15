@@ -19,7 +19,7 @@
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
 **Studio:** 0.26.0-alpha.1
-**Projektformat:** `.nls` 0.12.0
+**Projektformat:** `.nls` 0.13.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -401,3 +401,10 @@ Das `.nls`-Format steigt auf **0.12.0**. Build-026-Projekte in 0.11.0 werden bei
 Der Photography-Archetyp ordnet Brennweiten nun **direkt dem jeweiligen Fotospot** zu. Die Brennweiten bleiben als eigener semantischer Authoring-Baustein erhalten, werden in der Seitenkomposition aber positionsgleich mit der Fotospot-Liste gekoppelt. Eine separate Brennweiten-Sammelbox entfällt. Fehlt für einen Spot eine Zuordnung, zeigt Studio dezent „Brennweite offen“.
 
 Die dünne Editorial-Linie bleibt erhalten, wird für Photography Interest Pages jedoch auf einen ruhigen Akzent reduziert; zugleich beginnt die Seitenkomposition höher. World Expression, Companion-/Footer-Safe-Zonen, Capacity Protection, Persistenz und `.nls` 0.12.0 bleiben unverändert.
+
+
+## Build 028 – Hiking & Nature Experience
+
+Build 028 macht **Wandern & Natur** zum zweiten fachlich ausgebauten Destination-Interest-Archetyp. Routen und Touren stehen im Mittelpunkt; Startpunkt, Dauer und Schwierigkeit bleiben in der Seitenkomposition direkt der jeweiligen Route zugeordnet. Aussichtspunkte/Naturziele, Streckenhinweise und ein optionaler Karten-/Ortsbezug ergänzen die Reisebegleitung. Studio bleibt bewusst kein GPX-Manager und kein Outdoor-Navigator.
+
+Die aktive Editorial World, die weiße Grundseite, Companion-/Footer-Safe-Zonen und Capacity Protection gelten unverändert. Das `.nls`-Format steigt auf **0.13.0**. Projekte aus Build 027 / 0.12.0 werden beim Öffnen migriert; bestehende Wandern-&-Natur-Seiten erhalten die neuen Story Components, ohne dass Studio Inhalte erfindet.

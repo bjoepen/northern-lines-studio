@@ -21,7 +21,14 @@ export type EditorialComponentId =
   | 'photo_motifs'
   | 'photo_guidance'
   | 'photo_focal_lengths'
-  | 'photo_place_reference';
+  | 'photo_place_reference'
+  | 'hike_routes'
+  | 'hike_start_points'
+  | 'hike_durations'
+  | 'hike_difficulties'
+  | 'hike_highlights'
+  | 'hike_guidance'
+  | 'hike_place_reference';
 
 export type EditorialFrameComponentId = 'header' | 'footer' | 'page_number' | 'companion';
 
