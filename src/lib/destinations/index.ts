@@ -23,7 +23,7 @@ export interface DestinationDraft {
 }
 
 export function destinationForPage(project: StudioProject | null, page: StudioPage | null): Destination | null {
-  if (!project || page?.type !== 'destination' || !page.journeyStage) return null;
+  if (!project || !page?.journeyStage || !['destination', 'destination_interest'].includes(page.type)) return null;
   const stage = project.journey.stages.find((entry) => entry.id === page.journeyStage);
   if (!stage) return null;
   const destinationId = stage.destinationId ?? `destination-${stage.id}`;

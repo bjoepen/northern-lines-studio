@@ -92,7 +92,7 @@ describe('workspace model', () => {
       layoutSystemId: 'fjord-layout',
       layoutSystemName: 'Fjord Layout Language',
       designLanguage: ['Northern', 'Calm', 'Image-led'],
-      pageGrammars: ['cover', 'welcome', 'contents', 'planning', 'destination', 'light', 'weather', 'workflow', 'notes', 'closing']
+      pageGrammars: ['cover', 'welcome', 'contents', 'planning', 'destination', 'destination_interest', 'light', 'weather', 'workflow', 'notes', 'closing']
     });
   });
 

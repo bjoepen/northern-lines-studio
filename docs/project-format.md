@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.9.0
+**Current format:** `.nls` 0.11.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -185,3 +185,37 @@ Die Daten speichern Semantik und Inhalt, aber keine Farbe, Box-Geometrie, Koordi
 ## Editorial Worlds · Build 025B
 
 `editorialWorldId` unterstützt `fjord` und `baltic`. Der World-Wechsel ändert keine Schema-Version und keine semantischen Reiseinhalte.
+
+
+## Build 026 – Destination Interest Pages (`0.11.0`)
+
+Build 026 introduces destination-bound thematic pages without duplicating the Destination Profile. A thematic page stays in `pageManifest`, references the existing Journey Stage through `journeyStage`, and stores only the semantic interest kind:
+
+```json
+{
+  "id": "page-bergen-photography",
+  "order": 11,
+  "type": "destination_interest",
+  "role": "destination",
+  "title": "Fotografie",
+  "content": "content/pages/011-bergen-photography.md",
+  "layout": "destination-interest",
+  "journeyStage": "bergen",
+  "destinationInterestKind": "photography"
+}
+```
+
+Allowed interest kinds in the Foundation are:
+
+- `photography`
+- `hiking_nature`
+- `culture_history`
+- `culinary_local`
+
+A destination may carry several different interest pages. Build 026 deliberately allows only one page per interest kind and destination; this keeps the vocabulary finite and avoids duplicate technical page variants.
+
+The page does **not** persist World colours, typography, Companion position or free layout geometry. Those remain World/Grammar responsibilities.
+
+### Migration 0.10.0 → 0.11.0
+
+Opening a Build-025/0.10.0 project updates `formatVersion` to 0.11.0. Existing Journey, Destination, imagery, Editorial Extensions and page content remain unchanged. No interest page is invented during migration. New interest pages exist only after an explicit author action in Studio.

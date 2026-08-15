@@ -7,6 +7,7 @@ export type PageType =
   | 'contents'
   | 'planning'
   | 'destination'
+  | 'destination_interest'
   | 'knowledge'
   | 'workflow'
   | 'notes'
@@ -23,6 +24,12 @@ export type PageRole =
 
 export type JourneyStageKind = 'destination' | 'landscape' | 'journey';
 
+export type DestinationInterestKind =
+  | 'photography'
+  | 'hiking_nature'
+  | 'culture_history'
+  | 'culinary_local';
+
 export interface StudioPage {
   id: string;
   order: number;
@@ -32,6 +39,7 @@ export interface StudioPage {
   content: string;
   layout: string;
   journeyStage?: string;
+  destinationInterestKind?: DestinationInterestKind;
   knowledgeType?: string;
   components?: EditorialComponentId[];
   authoring?: Partial<Record<EditorialComponentId, AuthoringEntry>>;
@@ -173,6 +181,11 @@ const previewCopy: Record<PageType, PreviewContent> = {
     eyebrow: 'Reiseziel',
     heading: 'Unterwegs im Norden',
     body: 'Der Ort in Kürze · Geschichte & Hintergründe · Fotografie & Erleben'
+  },
+  destination_interest: {
+    eyebrow: 'Dein Erlebnis',
+    heading: 'Mehr von diesem Ort',
+    body: 'Eine thematische Vertiefung für das, was dir auf dieser Reise wichtig ist.'
   },
   knowledge: {
     eyebrow: 'Reisebegleitung',

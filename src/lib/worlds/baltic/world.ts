@@ -12,7 +12,7 @@ export const balticWorld: EditorialWorldDefinition = {
   layoutSystemId: 'baltic-layout',
   layoutSystemName: 'Ostsee Layout Language',
   pageGrammars: [
-    'cover', 'welcome', 'contents', 'planning', 'destination',
+    'cover', 'welcome', 'contents', 'planning', 'destination', 'destination_interest',
     'light', 'weather', 'workflow', 'notes', 'closing'
   ]
 };

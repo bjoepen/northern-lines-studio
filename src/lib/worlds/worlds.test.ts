@@ -22,6 +22,8 @@ describe('editorial world library', () => {
 
   it('contains the Fjord reference grammars', () => {
     expect(requireEditorialWorld('fjord').pageGrammars).toContain('destination');
+    expect(requireEditorialWorld('fjord').pageGrammars).toContain('destination_interest');
+    expect(requireEditorialWorld('baltic').pageGrammars).toContain('destination_interest');
     expect(requireEditorialWorld('fjord').pageGrammars).toContain('closing');
   });
 

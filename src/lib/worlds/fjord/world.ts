@@ -17,6 +17,7 @@ export const fjordWorld: EditorialWorldDefinition = {
     'contents',
     'planning',
     'destination',
+    'destination_interest',
     'light',
     'weather',
     'workflow',

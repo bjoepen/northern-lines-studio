@@ -1756,3 +1756,38 @@ Der Companion gehört zur World, nimmt aber nicht am Layout teil. Das Layout nim
 World-Wechsel darf Reiseinhalte, Destination IDs, Bildrollen, Extension-Semantik oder Seitenwirkungen nicht verändern.
 
 Build 024 gilt als Milestone Build: adaptive Layout Grammar, Editorial Extension Zones, harte Safe Zones und Extension Capacity Protection bilden gemeinsam die belastbare Basis für weitere Editorial Worlds.
+
+## 64. Build 025C · Editorial World Milestone
+
+Build 025C gilt als Meilenstein: Der Wechsel zwischen **Fjord** und **Ostsee** beweist, dass Editorial Worlds echte Produktarchitektur sind und nicht lediglich Farbvarianten eines einzelnen Layouts.
+
+Verbindlich bestätigt sind:
+
+- dieselbe semantische Destination und dieselbe adaptive Layout Grammar in beiden Worlds;
+- world-spezifische Typografie, Companion, Signets, Akzentfarben und Editorial-Flächen;
+- weiße bzw. neutral-weiße Seitenfläche als ruhige gemeinsame Bühne;
+- World Expression über Inhalt und Akzente statt über flächige Seitenhintergründe;
+- keine Inhaltsduplikation beim World-Wechsel.
+
+> **Gleiche Sprache. Andere Welt.**
+
+## 65. Destination Interest Pages · Die Destination bleibt das Zentrum
+
+Eine Destination ist nicht auf eine einzige Ortsseite beschränkt. Die Haupt-Ortsseite bleibt allgemein, ruhig und reisetauglich. Thematische Zusatzseiten vertiefen nur das, was für diese konkrete Reise Bedeutung hat.
+
+Für die erste Foundation gelten genau vier Archetypen:
+
+- **Fotografie**
+- **Wandern & Natur**
+- **Kultur & Geschichte** – inklusive Museen, Architektur, archäologischer/antiker Stätten und historischer Orte
+- **Kulinarik & Lokal**
+
+Mehrere Vertiefungen für dieselbe Destination sind ausdrücklich legitim. Bergen darf beispielsweise eine Fotografie-Seite und zusätzlich eine Kultur-&-Geschichte-Seite besitzen.
+
+> **Die Destination bleibt das Zentrum. Die Vertiefung folgt dem Interesse der Reise.**
+
+Studio spricht dabei Travel Language. Die Oberfläche fragt nicht nach einem technischen Archetyp, sondern beispielsweise:
+
+> **Was möchtest du in Bergen erleben?**
+
+Der Reisende wählt das Interesse; Studio erzeugt und ordnet die passende Zusatzseite innerhalb der Destination. Alle Zusatzseiten erben dieselbe Editorial World, dieselben Companion-/Footer-Invarianten und dieselbe Northern-Lines-Sprache. Build 026 legt zunächst Struktur, Navigation, Persistenz und World-Vererbung fest. Fachspezifische Module der vier Archetypen folgen in späteren Builds.

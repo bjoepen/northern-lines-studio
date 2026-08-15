@@ -26,7 +26,7 @@ for (const kind of ['knowledge', 'photo_spot', 'tip', 'souvenir', 'important', '
 }
 
 mustContain(project, 'editorialExtensions: DestinationEditorialExtension[]', 'Destination model must persist editorial extensions.');
-mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.10.0"', 'Build 024 must use .nls 0.10.0.');
+mustContain(rust, 'const BUILD_025_FORMAT_VERSION: &str = "0.10.0"', 'Build 024 compatibility must keep .nls 0.10.0 migration support.');
 mustContain(rust, 'const BUILD_023_FORMAT_VERSION: &str = "0.9.0"', 'Build 023 migration source must stay explicit.');
 mustContain(rust, 'editorial_extensions: Vec<DestinationEditorialExtension>', 'Rust destination model must persist editorial extensions.');
 mustContain(app, 'Besondere Hinweise', 'Travel-language extension authoring is missing.');

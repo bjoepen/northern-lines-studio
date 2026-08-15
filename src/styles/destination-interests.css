@@ -1,0 +1,152 @@
+/* Build 026 · Destination Interest Pages Foundation */
+.destination-interest-page {
+  background: #fff;
+}
+
+.destination-interest-preview {
+  width: 100%;
+  max-width: 420px;
+}
+
+.destination-interest-preview h1 {
+  margin-bottom: 4px;
+}
+
+.destination-interest-place {
+  margin: 0 0 22px;
+  font-family: var(--world-body-family);
+  font-size: 15px;
+  color: var(--world-quiet);
+}
+
+.destination-interest-foundation-note {
+  margin-top: 34px;
+  padding: 18px 20px;
+  background: color-mix(in srgb, var(--world-accent) 8%, #ffffff 92%);
+  border-radius: 2px;
+  display: grid;
+  gap: 6px;
+}
+
+.destination-interest-foundation-note span,
+.destination-interest-selector-heading > span {
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-size: 10px;
+  color: var(--world-quiet);
+}
+
+.destination-interest-foundation-note strong {
+  font-family: var(--world-body-family);
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.destination-interest-foundation-note small {
+  color: var(--world-quiet);
+  line-height: 1.45;
+}
+
+.destination-interest-selector {
+  margin: 22px 0 6px;
+  padding-top: 2px;
+}
+
+.destination-interest-selector-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 11px;
+}
+
+.destination-interest-selector-heading strong {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.destination-interest-selector-heading small,
+.destination-interest-save-hint {
+  color: var(--ui-muted, #738087);
+  line-height: 1.4;
+}
+
+.destination-interest-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
+}
+
+.destination-interest-options button {
+  appearance: none;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(25, 43, 51, .035);
+  padding: 9px 10px;
+  min-height: 44px;
+  text-align: left;
+  display: grid;
+  gap: 2px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.destination-interest-options button:hover:not(:disabled) {
+  background: rgba(25, 43, 51, .065);
+}
+
+.destination-interest-options button.active {
+  background: rgba(25, 43, 51, .055);
+}
+
+.destination-interest-options button:disabled {
+  cursor: default;
+  opacity: .68;
+}
+
+.destination-interest-options button strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.destination-interest-options button small {
+  font-size: 10px;
+  color: var(--ui-muted, #738087);
+}
+
+.destination-interest-save-hint {
+  display: block;
+  margin-top: 7px;
+  font-size: 10px;
+}
+
+.destination-interest-card {
+  gap: 6px;
+}
+
+.destination-interest-remove {
+  margin-top: 7px;
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  color: #8b6e69;
+  cursor: pointer;
+}
+
+.destination-interest-remove:hover {
+  color: #704a43;
+}
+
+.page-list button.interest-page-nav {
+  padding-left: 15px;
+}
+
+.page-list button.interest-page-nav .page-order {
+  opacity: .72;
+}
+
+.page-list button.interest-page-nav strong {
+  font-weight: 550;
+}
