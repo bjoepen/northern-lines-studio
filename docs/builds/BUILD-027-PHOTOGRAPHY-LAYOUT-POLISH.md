@@ -25,3 +25,9 @@ Die Photography & Place Experience soll fotografische Entscheidungen unmittelbar
 ## Designregel
 
 > Ort → Brennweite ist eine unmittelbare fotografische Beziehung. Studio darf sie nicht in getrennten Informationsflächen auseinanderreißen.
+
+## Editorial Pairing Polish
+
+- Die vertikale Trennlinie zwischen Fotospot und Brennweitenempfehlung entfällt.
+- Die Paarung bleibt ausschließlich über Ausrichtung, Abstand und Typografie eindeutig.
+- Ziel: redaktionelle Lesbarkeit statt Tabellen-/Spreadsheet-Anmutung.
