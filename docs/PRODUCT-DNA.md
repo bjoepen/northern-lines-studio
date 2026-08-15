@@ -1924,3 +1924,29 @@ Die verbindliche Reihenfolge lautet:
 7. wenn keine zulässige Variante passt: `overflow` statt Clipping, Verdrängen oder weiterer Verkleinerung.
 
 Diese Regel ist kein Interest-Page-Sonderfall. Sie ist Teil der allgemeinen Northern-Lines-Layout-Grammatik.
+
+
+## Build 030 Regression Fix · Capacity Protection bleibt autoritativ
+
+Die adaptive Composition Engine darf die bestehende Capacity Protection niemals umgehen. Jede erlaubte Komposition wird gegen die geschützte Content-Zone geprüft. Wird in `comfortable` und der einmaligen Interest-Page-Stufe `tight` keine gültige Variante gefunden, wechselt Studio zwingend in `overflow`.
+
+> **Capacity Protection bleibt autoritativ.**
+
+Der bereits etablierte Travel-Language-Hinweis **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** ist der vorgesehene Endzustand. Companion und Footer bleiben frei; Clipping, weiteres Schrumpfen oder Rendern außerhalb der Content-Zone sind keine zulässigen Alternativen.
+
+## Build 030 Fix · Overflow nur aus geometrischem Content Fit
+
+Verbindliche Präzisierung der Capacity Protection:
+
+> **Overflow nur aus geometrischem Content Fit.**
+
+Eine Interest Page darf nicht allein wegen einer abstrakten Zeichenanzahl, einer pauschalen Textgewichtung oder eines nicht vorhandenen zukünftigen Moduls in `overflow` wechseln. Studio bewertet die zulässigen Kompositionen anhand ihrer umgebrochenen, kalibrierten Renderhöhe innerhalb der real geschützten Content-Zone.
+
+- Vorhandener Seitenraum gehört dem vorhandenen Inhalt.
+- Nicht vorhandene Module, insbesondere eine noch nicht gesetzte Karte, reservieren keinen Platz.
+- Asymmetrische Höhen zweier Boxen sind zulässig.
+- 1/2–1/2, 1/3–2/3, 2/3–1/3 und gestapelte Varianten bleiben Teil der Grammar.
+- Companion und Footer bleiben harte Safe-Zonen.
+- Erst wenn keine zulässige Komposition in `comfortable` bzw. der einen erlaubten Interest-Page-Stufe `tight` geometrisch passt, folgt `overflow`.
+
+Der verbindliche Regressionstest ist **Geiranger · Wandern & Natur** mit den beiden Routen `Fosseråsa → Storsæterfossen` und `Skagehola → Skageflå → Homlong`. Der vollständige Hinweis `Sehr steile und teilweise ausgesetzte Abschnitte; Trittsicherheit erforderlich.` darf allein keinen Overflow auslösen.

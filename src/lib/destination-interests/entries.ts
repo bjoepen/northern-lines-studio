@@ -141,15 +141,6 @@ function entryHeightEstimate(entry: DestinationInterestEntry, width: number, den
   return (2.4 + headingLines * 1.18 + categoryLines * 0.85 + bodyLines + fieldSpacing) * compactFactor;
 }
 
-function entryFitsWidth(entry: DestinationInterestEntry, width: number, density: InterestPageDensity): boolean {
-  const length = interestEntryContentLength(entry);
-  const relief = density === 'tight' ? 20 : 0;
-  if (width <= 0.34) return length <= 150 + relief;
-  if (width <= 0.51) return length <= 220 + relief;
-  if (width <= 0.68) return length <= 360 + relief;
-  return length <= 620 + relief;
-}
-
 function compositionHeightEstimate(
   composition: TwoEntryComposition,
   entries: readonly DestinationInterestEntry[],
@@ -166,11 +157,17 @@ function compositionHeightEstimate(
 }
 
 function pageHeightBudget(kind: DestinationInterestKind | undefined, introductionLength: number, density: InterestPageDensity): number {
-  // This is intentionally a finite editorial heuristic, not browser geometry.
+  // This is a calibrated geometry proxy for the protected content band.
   // Intro pressure reduces the usable content band while Companion/Footer stay fixed.
-  const base = kind === 'culinary_local' ? 23.0 : 23.8;
+  // Capacity Protection is deliberately conservative: the budget ends before
+  // Companion/Footer safe zones, not at the visual page edge. Culinary cards
+  // carry more labelled sub-fields than the other archetypes, so their calibrated
+  // content band is smaller. `tight` is one bounded relief step, never a licence
+  // to consume the protected lower page. No candidate is rejected from raw character
+  // count: wrapping/height geometry decides whether it fits.
+  const base = kind === 'culinary_local' ? 16.5 : 22.6;
   const introPenalty = Math.min(4.6, introductionLength / 78);
-  const tightRelief = density === 'tight' ? 3.0 : 0;
+  const tightRelief = density === 'tight' ? 1.5 : 0;
   return base - introPenalty + tightRelief;
 }
 
@@ -197,7 +194,6 @@ function bestFittingTwoEntryComposition(
       widths: WIDTHS[composition],
       height: compositionHeightEstimate(composition, entries, density)
     }))
-    .filter((candidate) => entryFitsWidth(entries[0], candidate.widths[0], density) && entryFitsWidth(entries[1], candidate.widths[1], density))
     .filter((candidate) => candidate.height <= budget)
     .sort((a, b) => (a.height + candidatePreference(a.composition)) - (b.height + candidatePreference(b.composition)));
   return fitting[0]?.composition ?? null;
@@ -207,7 +203,8 @@ function bestFittingTwoEntryComposition(
  * Finite composition search for structured Interest entries.
  * Content Fit decides the composition; Studio never chooses a pretty grid first
  * and then shrinks/clips content to make it survive. All approved two-entry
- * combinations are evaluated before tight or overflow is accepted.
+ * combinations are evaluated before tight or overflow is accepted. Candidate fit
+ * is based on wrapped-height geometry, never a raw character-count threshold.
  */
 export function interestPageLayoutState(
   kind: DestinationInterestKind | undefined,

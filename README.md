@@ -432,3 +432,6 @@ The Culinary & Local Interest Page now follows the same bounded capacity grammar
 
 ### Build 030 – Global Content Fit & Composition Contract
 Studio entscheidet Layoutvarianten jetzt nach Content Fit: alle für einen Seitentyp erlaubten Kompositionen werden geprüft, bevor verdichtet oder `overflow` gemeldet wird. Semantisch unterschiedliche Inhalte werden nicht in generische Sammelboxen gepresst. Die globale Regel lautet: **Content Fit entscheidet über die Komposition. Nicht sammeln, sondern erzählen.**
+
+### Build 030 geometric content-fit correction
+Capacity Protection no longer treats raw character count as a reason to reject an otherwise valid Interest Page composition. The Geiranger two-route case with the complete Skageflå safety note remains renderable; overflow is reserved for content that no allowed composition can fit inside the protected page geometry.

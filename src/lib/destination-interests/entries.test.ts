@@ -9,20 +9,28 @@ const culinary = (id: string, title: string, fields: Record<string, string>): De
   fields
 });
 
+
+const hiking = (id: string, title: string, fields: Record<string, string>): DestinationInterestEntry => ({
+  id,
+  kind: 'hiking_route',
+  title,
+  fields
+});
+
 describe('Interest Page layout state', () => {
-  it('evaluates every approved two-entry composition before density or overflow', () => {
+  it('restores the Bergen culinary capacity warning after every approved composition is exhausted', () => {
     const entries = [
       culinary('skillingsbolle', 'Skillingsbolle bei Baker Brun', {
         category: 'lokale Spezialität / Bäckerei',
-        why: 'Die Skillingsbolle gilt als typische Bergener Spezialität und lokale Tradition.',
+        why: 'Die Skillingsbolle gilt als typische Bergener Spezialität; Visit Bergen hebt sie ausdrücklich als lokale Tradition hervor.',
         try: 'Frisch gebackene Skillingsbolle mit Zimt und Zucker',
         guidance: 'Baker Brun Svensgården liegt direkt in Bryggen.',
         placeReference: 'Bryggen 27, Bergen'
       }),
       culinary('fisketorget', 'Bergener Fischmarkt / Mathallen', {
         category: 'Markt / Seafood',
-        why: 'Der Fischmarkt ist ein historischer Handelsplatz und verbindet lokale Geschichte und heutige Esskultur.',
-        try: 'Frischer Fisch, Meeresfrüchte oder klassische Bergener Fischsuppe.',
+        why: 'Der Fischmarkt ist seit dem 13. Jahrhundert ein zentraler Handelsplatz Bergens und verbindet damit lokale Geschichte und heutige Esskultur.',
+        try: 'Frischer Fisch und Meeresfrüchte; alternativ klassische Bergener Fischsuppe. Fisch und Seafood gehören ohnehin stark zur lokalen Küche.',
         guidance: 'Die Markthallen sind ganzjährig geöffnet; der Außenmarkt ist saisonal.',
         placeReference: 'Torget, Bergen'
       })
@@ -37,8 +45,32 @@ describe('Interest Page layout state', () => {
     ]);
     expect(['two-up', 'one-third-two-thirds', 'two-thirds-one-third', 'stacked']).toContain(state.composition);
     expect(['comfortable', 'tight']).toContain(state.density);
-    expect(state.overflow).toBe(false);
+    expect(state.overflow).toBe(true);
     expect(interestEntryComposition(entries, true, 'culinary_local')).not.toBe('single');
+  });
+
+  it('keeps the Geiranger two-route page renderable when the full Skageflå safety note is present', () => {
+    const entries = [
+      hiking('fosserasa', 'Fosseråsa → Storsæterfossen', {
+        startPoint: 'Geiranger Zentrum / Norwegian Fjord Centre',
+        duration: 'ca. 4 h hin und zurück ab Fjord Centre',
+        difficulty: 'Mittel',
+        highlights: 'Storsæterfossen, Wasserfall, Wald- und Kulturlandschaft',
+        guidance: 'längerer Anstieg; stellenweise Steinstufen, bei Nässe vorsichtig'
+      }),
+      hiking('skagefla', 'Skagehola → Skageflå → Homlong', {
+        startPoint: 'Skagehola, nur per Boot erreichbar',
+        duration: 'etwa 3–4 h Wanderzeit plus Bootstransfer',
+        difficulty: 'Anspruchsvoll',
+        highlights: 'Skageflå, Geirangerfjord, Blick zu den Sieben Schwestern',
+        guidance: 'Sehr steile und teilweise ausgesetzte Abschnitte; Trittsicherheit erforderlich.'
+      })
+    ];
+
+    const state = interestPageLayoutState('hiking_nature', entries, 83);
+    expect(state.overflow).toBe(false);
+    expect(state.composition).toBe('two-up');
+    expect(state.density).toBe('comfortable');
   });
 
   it('can prefer an asymmetric pair when the second entry needs materially more width', () => {
