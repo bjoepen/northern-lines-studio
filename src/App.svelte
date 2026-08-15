@@ -965,6 +965,15 @@
     ? ['introduction', 'photo_spots', 'photo_light', 'photo_motifs', 'photo_guidance', 'photo_focal_lengths', 'photo_place_reference']
         .reduce((sum, key) => sum + ((selectedPhotographyAuthoring as any)?.[key]?.content?.trim().length ?? 0), 0)
     : 0;
+  $: photographySpotLines = (selectedPhotographyAuthoring?.photo_spots?.content || '')
+    .split('\n').map((line) => line.trim()).filter(Boolean);
+  $: photographyFocalLengthLines = (() => {
+    const content = selectedPhotographyAuthoring?.photo_focal_lengths?.content?.trim() || '';
+    if (!content) return [];
+    const lines = content.split('\n').map((line) => line.trim()).filter(Boolean);
+    if (lines.length > 1) return lines;
+    return content.match(/\b\d{1,3}\s*(?:[–-]\s*\d{1,3}\s*)?mm\b/gi) ?? [content];
+  })();
   $: photographyInterestOverflow = photographyInterestContentLength > 980;
   $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
@@ -1159,6 +1168,7 @@
               class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
               class:destination-interest-page={selectedPage?.type === 'destination_interest'}
+              class:photography-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1238,7 +1248,7 @@
               {:else if selectedPage?.type === 'destination_interest' && destinationInterest && journeyStage}
                 {#if selectedPage.destinationInterestKind === 'photography'}
                   <div class="destination-interest-preview photography-place-experience">
-                    <div class="page-rule"></div>
+                    <div class="page-rule photography-page-rule"></div>
                     <p class="eyebrow">Fotografie</p>
                     <h1>{preview.heading}</h1>
                     <p class="destination-interest-place">{journeyStage.title}</p>
@@ -1254,14 +1264,16 @@
                     <section class="photography-spots" aria-label="Fotospots">
                       <span class="photography-section-label">Fotospots</span>
                       <div class="photography-spot-list">
-                        {#if (selectedPage.authoring?.photo_spots?.content || '').trim()}
-                          {#each (selectedPage.authoring?.photo_spots?.content || '').split('\n').filter((line) => line.trim()) as spot, index}
+                        {#if photographySpotLines.length}
+                          {#each photographySpotLines as spot, index}
+                            {@const focalLength = photographyFocalLengthLines[index] || ''}
                             <div class="photography-spot-row">
                               <span class="photography-spot-number">{String(index + 1).padStart(2, '0')}</span>
-                              <div>
+                              <div class="photography-spot-copy">
                                 <strong>{spot.split('—')[0]?.trim()}</strong>
                                 {#if spot.includes('—')}<small>{spot.split('—').slice(1).join('—').trim()}</small>{/if}
                               </div>
+                              <span class:missing={!focalLength} class="photography-spot-focal">{focalLength || 'Brennweite offen'}</span>
                             </div>
                           {/each}
                         {:else}
@@ -1279,9 +1291,6 @@
                       {/if}
                       {#if selectedPage.authoring?.photo_guidance?.content}
                         <section><span>Fotografischer Hinweis</span><p>{selectedPage.authoring.photo_guidance.content}</p></section>
-                      {/if}
-                      {#if selectedPage.authoring?.photo_focal_lengths?.content}
-                        <section><span>Brennweiten & Praxis</span><p>{selectedPage.authoring.photo_focal_lengths.content}</p></section>
                       {/if}
                     </div>
 
@@ -1769,6 +1778,9 @@
                 placeholder="Was möchtest du hier erzählen?"
                 aria-label={`${activeAuthoring.label} Inhalt`}
               ></textarea>
+              {#if activeAuthoring.componentId === 'photo_focal_lengths'}
+                <small class="authoring-context-hint">Eine Brennweite pro Zeile. Die Reihenfolge entspricht direkt deiner Fotospot-Liste.</small>
+              {/if}
               <div class="authoring-controls">
                 <label>
                   <span>Status</span>

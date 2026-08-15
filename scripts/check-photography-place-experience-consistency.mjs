@@ -19,8 +19,14 @@ mustContain(app, 'selectedPhotographyAuthoring', 'Photography capacity calculati
 if (app.includes('((selectedPage.authoring as any)?.[key]')) throw new Error('Photography capacity calculation must not dereference nullable selectedPage inside reduce().');
 mustContain(app, 'Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.', 'Capacity protection Travel Language must remain active.');
 mustContain(css, '.photography-spots', 'Photography spot treatment is missing.');
+mustContain(app, 'photographyFocalLengthLines[index]', 'Each photography spot must receive its focal-length recommendation by index.');
+mustContain(app, "Brennweite offen", 'Photography spots must make a missing focal assignment visible.');
+if (app.includes('<section><span>Brennweiten & Praxis</span>')) throw new Error('Focal lengths must not render as a detached summary card.');
+mustContain(css, '.photography-page-rule', 'Photography page opening must use the compact editorial rule.');
+mustContain(grammar, "label: 'Brennweite je Fotospot'", 'Inspector must describe the spot-to-focal assignment explicitly.');
 mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.12.0"', 'Build 027 must use .nls 0.12.0.');
 mustContain(rust, 'const BUILD_026_FORMAT_VERSION: &str = "0.11.0"', 'Build 026 migration source must remain supported.');
 mustContain(format, 'Photography & Place Experience (`0.12.0`)', 'Project format docs must describe Build 027.');
 console.log('Photography & Place Experience Consistency Gate: \x1b[32mPASS\x1b[0m');
+console.log('Photography Layout Polish Gate: \x1b[32mPASS\x1b[0m');
 console.log('Destination → Photography Interest → Place Experience → World Expression → Capacity → Persistence');

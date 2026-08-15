@@ -395,3 +395,9 @@ Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt neutra
 Build 027 macht aus der Fotografie-Vertiefung den ersten fachlich ausgebauten Destination-Interest-Archetyp. Die Seite kann Fotospots, Licht & Tageszeit, Motive, fotografische Hinweise, Brennweiten-/Praxisempfehlungen sowie einen optionalen Karten-/Ortsbezug tragen. Die Fotografie bleibt ortsbezogene Reisebegleitung – keine EXIF-, Kamera- oder Produktdatenbank. Die aktive Editorial World, Companion-/Footer-Safe-Zonen und die Travel Language gelten unverändert.
 
 Das `.nls`-Format steigt auf **0.12.0**. Build-026-Projekte in 0.11.0 werden beim Öffnen migriert; bestehende Fotografie-Interest-Pages erhalten die neuen Story Components, ohne dass Studio Inhalte erfindet.
+
+## Build 027 · Photography Layout Polish
+
+Der Photography-Archetyp ordnet Brennweiten nun **direkt dem jeweiligen Fotospot** zu. Die Brennweiten bleiben als eigener semantischer Authoring-Baustein erhalten, werden in der Seitenkomposition aber positionsgleich mit der Fotospot-Liste gekoppelt. Eine separate Brennweiten-Sammelbox entfällt. Fehlt für einen Spot eine Zuordnung, zeigt Studio dezent „Brennweite offen“.
+
+Die dünne Editorial-Linie bleibt erhalten, wird für Photography Interest Pages jedoch auf einen ruhigen Akzent reduziert; zugleich beginnt die Seitenkomposition höher. World Expression, Companion-/Footer-Safe-Zonen, Capacity Protection, Persistenz und `.nls` 0.12.0 bleiben unverändert.
