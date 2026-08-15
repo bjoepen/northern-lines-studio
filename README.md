@@ -19,7 +19,7 @@
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
 **Studio:** 0.26.0-alpha.1
-**Projektformat:** `.nls` 0.11.0
+**Projektformat:** `.nls` 0.12.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -389,3 +389,9 @@ Editorial Extension Zones may adapt, stack and change width, but protected zones
 ### Build 025C · White Page Expression Polish
 
 Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt neutral weiß; World Expression entsteht über Typografie, Akzente, Companion, Signets und gezielte Editorial-/Extension-Flächen.
+
+## Build 027 – Photography & Place Experience
+
+Build 027 macht aus der Fotografie-Vertiefung den ersten fachlich ausgebauten Destination-Interest-Archetyp. Die Seite kann Fotospots, Licht & Tageszeit, Motive, fotografische Hinweise, Brennweiten-/Praxisempfehlungen sowie einen optionalen Karten-/Ortsbezug tragen. Die Fotografie bleibt ortsbezogene Reisebegleitung – keine EXIF-, Kamera- oder Produktdatenbank. Die aktive Editorial World, Companion-/Footer-Safe-Zonen und die Travel Language gelten unverändert.
+
+Das `.nls`-Format steigt auf **0.12.0**. Build-026-Projekte in 0.11.0 werden beim Öffnen migriert; bestehende Fotografie-Interest-Pages erhalten die neuen Story Components, ohne dass Studio Inhalte erfindet.

@@ -958,6 +958,14 @@
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: destinationInterest = selectedPage?.type === 'destination_interest' ? destinationInterestDefinition(selectedPage.destinationInterestKind) : null;
+  $: selectedPhotographyAuthoring = selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'
+    ? selectedPage.authoring
+    : null;
+  $: photographyInterestContentLength = selectedPhotographyAuthoring
+    ? ['introduction', 'photo_spots', 'photo_light', 'photo_motifs', 'photo_guidance', 'photo_focal_lengths', 'photo_place_reference']
+        .reduce((sum, key) => sum + ((selectedPhotographyAuthoring as any)?.[key]?.content?.trim().length ?? 0), 0)
+    : 0;
+  $: photographyInterestOverflow = photographyInterestContentLength > 980;
   $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -1228,18 +1236,77 @@
                   {/if}
                 </div>
               {:else if selectedPage?.type === 'destination_interest' && destinationInterest && journeyStage}
-                <div class="destination-interest-preview">
-                  <div class="page-rule"></div>
-                  <p class="eyebrow">{destinationInterest.eyebrow}</p>
-                  <h1>{preview.heading}</h1>
-                  <p class="destination-interest-place">{journeyStage.title}</p>
-                  <p class="preview-body">{preview.body || destinationInterest.description}</p>
-                  <div class="destination-interest-foundation-note">
-                    <span>Deine Vertiefung</span>
-                    <strong>{destinationInterest.description}</strong>
-                    <small>Build 026 schafft die Seitenstruktur. Die fachspezifischen Module folgen in den nächsten Builds.</small>
+                {#if selectedPage.destinationInterestKind === 'photography'}
+                  <div class="destination-interest-preview photography-place-experience">
+                    <div class="page-rule"></div>
+                    <p class="eyebrow">Fotografie</p>
+                    <h1>{preview.heading}</h1>
+                    <p class="destination-interest-place">{journeyStage.title}</p>
+                    <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Fotografische Orientierung für das, was du an diesem Ort festhalten möchtest.'}</p>
+
+                    {#if photographyInterestOverflow}
+                      <div class="destination-capacity-stop photography-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
+                        <span>Mehr Raum nötig</span>
+                        <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
+                        <small>Kürze die fotografische Vertiefung oder verteile sie später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
+                      </div>
+                    {:else}
+                    <section class="photography-spots" aria-label="Fotospots">
+                      <span class="photography-section-label">Fotospots</span>
+                      <div class="photography-spot-list">
+                        {#if (selectedPage.authoring?.photo_spots?.content || '').trim()}
+                          {#each (selectedPage.authoring?.photo_spots?.content || '').split('\n').filter((line) => line.trim()) as spot, index}
+                            <div class="photography-spot-row">
+                              <span class="photography-spot-number">{String(index + 1).padStart(2, '0')}</span>
+                              <div>
+                                <strong>{spot.split('—')[0]?.trim()}</strong>
+                                {#if spot.includes('—')}<small>{spot.split('—').slice(1).join('—').trim()}</small>{/if}
+                              </div>
+                            </div>
+                          {/each}
+                        {:else}
+                          <small class="photography-empty">Noch keine Fotospots notiert.</small>
+                        {/if}
+                      </div>
+                    </section>
+
+                    <div class="photography-experience-grid">
+                      {#if selectedPage.authoring?.photo_light?.content}
+                        <section><span>Licht & Tageszeit</span><p>{selectedPage.authoring.photo_light.content}</p></section>
+                      {/if}
+                      {#if selectedPage.authoring?.photo_motifs?.content}
+                        <section><span>Motive</span><p>{selectedPage.authoring.photo_motifs.content}</p></section>
+                      {/if}
+                      {#if selectedPage.authoring?.photo_guidance?.content}
+                        <section><span>Fotografischer Hinweis</span><p>{selectedPage.authoring.photo_guidance.content}</p></section>
+                      {/if}
+                      {#if selectedPage.authoring?.photo_focal_lengths?.content}
+                        <section><span>Brennweiten & Praxis</span><p>{selectedPage.authoring.photo_focal_lengths.content}</p></section>
+                      {/if}
+                    </div>
+
+                    {#if selectedPage.authoring?.photo_place_reference?.content}
+                      <div class="photography-place-reference">
+                        <span>Ort & Karte</span>
+                        <strong>{selectedPage.authoring.photo_place_reference.content}</strong>
+                      </div>
+                    {/if}
+                    {/if}
                   </div>
-                </div>
+                {:else}
+                  <div class="destination-interest-preview">
+                    <div class="page-rule"></div>
+                    <p class="eyebrow">{destinationInterest.eyebrow}</p>
+                    <h1>{preview.heading}</h1>
+                    <p class="destination-interest-place">{journeyStage.title}</p>
+                    <p class="preview-body">{preview.body || destinationInterest.description}</p>
+                    <div class="destination-interest-foundation-note">
+                      <span>Deine Vertiefung</span>
+                      <strong>{destinationInterest.description}</strong>
+                      <small>Die fachspezifischen Module folgen schrittweise in den nächsten Builds.</small>
+                    </div>
+                  </div>
+                {/if}
               {:else}
                 <div class="page-rule"></div>
                 <p class="eyebrow">{preview.eyebrow}</p>

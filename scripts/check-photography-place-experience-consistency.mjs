@@ -1,0 +1,26 @@
+import fs from 'node:fs';
+const read = (path) => fs.readFileSync(path, 'utf8');
+const mustContain = (source, token, message) => { if (!source.includes(token)) throw new Error(message); };
+const project = read('src/lib/grammar/types.ts');
+const story = read('src/lib/story/definitions.ts');
+const grammar = read('src/lib/grammar/index.ts');
+const app = read('src/App.svelte');
+const css = read('src/styles/destination-interests.css');
+const rust = read('src-tauri/src/lib.rs');
+const format = read('docs/project-format.md');
+for (const id of ['photo_spots','photo_light','photo_motifs','photo_guidance','photo_focal_lengths','photo_place_reference']) {
+  mustContain(project, `'${id}'`, `Missing photography component ${id}.`);
+  mustContain(story, `${id}:`, `Missing story definition ${id}.`);
+  mustContain(rust, `\"${id}\"`, `Rust must persist photography component ${id}.`);
+}
+mustContain(grammar, 'Photography & Place Experience', 'Photography interest grammar is missing.');
+mustContain(app, 'photography-place-experience', 'Photography preview is missing.');
+mustContain(app, 'selectedPhotographyAuthoring', 'Photography capacity calculation must use a null-safe authoring snapshot.');
+if (app.includes('((selectedPage.authoring as any)?.[key]')) throw new Error('Photography capacity calculation must not dereference nullable selectedPage inside reduce().');
+mustContain(app, 'Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.', 'Capacity protection Travel Language must remain active.');
+mustContain(css, '.photography-spots', 'Photography spot treatment is missing.');
+mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.12.0"', 'Build 027 must use .nls 0.12.0.');
+mustContain(rust, 'const BUILD_026_FORMAT_VERSION: &str = "0.11.0"', 'Build 026 migration source must remain supported.');
+mustContain(format, 'Photography & Place Experience (`0.12.0`)', 'Project format docs must describe Build 027.');
+console.log('Photography & Place Experience Consistency Gate: \x1b[32mPASS\x1b[0m');
+console.log('Destination → Photography Interest → Place Experience → World Expression → Capacity → Persistence');

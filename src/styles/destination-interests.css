@@ -151,3 +151,121 @@
 .page-list button.interest-page-nav strong {
   font-weight: 550;
 }
+
+/* Build 027 · Photography & Place Experience
+   One thematic page, not a camera database: location first, practical photography second. */
+.photography-place-experience {
+  max-width: 445px;
+}
+
+.photography-place-experience .preview-body {
+  max-width: 380px;
+  margin-bottom: 18px;
+}
+
+.photography-section-label,
+.photography-experience-grid section > span,
+.photography-place-reference > span {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 9px;
+  color: var(--interest-meta, var(--world-accent));
+}
+
+.photography-spots {
+  margin-top: 18px;
+  padding: 14px 16px 12px;
+  background: var(--interest-surface, color-mix(in srgb, var(--world-accent) 8%, #fff));
+}
+
+.photography-spot-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.photography-spot-row {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 9px;
+  align-items: start;
+}
+
+.photography-spot-number {
+  font-family: var(--world-display-family);
+  font-size: 11px;
+  color: var(--interest-meta, var(--world-accent));
+}
+
+.photography-spot-row div {
+  display: grid;
+  gap: 1px;
+}
+
+.photography-spot-row strong {
+  font-family: var(--world-body-family);
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--interest-ink, var(--world-ink));
+}
+
+.photography-spot-row small {
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--interest-quiet, var(--world-quiet));
+}
+
+.photography-experience-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-top: 12px;
+}
+
+.photography-experience-grid section {
+  min-width: 0;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--interest-surface) 64%, #fff);
+}
+
+.photography-experience-grid p {
+  margin: 5px 0 0;
+  font-family: var(--world-body-family);
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--interest-ink, var(--world-ink));
+}
+
+.photography-place-reference {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--interest-meta) 22%, transparent);
+  display: grid;
+  gap: 4px;
+}
+
+.photography-place-reference strong {
+  font-family: var(--world-body-family);
+  font-size: 10.5px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: var(--interest-ink, var(--world-ink));
+}
+
+.photography-capacity-stop {
+  margin-top: 24px;
+}
+
+.baltic-page.destination-interest-page .photography-spots {
+  background: color-mix(in srgb, var(--baltic-sand) 58%, #fff);
+}
+
+.baltic-page.destination-interest-page .photography-experience-grid section {
+  background: color-mix(in srgb, var(--baltic-amber) 7%, #fff);
+}
+.photography-empty {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--interest-quiet, var(--world-quiet));
+}

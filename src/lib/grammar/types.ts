@@ -15,7 +15,13 @@ export type EditorialComponentId =
   | 'workflow_tip'
   | 'notes_area'
   | 'quote'
-  | 'closing_text';
+  | 'closing_text'
+  | 'photo_spots'
+  | 'photo_light'
+  | 'photo_motifs'
+  | 'photo_guidance'
+  | 'photo_focal_lengths'
+  | 'photo_place_reference';
 
 export type EditorialFrameComponentId = 'header' | 'footer' | 'page_number' | 'companion';
 
