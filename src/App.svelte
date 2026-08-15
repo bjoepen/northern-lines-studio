@@ -1287,6 +1287,7 @@
               class:photography-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'}
               class:hiking-nature-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'}
               class:culture-history-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culture_history'}
+              class:culinary-local-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culinary_local'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1514,17 +1515,55 @@
                       </section>
                     {/if}
                   </div>
+                {:else if selectedPage.destinationInterestKind === 'culinary_local'}
+                  <div class="destination-interest-preview culinary-local-experience" class:interest-density-tight={interestDensity === 'tight'}>
+                    <div class="page-rule culinary-local-page-rule"></div>
+                    <p class="eyebrow">{destinationInterest.label}</p>
+                    <h1>{journeyStage.title}</h1>
+                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    {#if interestOverflow}
+                      <div class="destination-capacity-stop culinary-local-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
+                        <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
+                        <small>Kürze einzelne Empfehlungen oder verteile die Vertiefung auf weitere Seiten.</small>
+                      </div>
+                    {:else}
+                      <section class="interest-entry-section culinary-local-recommendations" aria-label="Kulinarische und lokale Empfehlungen">
+                        <span class="culinary-local-section-label">Empfehlungen</span>
+                        <div class={`interest-entry-grid interest-entry-${interestComposition}`}>
+                          {#if selectedInterestEntries.length}
+                            {#each selectedInterestEntries as entry, index (entry.id)}
+                              <article class="interest-entry-card culinary-local-entry-card">
+                                <div class="interest-entry-heading">
+                                  <span class="interest-entry-number">{String(index + 1).padStart(2, '0')}</span>
+                                  <div>
+                                    <strong>{entry.title}</strong>
+                                    {#if entry.fields.category}<small>{entry.fields.category}</small>{/if}
+                                  </div>
+                                </div>
+                                {#if entry.fields.why || entry.fields.try || entry.fields.guidance || entry.fields.timePrice}
+                                  <div class="interest-entry-details culinary-local-entry-details">
+                                    {#if entry.fields.why}<p class="interest-entry-wide"><span>Warum lohnt es sich?</span>{entry.fields.why}</p>{/if}
+                                    {#if entry.fields.try}<p><span>Probieren & entdecken</span>{entry.fields.try}</p>{/if}
+                                    {#if entry.fields.guidance}<p><span>Gut zu wissen</span>{entry.fields.guidance}</p>{/if}
+                                    {#if entry.fields.timePrice}<p class="interest-entry-wide culinary-time-price"><span>Zeit / Preis</span>{entry.fields.timePrice}</p>{/if}
+                                  </div>
+                                {/if}
+                                {#if entry.fields.placeReference}<p class="interest-entry-place"><span>Ort & Karte</span>{entry.fields.placeReference}</p>{/if}
+                              </article>
+                            {/each}
+                          {:else}
+                            <small class="culinary-local-empty">Noch keine Empfehlung angelegt.</small>
+                          {/if}
+                        </div>
+                      </section>
+                    {/if}
+                  </div>
                 {:else}
                   <div class="destination-interest-preview">
                     <div class="page-rule"></div>
                     <p class="eyebrow">{destinationInterest.label}</p>
                     <h1>{journeyStage.title}</h1>
                     <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
-                    <div class="destination-interest-foundation-note">
-                      <span>Deine Vertiefung</span>
-                      <strong>{destinationInterest.description}</strong>
-                      <small>Die fachspezifischen Module folgen schrittweise in den nächsten Builds.</small>
-                    </div>
                   </div>
                 {/if}
               {:else}
