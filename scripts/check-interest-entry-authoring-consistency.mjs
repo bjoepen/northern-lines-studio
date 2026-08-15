@@ -15,7 +15,7 @@ must(app, "invoke<StudioProject>('save_interest_entries'", 'Structured entries m
 must(app, 'interestPageLayoutState(', 'Studio must choose composition and density from content.');
 must(app, "interestDensity =", 'Interest density must be adaptive.');
 must(css, '.interest-entry-grid.interest-entry-two-up', 'Two-box grammar is missing.');
-must(css, '.interest-entry-grid.interest-entry-grouped', 'One-box grouped grammar is missing.');
+must(css, '.interest-entry-grid.interest-entry-stacked', 'Separate stacked-entry grammar is missing.');
 must(css, '.interest-density-tight', 'Bounded Interest compact state is missing.');
 must(rust, 'fn migrate_interest_entries', 'Legacy line authoring needs a loss-preserving structured migration.');
 must(rust, 'fn save_interest_entries', 'Rust structured entry command is missing.');

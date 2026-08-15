@@ -92,66 +92,179 @@ export function interestEntryContentLength(entry: DestinationInterestEntry): num
   return entry.title.trim().length + Object.values(entry.fields).reduce((sum, value) => sum + value.trim().length, 0);
 }
 
-export type InterestEntryComposition = 'single' | 'two-up' | 'grouped';
+export type InterestEntryComposition =
+  | 'single'
+  | 'two-up'
+  | 'one-third-two-thirds'
+  | 'two-thirds-one-third'
+  | 'stacked';
 export type InterestPageDensity = 'comfortable' | 'tight';
 
 export interface InterestPageLayoutState {
   composition: InterestEntryComposition;
   density: InterestPageDensity;
   overflow: boolean;
+  evaluatedCompositions: readonly InterestEntryComposition[];
 }
 
-export function interestEntryComposition(
+type TwoEntryComposition = Exclude<InterestEntryComposition, 'single'>;
+
+const TWO_ENTRY_COMPOSITIONS: readonly TwoEntryComposition[] = [
+  'two-up',
+  'one-third-two-thirds',
+  'two-thirds-one-third',
+  'stacked'
+];
+
+const WIDTHS: Readonly<Record<TwoEntryComposition, readonly [number, number]>> = {
+  'two-up': [0.5, 0.5],
+  'one-third-two-thirds': [1 / 3, 2 / 3],
+  'two-thirds-one-third': [2 / 3, 1 / 3],
+  'stacked': [1, 1]
+};
+
+function fieldLineEstimate(value: string | undefined, width: number, density: InterestPageDensity): number {
+  const text = value?.trim() ?? '';
+  if (!text) return 0;
+  const baseChars = density === 'tight' ? 78 : 72;
+  const charsPerLine = Math.max(16, Math.floor(baseChars * width));
+  return Math.max(1, Math.ceil(text.length / charsPerLine));
+}
+
+function entryHeightEstimate(entry: DestinationInterestEntry, width: number, density: InterestPageDensity): number {
+  const headingLines = fieldLineEstimate(entry.title, width, density);
+  const categoryLines = fieldLineEstimate(entry.fields.category, width, density);
+  const bodyFields = Object.entries(entry.fields).filter(([key, value]) => key !== 'category' && value.trim());
+  const bodyLines = bodyFields.reduce((sum, [, value]) => sum + 0.72 + fieldLineEstimate(value, width, density), 0);
+  const fieldSpacing = Math.max(0, bodyFields.length - 1) * 0.32;
+  const compactFactor = density === 'tight' ? 0.9 : 1;
+  return (2.4 + headingLines * 1.18 + categoryLines * 0.85 + bodyLines + fieldSpacing) * compactFactor;
+}
+
+function entryFitsWidth(entry: DestinationInterestEntry, width: number, density: InterestPageDensity): boolean {
+  const length = interestEntryContentLength(entry);
+  const relief = density === 'tight' ? 20 : 0;
+  if (width <= 0.34) return length <= 150 + relief;
+  if (width <= 0.51) return length <= 220 + relief;
+  if (width <= 0.68) return length <= 360 + relief;
+  return length <= 620 + relief;
+}
+
+function compositionHeightEstimate(
+  composition: TwoEntryComposition,
   entries: readonly DestinationInterestEntry[],
-  hasMapReference = false,
-  kind?: DestinationInterestKind
-): InterestEntryComposition {
-  if (entries.length <= 1) return 'single';
-  const lengths = entries.map(interestEntryContentLength);
-  const total = lengths.reduce((sum, value) => sum + value, 0);
-  const longest = Math.max(...lengths, 0);
-
-  // A place reference is semantic metadata, not a rendered map. Culinary entries may
-  // therefore still use two balanced boxes when both recommendations remain concise.
-  // A future real map gets its own capacity reservation and may change composition.
-  const allowsTwoUpWithPlaceReference = kind === 'culinary_local';
-  const placeReferenceAllowsTwoUp = !hasMapReference || allowsTwoUpWithPlaceReference;
-  const totalBudget = kind === 'culinary_local' ? 760 : 700;
-  const longestBudget = kind === 'culinary_local' ? 420 : 390;
-
-  if (entries.length === 2 && placeReferenceAllowsTwoUp && total <= totalBudget && longest <= longestBudget) return 'two-up';
-  return 'grouped';
+  density: InterestPageDensity
+): number {
+  const widths = WIDTHS[composition];
+  const heights = [
+    entryHeightEstimate(entries[0], widths[0], density),
+    entryHeightEstimate(entries[1], widths[1], density)
+  ];
+  return composition === 'stacked'
+    ? heights[0] + heights[1] + (density === 'tight' ? 0.8 : 1.1)
+    : Math.max(...heights);
 }
 
+function pageHeightBudget(kind: DestinationInterestKind | undefined, introductionLength: number, density: InterestPageDensity): number {
+  // This is intentionally a finite editorial heuristic, not browser geometry.
+  // Intro pressure reduces the usable content band while Companion/Footer stay fixed.
+  const base = kind === 'culinary_local' ? 23.0 : 23.8;
+  const introPenalty = Math.min(4.6, introductionLength / 78);
+  const tightRelief = density === 'tight' ? 3.0 : 0;
+  return base - introPenalty + tightRelief;
+}
+
+function candidatePreference(composition: TwoEntryComposition): number {
+  // Prefer balanced peers, then asymmetric editorial pairs, then stacking.
+  switch (composition) {
+    case 'two-up': return 0;
+    case 'one-third-two-thirds': return 0.4;
+    case 'two-thirds-one-third': return 0.4;
+    case 'stacked': return 0.8;
+  }
+}
+
+function bestFittingTwoEntryComposition(
+  kind: DestinationInterestKind | undefined,
+  entries: readonly DestinationInterestEntry[],
+  introductionLength: number,
+  density: InterestPageDensity
+): InterestEntryComposition | null {
+  const budget = pageHeightBudget(kind, introductionLength, density);
+  const fitting = TWO_ENTRY_COMPOSITIONS
+    .map((composition) => ({
+      composition,
+      widths: WIDTHS[composition],
+      height: compositionHeightEstimate(composition, entries, density)
+    }))
+    .filter((candidate) => entryFitsWidth(entries[0], candidate.widths[0], density) && entryFitsWidth(entries[1], candidate.widths[1], density))
+    .filter((candidate) => candidate.height <= budget)
+    .sort((a, b) => (a.height + candidatePreference(a.composition)) - (b.height + candidatePreference(b.composition)));
+  return fitting[0]?.composition ?? null;
+}
+
+/**
+ * Finite composition search for structured Interest entries.
+ * Content Fit decides the composition; Studio never chooses a pretty grid first
+ * and then shrinks/clips content to make it survive. All approved two-entry
+ * combinations are evaluated before tight or overflow is accepted.
+ */
 export function interestPageLayoutState(
   kind: DestinationInterestKind | undefined,
   entries: readonly DestinationInterestEntry[],
   introductionLength = 0
 ): InterestPageLayoutState {
-  const hasPlaceReference = entries.some((entry) => Boolean(entry.fields.placeReference?.trim()));
-  const composition = interestEntryComposition(entries, hasPlaceReference, kind);
-  const lengths = entries.map(interestEntryContentLength);
-  const total = lengths.reduce((sum, value) => sum + value, 0);
-  const longest = Math.max(...lengths, 0);
-
-  if (kind === 'culinary_local') {
-    // Culinary pages often carry several explanatory fields. Use exactly one bounded
-    // compact step; never keep shrinking type to force content into the page.
-    const weighted = total + Math.round(introductionLength * 0.55);
-    const overflow = entries.length > 3
-      || longest > 540
-      || (composition === 'grouped' && weighted > 840)
-      || (composition === 'two-up' && weighted > 980);
-    const density: InterestPageDensity = weighted > 610 || longest > 350 || entries.length > 2
-      ? 'tight'
-      : 'comfortable';
-    return { composition, density, overflow };
+  if (entries.length === 0) {
+    return { composition: 'single', density: 'comfortable', overflow: false, evaluatedCompositions: ['single'] };
+  }
+  if (entries.length === 1) {
+    const comfortableHeight = entryHeightEstimate(entries[0], 1, 'comfortable');
+    if (comfortableHeight <= pageHeightBudget(kind, introductionLength, 'comfortable')) {
+      return { composition: 'single', density: 'comfortable', overflow: false, evaluatedCompositions: ['single'] };
+    }
+    const tightHeight = entryHeightEstimate(entries[0], 1, 'tight');
+    const overflow = tightHeight > pageHeightBudget(kind, introductionLength, 'tight');
+    return { composition: 'single', density: 'tight', overflow, evaluatedCompositions: ['single'] };
   }
 
-  const weighted = total + introductionLength;
-  const density: InterestPageDensity = weighted > 850 || (hasPlaceReference && weighted > 650) || entries.length > 2
-    ? 'tight'
-    : 'comfortable';
-  const overflow = weighted > 1250 || entries.length > 3;
-  return { composition, density, overflow };
+  if (entries.length === 2) {
+    const comfortable = bestFittingTwoEntryComposition(kind, entries, introductionLength, 'comfortable');
+    if (comfortable) {
+      return { composition: comfortable, density: 'comfortable', overflow: false, evaluatedCompositions: TWO_ENTRY_COMPOSITIONS };
+    }
+    const tight = bestFittingTwoEntryComposition(kind, entries, introductionLength, 'tight');
+    if (tight) {
+      return { composition: tight, density: 'tight', overflow: false, evaluatedCompositions: TWO_ENTRY_COMPOSITIONS };
+    }
+    return { composition: 'stacked', density: 'tight', overflow: true, evaluatedCompositions: TWO_ENTRY_COMPOSITIONS };
+  }
+
+  // More than two entries are separate semantic units, never one catch-all box.
+  // They stack as individual cards; compact density is the only permitted fallback.
+  const comfortableTotal = entries.reduce((sum, entry) => sum + entryHeightEstimate(entry, 1, 'comfortable'), 0)
+    + (entries.length - 1) * 1.1;
+  if (comfortableTotal <= pageHeightBudget(kind, introductionLength, 'comfortable')) {
+    return { composition: 'stacked', density: 'comfortable', overflow: false, evaluatedCompositions: ['stacked'] };
+  }
+  const tightTotal = entries.reduce((sum, entry) => sum + entryHeightEstimate(entry, 1, 'tight'), 0)
+    + (entries.length - 1) * 0.8;
+  return {
+    composition: 'stacked',
+    density: 'tight',
+    overflow: tightTotal > pageHeightBudget(kind, introductionLength, 'tight'),
+    evaluatedCompositions: ['stacked']
+  };
+}
+
+/**
+ * Kept as the lightweight public composition helper used by older tests/callers.
+ * It delegates to the same finite candidate search so no code path can choose a
+ * composition before Content Fit.
+ */
+export function interestEntryComposition(
+  entries: readonly DestinationInterestEntry[],
+  _hasMapReference = false,
+  kind?: DestinationInterestKind
+): InterestEntryComposition {
+  return interestPageLayoutState(kind, entries, 0).composition;
 }

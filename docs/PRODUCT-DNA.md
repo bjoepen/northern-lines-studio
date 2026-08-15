@@ -1536,13 +1536,13 @@ Vor der Freigabe eines neuen Features sollten mindestens diese Fragen beantworte
 
 Am Ende lässt sich alles auf wenige Sätze verdichten.
 
-> **Northern Lines Studio ist kein Programm, mit dem man Seiten baut.  
+> **Northern Lines Studio ist kein Programm, mit dem man Seiten baut.
 > Es ist eine Umgebung, in der man eine Reise erzählt.**
 
-> **Der Reisende entscheidet über Bedeutung und Wirkung.  
+> **Der Reisende entscheidet über Bedeutung und Wirkung.
 > Studio übernimmt die technische Komplexität.**
 
-> **Der Inhalt gehört zur Reise und zum Ort.  
+> **Der Inhalt gehört zur Reise und zum Ort.
 > Die Layout Grammar sorgt dafür, dass daraus Northern Lines wird.**
 
 > **Wenige starke Möglichkeiten. Viele persönliche Geschichten.**
@@ -1551,7 +1551,7 @@ Am Ende lässt sich alles auf wenige Sätze verdichten.
 
 Und vielleicht der wichtigste praktische Prüfstein:
 
-> **Northern Lines Studio wird nicht danach beurteilt, wie viele Funktionen es anbietet.  
+> **Northern Lines Studio wird nicht danach beurteilt, wie viele Funktionen es anbietet.
 > Es wird danach beurteilt, wie selbstverständlich sich daraus eine Reise gestalten lässt.**
 
 ---
@@ -1890,3 +1890,37 @@ Für **alle Interest Pages** gelten bei informationsdichten Einträgen genau zwe
 Reicht die feste `tight`-Stufe nicht, wechselt die Seite in `overflow` und verwendet die bestehende Travel Language: **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** Companion- und Footer-Safe-Zonen bleiben dabei harte Invarianten.
 
 Die Komposition wird vor der Verdichtung geprüft. Zwei ausgewogene Empfehlungen dürfen als zwei Boxen erzählt werden, wenn dadurch die Seite ruhiger und lesbarer wird. Ein textlicher Ort-/Kartenbezug ist noch keine gerenderte Karte und erzwingt daher nicht automatisch eine gestapelte Sammelfläche. Eine spätere echte Karte erhält eine eigene Kapazitätsreserve.
+
+## Build 030 Fix · Global Content Fit & Composition Contract
+
+Diese Regel gilt **für alle Seitentypen in Northern Lines Studio** – Interest Pages, Ortsseiten und alle weiteren redaktionellen Seiten.
+
+> **Content Fit entscheidet über die Komposition.**
+
+Studio darf eine Komposition erst final wählen, nachdem die für den jeweiligen Seitentyp freigegebenen Varianten gegen den vollständigen Inhalt geprüft wurden. Eine formal attraktive Variante ist ungültig, sobald sie Text abschneidet, Inhalt aus einer Fläche herauslaufen lässt, Companion-/Footer-Safe-Zonen verletzt oder eine unnötige Verdichtung erzwingt.
+
+Für zwei redaktionelle Einheiten umfasst der freigegebene Kompositionsraum – sofern der jeweilige Seitentyp diese Varianten semantisch erlaubt – mindestens:
+
+- volle Breite / gestapelt;
+- 1/2–1/2;
+- 1/3–2/3;
+- 2/3–1/3;
+- bereits etablierte adaptive Varianten wie 50/50, 60/40 und 70/30 in den dafür vorgesehenen Zonen.
+
+Studio prüft die zulässigen Kandidaten vollständig und wählt die ruhigste passende Variante. Erst danach darf eine für den Seitentyp ausdrücklich erlaubte Dichte-Stufe greifen. Für Interest Pages bleiben ausschließlich `comfortable` und die eine feste `tight`-Stufe zulässig. Andere Seitentypen dürfen Schrift weiterhin **nicht** verkleinern, um ein Layoutproblem zu retten.
+
+> **Nicht sammeln, sondern erzählen.**
+
+Semantisch unterschiedliche Inhalte dürfen nicht aus Bequemlichkeit in eine große Sammelbox geschoben werden. Zusammengehörige Informationen bleiben zusammen; unterschiedliche Einheiten bleiben als eigene redaktionelle Einheiten erkennbar. Eine gemeinsame Fläche ist nur zulässig, wenn die Inhalte semantisch tatsächlich eine Einheit bilden und dadurch besser lesbar werden.
+
+Die verbindliche Reihenfolge lautet:
+
+1. vollständigen Inhalt erfassen;
+2. alle für die Seite erlaubten Kompositionen prüfen;
+3. Content Fit gegen die tatsächliche Content-Zone bewerten;
+4. beste passende Komposition wählen;
+5. nur falls ausdrücklich erlaubt, die feste alternative Dichte-Stufe prüfen;
+6. Companion-, Footer- und weitere Safe-Zonen erneut prüfen;
+7. wenn keine zulässige Variante passt: `overflow` statt Clipping, Verdrängen oder weiterer Verkleinerung.
+
+Diese Regel ist kein Interest-Page-Sonderfall. Sie ist Teil der allgemeinen Northern-Lines-Layout-Grammatik.
