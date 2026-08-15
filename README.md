@@ -425,3 +425,7 @@ Build 029 expands the third Interest Page archetype using the shared structured-
 
 ## Build 030 – Culinary & Local Experience
 Build 030 completes the fourth approved Destination Interest archetype. **Kulinarik & Lokal** uses the shared structured-entry UX: travellers add repeatable recommendations, describe category, editorial reason, what to try/discover, practical guidance, optional time/price context and optional place/map reference. Studio chooses the composition automatically and preserves World Expression, Interest-only adaptive density, Companion/Footer safe zones and capacity protection. The `.nls` format remains **0.14.0** because the generic structured entry field map already supports these semantic fields without migration.
+
+
+### Build 030 Polish – Culinary Density & Safe-Zone Correction
+The Culinary & Local Interest Page now follows the same bounded capacity grammar as the other Interest archetypes: exactly two fixed typography states (`comfortable` and `tight`), adaptive one-/two-box composition before density reduction, and `overflow` instead of arbitrary type scaling or Companion/Footer intrusion. Textual place references do not reserve map geometry until an actual map is rendered.

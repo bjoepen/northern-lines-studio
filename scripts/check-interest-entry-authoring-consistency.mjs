@@ -12,7 +12,7 @@ must(project, 'interestEntries?: DestinationInterestEntry[]', 'StudioPage must p
 for (const kind of ['photo_spot','hiking_route','culture_place','culinary_recommendation']) must(project, `'${kind}'`, `Missing Interest entry kind ${kind}.`);
 for (const label of ['Fotospot hinzufügen','Route hinzufügen','Ort / Station hinzufügen','Empfehlung hinzufügen']) must(entries, label, `Missing add-first label ${label}.`);
 must(app, "invoke<StudioProject>('save_interest_entries'", 'Structured entries must be persisted through Rust.');
-must(app, 'interestEntryComposition(selectedInterestEntries', 'Studio must choose composition from content.');
+must(app, 'interestPageLayoutState(', 'Studio must choose composition and density from content.');
 must(app, "interestDensity =", 'Interest density must be adaptive.');
 must(css, '.interest-entry-grid.interest-entry-two-up', 'Two-box grammar is missing.');
 must(css, '.interest-entry-grid.interest-entry-grouped', 'One-box grouped grammar is missing.');

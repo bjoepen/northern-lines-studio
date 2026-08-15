@@ -92,11 +92,66 @@ export function interestEntryContentLength(entry: DestinationInterestEntry): num
   return entry.title.trim().length + Object.values(entry.fields).reduce((sum, value) => sum + value.trim().length, 0);
 }
 
-export function interestEntryComposition(entries: readonly DestinationInterestEntry[], hasMapReference = false): 'single' | 'two-up' | 'grouped' {
+export type InterestEntryComposition = 'single' | 'two-up' | 'grouped';
+export type InterestPageDensity = 'comfortable' | 'tight';
+
+export interface InterestPageLayoutState {
+  composition: InterestEntryComposition;
+  density: InterestPageDensity;
+  overflow: boolean;
+}
+
+export function interestEntryComposition(
+  entries: readonly DestinationInterestEntry[],
+  hasMapReference = false,
+  kind?: DestinationInterestKind
+): InterestEntryComposition {
   if (entries.length <= 1) return 'single';
   const lengths = entries.map(interestEntryContentLength);
   const total = lengths.reduce((sum, value) => sum + value, 0);
   const longest = Math.max(...lengths, 0);
-  if (entries.length === 2 && !hasMapReference && total <= 700 && longest <= 390) return 'two-up';
+
+  // A place reference is semantic metadata, not a rendered map. Culinary entries may
+  // therefore still use two balanced boxes when both recommendations remain concise.
+  // A future real map gets its own capacity reservation and may change composition.
+  const allowsTwoUpWithPlaceReference = kind === 'culinary_local';
+  const placeReferenceAllowsTwoUp = !hasMapReference || allowsTwoUpWithPlaceReference;
+  const totalBudget = kind === 'culinary_local' ? 760 : 700;
+  const longestBudget = kind === 'culinary_local' ? 420 : 390;
+
+  if (entries.length === 2 && placeReferenceAllowsTwoUp && total <= totalBudget && longest <= longestBudget) return 'two-up';
   return 'grouped';
+}
+
+export function interestPageLayoutState(
+  kind: DestinationInterestKind | undefined,
+  entries: readonly DestinationInterestEntry[],
+  introductionLength = 0
+): InterestPageLayoutState {
+  const hasPlaceReference = entries.some((entry) => Boolean(entry.fields.placeReference?.trim()));
+  const composition = interestEntryComposition(entries, hasPlaceReference, kind);
+  const lengths = entries.map(interestEntryContentLength);
+  const total = lengths.reduce((sum, value) => sum + value, 0);
+  const longest = Math.max(...lengths, 0);
+
+  if (kind === 'culinary_local') {
+    // Culinary pages often carry several explanatory fields. Use exactly one bounded
+    // compact step; never keep shrinking type to force content into the page.
+    const weighted = total + Math.round(introductionLength * 0.55);
+    const overflow = entries.length > 3
+      || longest > 540
+      || (composition === 'grouped' && weighted > 840)
+      || (composition === 'two-up' && weighted > 980);
+    const density: InterestPageDensity = weighted > 610 || longest > 350 || entries.length > 2
+      ? 'tight'
+      : 'comfortable';
+    return { composition, density, overflow };
+  }
+
+  const weighted = total + introductionLength;
+  const density: InterestPageDensity = weighted > 850 || (hasPlaceReference && weighted > 650) || entries.length > 2
+    ? 'tight'
+    : 'comfortable';
+  const overflow = weighted > 1250 || entries.length > 3;
+  return { composition, density, overflow };
 }
