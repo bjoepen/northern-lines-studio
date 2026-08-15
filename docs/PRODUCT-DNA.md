@@ -1811,3 +1811,14 @@ Fotografie ist in Northern Lines Studio eine mögliche Vertiefung eines Ortes, n
 ## Semantische Nähe bleibt sichtbar
 
 Informationen, die inhaltlich zusammengehören, werden auch in der Seitenkomposition unmittelbar zusammen erzählt. Ein Routeneintrag trennt daher nicht künstlich Route, Startpunkt, Dauer und Schwierigkeit voneinander. Studio darf Daten intern getrennt speichern; für den Reisenden bleibt ihre Beziehung selbstverständlich sichtbar.
+
+
+## Interest-Page Compact Typography Exception
+
+Die bisherige Northern-Lines-Regel bleibt für alle normalen Seiten verbindlich: Schrift wird nicht verkleinert, um ein Layoutproblem zu retten. **Ausschließlich Interest Pages** dürfen für strukturierte, informationsdichte Praxisinhalte eine definierte kompaktere Typografie-Stufe verwenden.
+
+Die Ausnahme gilt nur für sekundäre Praxisinformationen wie Route, Startpunkt, Dauer, Schwierigkeit, Naturziel, Streckenhinweis oder vergleichbare Detaildaten. Titel, Ortsname und die primäre Seitenhierarchie werden niemals verkleinert. Alle anderen Seitentypen sind von dieser Ausnahme ausdrücklich ausgeschlossen.
+
+> **Interest Pages dürfen dichter erzählen. Alle anderen Seiten bleiben bei der bisherigen Typografie-Regel.**
+
+Companion- und Footer-Safe-Zonen bleiben auch bei kompakter Interest-Typografie harte Grenzen. Wenn der Inhalt trotz erlaubter Verdichtung nicht ruhig passt, greift Capacity Protection statt weiterer Verkleinerung.

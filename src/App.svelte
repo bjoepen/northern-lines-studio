@@ -986,7 +986,12 @@
   $: hikingStartPointLines = (selectedHikingAuthoring?.hike_start_points?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
   $: hikingDurationLines = (selectedHikingAuthoring?.hike_durations?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
   $: hikingDifficultyLines = (selectedHikingAuthoring?.hike_difficulties?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingInterestOverflow = hikingInterestContentLength > 1050;
+  $: hikingHighlightLines = (selectedHikingAuthoring?.hike_highlights?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  $: hikingGuidanceLines = (selectedHikingAuthoring?.hike_guidance?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  // Interest Pages alone may use the compact editorial density step. Other page types
+  // keep the global rule: typography never shrinks merely to rescue a layout.
+  $: hikingInterestCompact = hikingRouteLines.length > 1 || hikingInterestContentLength > 420;
+  $: hikingInterestOverflow = hikingInterestContentLength > 900 || hikingRouteLines.length > 2;
   $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -1316,7 +1321,7 @@
                     {/if}
                   </div>
                 {:else if selectedPage.destinationInterestKind === 'hiking_nature'}
-                  <div class="destination-interest-preview hiking-nature-experience">
+                  <div class="destination-interest-preview hiking-nature-experience" class:hiking-interest-compact={hikingInterestCompact}>
                     <div class="page-rule hiking-page-rule"></div>
                     <p class="eyebrow">Draußen unterwegs</p>
                     <h1>{preview.heading}</h1>
@@ -1338,6 +1343,8 @@
                               {@const startPoint = hikingStartPointLines[index] || ''}
                               {@const duration = hikingDurationLines[index] || ''}
                               {@const difficulty = hikingDifficultyLines[index] || ''}
+                              {@const highlight = hikingHighlightLines[index] || ''}
+                              {@const guidance = hikingGuidanceLines[index] || ''}
                               <article class="hiking-route-row">
                                 <span class="hiking-route-number">{String(index + 1).padStart(2, '0')}</span>
                                 <div class="hiking-route-copy">
@@ -1348,6 +1355,12 @@
                                     <span>{duration || 'Dauer offen'}</span>
                                     <span>{difficulty || 'Schwierigkeit offen'}</span>
                                   </div>
+                                  {#if highlight || guidance}
+                                    <div class="hiking-route-details">
+                                      {#if highlight}<p><span>Aussicht & Naturziele</span>{highlight}</p>{/if}
+                                      {#if guidance}<p><span>Hinweise zur Strecke</span>{guidance}</p>{/if}
+                                    </div>
+                                  {/if}
                                 </div>
                               </article>
                             {/each}
@@ -1356,15 +1369,6 @@
                           {/if}
                         </div>
                       </section>
-
-                      <div class="hiking-experience-grid">
-                        {#if selectedPage.authoring?.hike_highlights?.content}
-                          <section><span>Aussicht & Naturziele</span><p>{selectedPage.authoring.hike_highlights.content}</p></section>
-                        {/if}
-                        {#if selectedPage.authoring?.hike_guidance?.content}
-                          <section><span>Hinweise zur Strecke</span><p>{selectedPage.authoring.hike_guidance.content}</p></section>
-                        {/if}
-                      </div>
 
                       {#if selectedPage.authoring?.hike_place_reference?.content}
                         <div class="hiking-place-reference">
