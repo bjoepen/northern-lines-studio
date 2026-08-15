@@ -735,3 +735,30 @@
 .interest-introduction-edit:hover { color: var(--fjord-blue); }
 .interest-introduction-edit:disabled { opacity: .45; cursor: default; }
 .interest-introduction-actions { display: flex; justify-content: flex-end; }
+
+
+/* Build 030 · Culinary & Local Experience
+   Repeatable recommendations use the same structured Interest Entry grammar.
+   Studio composes; the traveller only describes the recommendation. */
+.a5-page.destination-interest-page.culinary-local-interest-page {
+  padding-top: 40px;
+  padding-bottom: 42px;
+}
+.culinary-local-experience { max-width: 445px; min-height: 0; }
+.culinary-local-experience .culinary-local-page-rule { width: 38px; height: 1px; margin-bottom: 12px; }
+.culinary-local-experience .eyebrow { margin-bottom: 8px; }
+.culinary-local-experience .preview-body { max-width: 390px; margin-top: 14px; margin-bottom: 14px; }
+.culinary-local-section-label {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 9px;
+  color: var(--interest-meta, var(--world-accent));
+}
+.culinary-local-recommendations { margin-top: 16px; }
+.culinary-local-entry-card .interest-entry-heading { grid-template-columns: 24px minmax(0, 1fr); }
+.culinary-local-entry-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.interest-entry-two-up .culinary-local-entry-details { grid-template-columns: minmax(0, 1fr); }
+.culinary-time-price { color: var(--interest-meta, var(--world-accent)); }
+.culinary-local-capacity-stop { margin-top: 20px; }
+.culinary-local-empty { font-size: 9.5px; line-height: 1.35; color: var(--interest-quiet, var(--world-quiet)); }

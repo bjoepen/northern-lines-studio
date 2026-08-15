@@ -1,28 +1,28 @@
-# APPLY-DROPIN — Build 029 · Culture & History Experience
+# APPLY-DROPIN — Build 030 · Culinary & Local Experience
 
-Baseline: final Build 028 Inspector UX Language Fix
-Target: Build 029 Culture & History Experience
+Baseline: final Build 029 Interest Page Header & Intro Fix  
+Target: Build 030 Culinary & Local Experience
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 git status
-git switch -c feature/build-029-culture-history-experience
+git switch -c feature/build-030-culinary-local-experience
 ```
 
 ## 2. Dry Run
 
 ```bash
-rsync -avn ~/Downloads/Northern-Lines-Studio-Build-029-Culture-History-Experience-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -avn ~/Downloads/Northern-Lines-Studio-Build-030-Culinary-Local-Experience-DropIn/ ~/Projekte/northern-lines-studio/
 ```
 
-Review the list. This Drop-in contains only new/changed Build-029 files and uses no `--delete`.
+Review the list. This Drop-in contains only new/changed Build-030 files and uses no `--delete`.
 
 ## 3. Apply
 
 ```bash
-rsync -av ~/Downloads/Northern-Lines-Studio-Build-029-Culture-History-Experience-DropIn/ ~/Projekte/northern-lines-studio/
+rsync -av ~/Downloads/Northern-Lines-Studio-Build-030-Culinary-Local-Experience-DropIn/ ~/Projekte/northern-lines-studio/
 cd ~/Projekte/northern-lines-studio
 ```
 
@@ -35,8 +35,9 @@ pnpm consistency
 Expected new output includes:
 
 ```text
-Culture & History Experience Consistency Gate: PASS
+Culinary & Local Experience Consistency Gate: PASS
 Native UI Consistency Gate: PASS
+Interest Page Header & Intro Consistency Gate: PASS
 ```
 
 The word `PASS` must be green. Existing semantics remain: WARN amber, FAIL red.
@@ -80,19 +81,21 @@ pnpm tauri dev
 
 ## 7. Real-world test
 
-Use an existing Destination and add **Kultur & Geschichte**.
+Use an existing Destination and add **Kulinarik & Lokal**.
 
-- Add two entries through **+ Ort / Station hinzufügen**.
-- Station 01: type `Museum`, editorial meaning, visit hint.
-- Station 02: type `Historischer Ort`, editorial meaning, optional time reference and map/place reference.
-- Confirm each station retains its own details after save, page switch, app close/reopen.
-- Confirm Studio automatically chooses an appropriate one/two/grouped composition.
+- Confirm the page header follows the shared Interest grammar: **KULINARIK & LOKAL → Ort → editable introduction**.
+- Add two entries through **+ Empfehlung hinzufügen**.
+- Recommendation 01: e.g. local dish or speciality with category, reason and **Probieren & entdecken**.
+- Recommendation 02: e.g. market, café or local shop with **Gut zu wissen**, optional **Zeit / Preis**, and optional map/place reference.
+- Confirm each recommendation retains its own details after save, page switch, app close/reopen.
+- Confirm Studio automatically chooses an appropriate single / two-up / grouped composition.
 - Confirm `comfortable` is the default; `tight` is only used under real capacity pressure.
 - Confirm no text clipping.
 - Confirm Companion and Footer stay fixed.
 - Confirm Fjord ↔ Ostsee changes expression, not content.
 - Confirm the local entry-editor action says **Zurück**.
 - Scan the visible flow for unintended browser/default HTML controls.
+- Confirm all visible PASS state words use the approved green status treatment.
 
 ## 8. Commit and Push
 
@@ -101,6 +104,6 @@ cd ~/Projekte/northern-lines-studio
 git status
 git add -A
 git diff --cached --check
-git commit -m "feat: add culture and history experience"
-git push -u origin feature/build-029-culture-history-experience
+git commit -m "feat: add culinary and local experience"
+git push -u origin feature/build-030-culinary-local-experience
 ```

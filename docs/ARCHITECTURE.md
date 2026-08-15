@@ -173,3 +173,6 @@ Legacy line-based Photography/Hiking authoring remains readable during migration
 
 ## Build 029 · Structured Culture & History Interest Experience
 Culture & History uses the same structured `DestinationInterestEntry` foundation as Photography and Hiking. Page-specific field schemas live in the Interest Entry schema layer; persistence remains generic in Rust. Rendering is archetype-specific, while composition, density, World Expression, Companion/Footer protection and overflow behavior remain shared Interest Page grammar responsibilities. This keeps the architecture on **Model → Rust persistence → semantic entry schema → Inspector → adaptive preview → consistency tests**, without introducing a page-specific persistence command.
+
+## Build 030 · Structured Culinary & Local Interest Experience
+Kulinarik & Lokal uses the same generic `DestinationInterestEntry` persistence foundation as the other Interest archetypes. The specialist schema lives in the Interest Entry definition layer, while rendering remains archetype-specific and composition/density/capacity remain shared grammar responsibilities. This completes the four-archetype proof that the Interest Page architecture is semantic rather than photography-specific.

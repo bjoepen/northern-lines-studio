@@ -280,3 +280,6 @@ Opening a Build-028/0.13.0 project creates structured entries from the existing 
 
 ## Build 029 – Culture & History Experience (`0.14.0`)
 No format migration is required. Build 029 uses the existing structured `interestEntries` model introduced with 0.14.0. `culture_history` entries use kind `culture_place`; their field map may contain `category`, `why`, `guidance`, `timeReference`, and `placeReference`. Missing optional fields remain absent/empty; Studio invents no cultural content.
+
+## Build 030 – Culinary & Local Experience (`0.14.0`)
+`culinary_recommendation` uses the existing `DestinationInterestEntry` structure. Typical semantic field keys are `category`, `why`, `try`, `guidance`, `timePrice`, and `placeReference`. No migration is required because `fields` is an extensible string map.

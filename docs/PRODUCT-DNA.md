@@ -1871,3 +1871,11 @@ Damit entfällt die frühere doppelte Nennung des Interests als Seitenanker und 
 Die Einleitung ist kein fest verdrahteter Foundation-Text. Sie ist pro Interest Page editierbar und typografisch klar vom Seitentitel unterschieden. Studio darf einen ruhigen archetypspezifischen Vorschlag anzeigen, der Reisende kann ihn jedoch jederzeit ersetzen.
 
 Diese Regel gilt ausschließlich für Interest Pages und verändert weder Destination Pages noch andere Seitengattungen.
+
+## Build 030 · Kulinarik & Lokal — verbindliche Interest-Page-Regel
+- Kulinarik & Lokal folgt derselben Structured-Entry-UX wie alle anderen Interest Pages.
+- Der Nutzer fügt **Empfehlungen** hinzu; Studio verwaltet keine Restaurant- oder Bewertungsdatenbank.
+- Eine Empfehlung hält Name, Art/Kategorie, redaktionelle Einordnung, **Probieren & entdecken**, **Gut zu wissen**, optionalen **Zeit-/Preisbezug** und optionalen **Ort-/Kartenbezug** semantisch zusammen.
+- Der Nutzer entscheidet über Inhalte. Studio entscheidet automatisch über eine Box, zwei Boxen oder gruppierte/gestapelte Darstellung.
+- Interest = Seitenanker · Ort = Seitentitel · Einleitung = editierbare redaktionelle Öffnung.
+- Companion/Footer bleiben harte Safe-Zonen. `comfortable → tight → overflow` bleibt verbindlich; kompaktere Typografie ist ausschließlich für Interest Pages zulässig.

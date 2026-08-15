@@ -69,9 +69,11 @@ const SCHEMAS: Readonly<Record<DestinationInterestKind, InterestEntrySchema>> = 
     titleLabel: 'Ort / Empfehlung',
     titlePlaceholder: 'z. B. Markt, Café, Gericht oder lokale Adresse',
     fields: [
-      { id: 'category', label: 'Art', placeholder: 'z. B. Markt, Gericht, Café, Spezialität' },
-      { id: 'why', label: 'Was macht es besonders?', placeholder: 'Kurze redaktionelle Einordnung', multiline: true },
-      { id: 'guidance', label: 'Hinweis', placeholder: 'Optionaler Praxis-Hinweis', multiline: true },
+      { id: 'category', label: 'Art', placeholder: 'z. B. Gericht, Café, Markt, Spezialität oder lokaler Laden' },
+      { id: 'why', label: 'Warum lohnt es sich?', placeholder: 'Was macht diese Empfehlung für den Ort besonders?', multiline: true },
+      { id: 'try', label: 'Probieren & entdecken', placeholder: 'Was sollte man hier probieren, entdecken oder mitnehmen?', multiline: true },
+      { id: 'guidance', label: 'Gut zu wissen', placeholder: 'Was sollte man vor Ort beachten?', multiline: true },
+      { id: 'timePrice', label: 'Zeit / Preis', placeholder: 'Optional, z. B. vormittags, saisonal oder €€' },
       { id: 'placeReference', label: 'Ort / Kartenbezug', placeholder: 'Optionaler Karten- oder Ortsbezug' }
     ]
   }
