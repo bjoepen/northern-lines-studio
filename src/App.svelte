@@ -4,7 +4,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { open } from '@tauri-apps/plugin-dialog';
-  import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
+  import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestEntry, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
   import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './lib/workspace';
@@ -38,6 +38,7 @@
   import type { DestinationImageRole } from './lib/destinations';
   import { EDITORIAL_EXTENSION_DEFINITIONS, editorialExtensionDefinition, editorialExtensionLabel } from './lib/editorial-extensions';
   import { DESTINATION_INTEREST_DEFINITIONS, destinationInterestDefinition, destinationInterestKindsForStage, destinationInterestLabel } from './lib/destination-interests';
+  import { emptyInterestEntry, interestEntryComposition, interestEntryContentLength, interestEntrySchema } from './lib/destination-interests/entries';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
 
   type PendingAction =
@@ -106,6 +107,9 @@
   let destinationImagePreviewError = '';
   let destinationImageState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let destinationImagePreviewRequest = 0;
+  let interestEntryDraft: DestinationInterestEntry | null = null;
+  let interestEntryOriginalSignature = '';
+  let interestEntrySaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let inspectorWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorResizing = false;
@@ -727,6 +731,7 @@
   }
 
   function selectPageNow(page: StudioPage) {
+    cancelInterestEntry();
     selectedPage = page;
     activeAuthoringComponent = null;
     authoringDraft = '';
@@ -747,6 +752,7 @@
 
   function editStoryComponent(componentId: EditorialComponentId) {
     if (activeAuthoringComponent === componentId) return;
+    if (interestEntryDraft && !interestEntryDirty) cancelInterestEntry();
     if (hasUnsavedChanges) {
       pendingAction = { kind: 'select-component', componentId };
       return;
@@ -787,7 +793,90 @@
     }
   }
 
+  function interestEntrySignature(entry: DestinationInterestEntry | null): string {
+    return entry ? JSON.stringify(entry) : '';
+  }
+
+  function beginInterestEntry(entry?: DestinationInterestEntry) {
+    if (!selectedPage?.destinationInterestKind || !selectedInterestEntrySchema) return;
+    if (authoringDirty || destinationDirty || interestEntryDirty) return;
+    const next = entry
+      ? { ...entry, fields: { ...entry.fields } }
+      : emptyInterestEntry(selectedPage.destinationInterestKind, `${selectedPage.id}-${selectedInterestEntrySchema.entryKind}-${Date.now()}`);
+    activeAuthoringComponent = null;
+    authoringDraft = '';
+    authoringStatus = 'empty';
+    interestEntryDraft = next;
+    interestEntryOriginalSignature = entry ? interestEntrySignature(next) : '';
+    interestEntrySaveState = 'idle';
+  }
+
+  function cancelInterestEntry() {
+    interestEntryDraft = null;
+    interestEntryOriginalSignature = '';
+    interestEntrySaveState = 'idle';
+  }
+
+  function updateInterestEntryTitle(event: Event) {
+    if (!interestEntryDraft) return;
+    interestEntryDraft = { ...interestEntryDraft, title: (event.currentTarget as HTMLInputElement).value };
+  }
+
+  function updateInterestEntryField(fieldId: string, event: Event) {
+    if (!interestEntryDraft) return;
+    interestEntryDraft = {
+      ...interestEntryDraft,
+      fields: { ...interestEntryDraft.fields, [fieldId]: (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value }
+    };
+  }
+
+  async function saveInterestEntry(): Promise<boolean> {
+    if (!project || !selectedPage || !interestEntryDraft || !selectedInterestEntrySchema) return false;
+    if (!interestEntryDraft.title.trim()) {
+      errorMessage = `${selectedInterestEntrySchema.singularLabel} braucht einen Namen.`;
+      return false;
+    }
+    interestEntrySaveState = 'saving';
+    const draft = interestEntryDraft;
+    try {
+      const selectedPageId = selectedPage.id;
+      const entries = selectedInterestEntries.some((entry) => entry.id === draft.id)
+        ? selectedInterestEntries.map((entry) => entry.id === draft.id ? draft : entry)
+        : [...selectedInterestEntries, draft];
+      const projectPath = project.projectPath;
+      const savedProject = await invoke<StudioProject>('save_interest_entries', {
+        path: projectPath,
+        pageId: selectedPageId,
+        entries
+      });
+      project = { ...savedProject, projectPath };
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
+      interestEntrySaveState = 'saved';
+      cancelInterestEntry();
+      return true;
+    } catch (error) {
+      errorMessage = String(error);
+      interestEntrySaveState = 'error';
+      return false;
+    }
+  }
+
+  async function removeInterestEntry(entryId: string) {
+    if (!project || !selectedPage || interestEntryDirty) return;
+    try {
+      const selectedPageId = selectedPage.id;
+      const projectPath = project.projectPath;
+      const entries = selectedInterestEntries.filter((entry) => entry.id !== entryId);
+      const savedProject = await invoke<StudioProject>('save_interest_entries', { path: projectPath, pageId: selectedPageId, entries });
+      project = { ...savedProject, projectPath };
+      selectedPage = project.pageManifest.find((page) => page.id === selectedPageId) ?? null;
+    } catch (error) {
+      errorMessage = String(error);
+    }
+  }
+
   function discardActiveUnsavedChanges() {
+    if (interestEntryDirty) cancelInterestEntry();
     if (destinationDirty) syncDestinationDraft();
     if (authoringDirty && activeAuthoring) {
       authoringDraft = activeAuthoring.content;
@@ -797,6 +886,10 @@
   }
 
   async function saveActiveUnsavedChanges(): Promise<boolean> {
+    if (interestEntryDirty) {
+      const saved = await saveInterestEntry();
+      if (!saved) return false;
+    }
     if (destinationDirty) {
       const saved = await saveDestinationProfile();
       if (!saved) return false;
@@ -958,40 +1051,25 @@
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
   $: journeyStage = journeyStageFor(project, selectedPage);
   $: destinationInterest = selectedPage?.type === 'destination_interest' ? destinationInterestDefinition(selectedPage.destinationInterestKind) : null;
-  $: selectedPhotographyAuthoring = selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'
-    ? selectedPage.authoring
-    : null;
-  $: photographyInterestContentLength = selectedPhotographyAuthoring
-    ? ['introduction', 'photo_spots', 'photo_light', 'photo_motifs', 'photo_guidance', 'photo_focal_lengths', 'photo_place_reference']
-        .reduce((sum, key) => sum + ((selectedPhotographyAuthoring as any)?.[key]?.content?.trim().length ?? 0), 0)
-    : 0;
-  $: photographySpotLines = (selectedPhotographyAuthoring?.photo_spots?.content || '')
-    .split('\n').map((line) => line.trim()).filter(Boolean);
-  $: photographyFocalLengthLines = (() => {
-    const content = selectedPhotographyAuthoring?.photo_focal_lengths?.content?.trim() || '';
-    if (!content) return [];
-    const lines = content.split('\n').map((line) => line.trim()).filter(Boolean);
-    if (lines.length > 1) return lines;
-    return content.match(/\b\d{1,3}\s*(?:[–-]\s*\d{1,3}\s*)?mm\b/gi) ?? [content];
-  })();
-  $: photographyInterestOverflow = photographyInterestContentLength > 980;
-  $: selectedHikingAuthoring = selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'
-    ? selectedPage.authoring
-    : null;
-  $: hikingInterestContentLength = selectedHikingAuthoring
-    ? ['introduction', 'hike_routes', 'hike_start_points', 'hike_durations', 'hike_difficulties', 'hike_highlights', 'hike_guidance', 'hike_place_reference']
-        .reduce((sum, key) => sum + ((selectedHikingAuthoring as any)?.[key]?.content?.trim().length ?? 0), 0)
-    : 0;
-  $: hikingRouteLines = (selectedHikingAuthoring?.hike_routes?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingStartPointLines = (selectedHikingAuthoring?.hike_start_points?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingDurationLines = (selectedHikingAuthoring?.hike_durations?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingDifficultyLines = (selectedHikingAuthoring?.hike_difficulties?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingHighlightLines = (selectedHikingAuthoring?.hike_highlights?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  $: hikingGuidanceLines = (selectedHikingAuthoring?.hike_guidance?.content || '').split('\n').map((line) => line.trim()).filter(Boolean);
-  // Interest Pages alone may use the compact editorial density step. Other page types
-  // keep the global rule: typography never shrinks merely to rescue a layout.
-  $: hikingInterestCompact = hikingRouteLines.length > 1 || hikingInterestContentLength > 420;
-  $: hikingInterestOverflow = hikingInterestContentLength > 900 || hikingRouteLines.length > 2;
+  $: selectedInterestEntries = selectedPage?.type === 'destination_interest' ? (selectedPage.interestEntries ?? []) : [];
+  $: selectedInterestEntrySchema = selectedPage?.type === 'destination_interest' ? interestEntrySchema(selectedPage.destinationInterestKind) : null;
+  $: interestEntriesContentLength = selectedInterestEntries.reduce((sum, entry) => sum + interestEntryContentLength(entry), 0)
+    + (selectedPage?.authoring?.introduction?.content?.trim().length ?? 0);
+  $: interestHasPlaceReference = selectedInterestEntries.some((entry) => Boolean(entry.fields.placeReference?.trim()));
+  $: interestComposition = interestEntryComposition(selectedInterestEntries, interestHasPlaceReference);
+  // Interest Pages alone may use a bounded compact density step. It is an adaptive
+  // capacity state, never the default. Primary hierarchy remains unchanged.
+  $: interestDensity = interestEntriesContentLength > 850 || (interestHasPlaceReference && interestEntriesContentLength > 650) || selectedInterestEntries.length > 2
+    ? 'tight'
+    : 'comfortable';
+  $: interestOverflow = interestEntriesContentLength > 1250 || selectedInterestEntries.length > 3;
+  $: interestEntryDirty = interestEntryDraft !== null && JSON.stringify(interestEntryDraft) !== interestEntryOriginalSignature;
+  $: structuredInterestPage = selectedPage?.type === 'destination_interest' && ['photography', 'hiking_nature', 'culture_history', 'culinary_local'].includes(selectedPage.destinationInterestKind ?? '');
+  $: structuredLegacyIds = selectedPage?.destinationInterestKind === 'photography'
+    ? new Set<EditorialComponentId>(['photo_spots', 'photo_light', 'photo_motifs', 'photo_guidance', 'photo_focal_lengths', 'photo_place_reference'])
+    : selectedPage?.destinationInterestKind === 'hiking_nature'
+      ? new Set<EditorialComponentId>(['hike_routes', 'hike_start_points', 'hike_durations', 'hike_difficulties', 'hike_highlights', 'hike_guidance', 'hike_place_reference'])
+      : new Set<EditorialComponentId>();
   $: destinationInterestKinds = project && journeyStage ? destinationInterestKindsForStage(project.pageManifest, journeyStage.id) : [];
   $: selectedDestination = destinationForPage(project, selectedPage);
   $: journeyRouteCount = project?.journey?.stages.length ?? 0;
@@ -1002,6 +1080,8 @@
   $: storyPresent = presentStoryComponents(storyStructure);
   $: storyAvailable = availableStoryComponents(storyStructure);
   $: storyMissing = missingStoryComponents(storyStructure);
+  $: visibleStoryPresent = storyPresent.filter((component) => !structuredLegacyIds.has(component.type));
+  $: visibleStoryAvailable = storyAvailable.filter((component) => !structuredLegacyIds.has(component.type));
   $: activeAuthoring = authoringViewFor(selectedPage, activeAuthoringComponent, storyStructure?.story.find((entry) => entry.type === activeAuthoringComponent)?.label ?? '');
   $: authoringProgress = authoringCompletion(selectedPage);
   $: authoredCount = authoredComponentCount(selectedPage);
@@ -1025,8 +1105,12 @@
     editorialExtensions: destinationEditorialExtensions,
     layoutVariant: destinationLayoutVariant
   }, selectedPage?.title ?? '');
-  $: hasUnsavedChanges = authoringDirty || destinationDirty;
-  $: unsavedDialogLabel = destinationDirty ? (destinationName || selectedPage?.title || 'Ortsprofil') : (activeAuthoring?.label ?? 'Story');
+  $: hasUnsavedChanges = authoringDirty || destinationDirty || interestEntryDirty;
+  $: unsavedDialogLabel = interestEntryDirty
+    ? (selectedInterestEntrySchema?.singularLabel ?? 'Vertiefung')
+    : destinationDirty
+      ? (destinationName || selectedPage?.title || 'Ortsprofil')
+      : (activeAuthoring?.label ?? 'Story');
   $: previewWidth = PREVIEW_BASE_WIDTH * previewScale;
   $: previewHeight = PREVIEW_BASE_HEIGHT * previewScale;
   $: selectedJourneyWorld = journeyWorlds.find((world) => world.id === newJourneyWorldId) ?? journeyWorlds[0] ?? null;
@@ -1265,116 +1349,112 @@
                 </div>
               {:else if selectedPage?.type === 'destination_interest' && destinationInterest && journeyStage}
                 {#if selectedPage.destinationInterestKind === 'photography'}
-                  <div class="destination-interest-preview photography-place-experience">
+                  <div class="destination-interest-preview photography-place-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule photography-page-rule"></div>
                     <p class="eyebrow">Fotografie</p>
                     <h1>{preview.heading}</h1>
                     <p class="destination-interest-place">{journeyStage.title}</p>
                     <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Fotografische Orientierung für das, was du an diesem Ort festhalten möchtest.'}</p>
 
-                    {#if photographyInterestOverflow}
+                    {#if interestOverflow}
                       <div class="destination-capacity-stop photography-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
                         <span>Mehr Raum nötig</span>
                         <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
-                        <small>Kürze die fotografische Vertiefung oder verteile sie später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
+                        <small>Studio verkleinert nicht weiter. Kürze einen Eintrag oder verteile die Vertiefung später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
                       </div>
                     {:else}
-                    <section class="photography-spots" aria-label="Fotospots">
-                      <span class="photography-section-label">Fotospots</span>
-                      <div class="photography-spot-list">
-                        {#if photographySpotLines.length}
-                          {#each photographySpotLines as spot, index}
-                            {@const focalLength = photographyFocalLengthLines[index] || ''}
-                            <div class="photography-spot-row">
-                              <span class="photography-spot-number">{String(index + 1).padStart(2, '0')}</span>
-                              <div class="photography-spot-copy">
-                                <strong>{spot.split('—')[0]?.trim()}</strong>
-                                {#if spot.includes('—')}<small>{spot.split('—').slice(1).join('—').trim()}</small>{/if}
-                              </div>
-                              <span class:missing={!focalLength} class="photography-spot-focal">{focalLength || 'Brennweite offen'}</span>
-                            </div>
-                          {/each}
-                        {:else}
-                          <small class="photography-empty">Noch keine Fotospots notiert.</small>
-                        {/if}
-                      </div>
-                    </section>
-
-                    <div class="photography-experience-grid">
-                      {#if selectedPage.authoring?.photo_light?.content}
-                        <section><span>Licht & Tageszeit</span><p>{selectedPage.authoring.photo_light.content}</p></section>
+                      <section class="interest-entry-section photography-spots" aria-label="Fotospots">
+                        <span class="photography-section-label">Fotospots</span>
+                        <div class={`interest-entry-grid interest-entry-${interestComposition}`}>
+                          {#if selectedInterestEntries.length}
+                            {#each selectedInterestEntries as entry, index (entry.id)}
+                              <article class="interest-entry-card photography-entry-card">
+                                <div class="interest-entry-heading">
+                                  <span class="interest-entry-number">{String(index + 1).padStart(2, '0')}</span>
+                                  <div>
+                                    <strong>{entry.title}</strong>
+                                    {#if entry.fields.description}<small>{entry.fields.description}</small>{/if}
+                                  </div>
+                                  <span class:missing={!entry.fields.focalLength} class="photography-spot-focal">{entry.fields.focalLength || 'Brennweite offen'}</span>
+                                </div>
+                                {#if entry.fields.light || entry.fields.motifs || entry.fields.guidance}
+                                  <div class="interest-entry-details photography-entry-details">
+                                    {#if entry.fields.light}<p><span>Licht / beste Zeit</span>{entry.fields.light}</p>{/if}
+                                    {#if entry.fields.motifs}<p><span>Motive</span>{entry.fields.motifs}</p>{/if}
+                                    {#if entry.fields.guidance}<p class="interest-entry-wide"><span>Fotografischer Hinweis</span>{entry.fields.guidance}</p>{/if}
+                                  </div>
+                                {/if}
+                                {#if entry.fields.placeReference}<p class="interest-entry-place"><span>Ort & Karte</span>{entry.fields.placeReference}</p>{/if}
+                              </article>
+                            {/each}
+                          {:else}
+                            <small class="photography-empty">Noch kein Fotospot angelegt.</small>
+                          {/if}
+                        </div>
+                      </section>
+                      {#if (selectedPage.authoring?.photo_light?.content && !selectedInterestEntries.some((entry) => entry.fields.light))
+                        || (selectedPage.authoring?.photo_motifs?.content && !selectedInterestEntries.some((entry) => entry.fields.motifs))
+                        || (selectedPage.authoring?.photo_guidance?.content && !selectedInterestEntries.some((entry) => entry.fields.guidance))}
+                        <div class="photography-experience-grid interest-legacy-shared" aria-label="Bestehende übergreifende Fotografie-Notizen">
+                          {#if selectedPage.authoring?.photo_light?.content && !selectedInterestEntries.some((entry) => entry.fields.light)}<section><span>Licht & Tageszeit</span><p>{selectedPage.authoring.photo_light.content}</p></section>{/if}
+                          {#if selectedPage.authoring?.photo_motifs?.content && !selectedInterestEntries.some((entry) => entry.fields.motifs)}<section><span>Motive</span><p>{selectedPage.authoring.photo_motifs.content}</p></section>{/if}
+                          {#if selectedPage.authoring?.photo_guidance?.content && !selectedInterestEntries.some((entry) => entry.fields.guidance)}<section><span>Fotografischer Hinweis</span><p>{selectedPage.authoring.photo_guidance.content}</p></section>{/if}
+                        </div>
                       {/if}
-                      {#if selectedPage.authoring?.photo_motifs?.content}
-                        <section><span>Motive</span><p>{selectedPage.authoring.photo_motifs.content}</p></section>
+                      {#if selectedPage.authoring?.photo_place_reference?.content && !interestHasPlaceReference}
+                        <div class="photography-place-reference interest-legacy-shared"><span>Ort & Karte</span><strong>{selectedPage.authoring.photo_place_reference.content}</strong></div>
                       {/if}
-                      {#if selectedPage.authoring?.photo_guidance?.content}
-                        <section><span>Fotografischer Hinweis</span><p>{selectedPage.authoring.photo_guidance.content}</p></section>
-                      {/if}
-                    </div>
-
-                    {#if selectedPage.authoring?.photo_place_reference?.content}
-                      <div class="photography-place-reference">
-                        <span>Ort & Karte</span>
-                        <strong>{selectedPage.authoring.photo_place_reference.content}</strong>
-                      </div>
-                    {/if}
                     {/if}
                   </div>
                 {:else if selectedPage.destinationInterestKind === 'hiking_nature'}
-                  <div class="destination-interest-preview hiking-nature-experience" class:hiking-interest-compact={hikingInterestCompact}>
+                  <div class="destination-interest-preview hiking-nature-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule hiking-page-rule"></div>
                     <p class="eyebrow">Draußen unterwegs</p>
                     <h1>{preview.heading}</h1>
                     <p class="destination-interest-place">{journeyStage.title}</p>
                     <p class="preview-body">{selectedPage.authoring?.introduction?.content || 'Routen, Naturziele und praktische Orientierung für deine Zeit draußen.'}</p>
 
-                    {#if hikingInterestOverflow}
+                    {#if interestOverflow}
                       <div class="destination-capacity-stop hiking-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
                         <span>Mehr Raum nötig</span>
                         <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
-                        <small>Kürze die Vertiefung oder verteile sie später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
+                        <small>Studio verkleinert nicht weiter. Kürze eine Route oder verteile die Vertiefung später auf eine weitere Seite. Companion und Footer bleiben geschützt.</small>
                       </div>
                     {:else}
-                      <section class="hiking-routes" aria-label="Routen und Touren">
+                      <section class="interest-entry-section hiking-routes" aria-label="Routen und Touren">
                         <span class="hiking-section-label">Routen & Touren</span>
-                        <div class="hiking-route-list">
-                          {#if hikingRouteLines.length}
-                            {#each hikingRouteLines as route, index}
-                              {@const startPoint = hikingStartPointLines[index] || ''}
-                              {@const duration = hikingDurationLines[index] || ''}
-                              {@const difficulty = hikingDifficultyLines[index] || ''}
-                              {@const highlight = hikingHighlightLines[index] || ''}
-                              {@const guidance = hikingGuidanceLines[index] || ''}
-                              <article class="hiking-route-row">
-                                <span class="hiking-route-number">{String(index + 1).padStart(2, '0')}</span>
-                                <div class="hiking-route-copy">
-                                  <strong>{route.split('—')[0]?.trim()}</strong>
-                                  {#if route.includes('—')}<small>{route.split('—').slice(1).join('—').trim()}</small>{/if}
-                                  <div class="hiking-route-meta">
-                                    <span>{startPoint || 'Start offen'}</span>
-                                    <span>{duration || 'Dauer offen'}</span>
-                                    <span>{difficulty || 'Schwierigkeit offen'}</span>
+                        <div class={`interest-entry-grid interest-entry-${interestComposition}`}>
+                          {#if selectedInterestEntries.length}
+                            {#each selectedInterestEntries as entry, index (entry.id)}
+                              <article class="interest-entry-card hiking-entry-card">
+                                <div class="interest-entry-heading">
+                                  <span class="interest-entry-number">{String(index + 1).padStart(2, '0')}</span>
+                                  <div>
+                                    <strong>{entry.title}</strong>
+                                    {#if entry.fields.description}<small>{entry.fields.description}</small>{/if}
                                   </div>
-                                  {#if highlight || guidance}
-                                    <div class="hiking-route-details">
-                                      {#if highlight}<p><span>Aussicht & Naturziele</span>{highlight}</p>{/if}
-                                      {#if guidance}<p><span>Hinweise zur Strecke</span>{guidance}</p>{/if}
-                                    </div>
-                                  {/if}
                                 </div>
+                                <div class="hiking-route-meta">
+                                  <span>{entry.fields.startPoint || 'Start offen'}</span>
+                                  <span>{entry.fields.duration || 'Dauer offen'}</span>
+                                  <span>{entry.fields.difficulty || 'Schwierigkeit offen'}</span>
+                                </div>
+                                {#if entry.fields.highlights || entry.fields.guidance}
+                                  <div class="interest-entry-details hiking-route-details">
+                                    {#if entry.fields.highlights}<p><span>Aussicht & Naturziele</span>{entry.fields.highlights}</p>{/if}
+                                    {#if entry.fields.guidance}<p><span>Hinweise zur Strecke</span>{entry.fields.guidance}</p>{/if}
+                                  </div>
+                                {/if}
+                                {#if entry.fields.placeReference}<p class="interest-entry-place"><span>Ort & Karte</span>{entry.fields.placeReference}</p>{/if}
                               </article>
                             {/each}
                           {:else}
-                            <small class="hiking-empty">Noch keine Route notiert.</small>
+                            <small class="hiking-empty">Noch keine Route angelegt.</small>
                           {/if}
                         </div>
                       </section>
-
-                      {#if selectedPage.authoring?.hike_place_reference?.content}
-                        <div class="hiking-place-reference">
-                          <span>Ort & Karte</span>
-                          <strong>{selectedPage.authoring.hike_place_reference.content}</strong>
-                        </div>
+                      {#if selectedPage.authoring?.hike_place_reference?.content && !interestHasPlaceReference}
+                        <div class="hiking-place-reference interest-legacy-shared"><span>Ort & Karte</span><strong>{selectedPage.authoring.hike_place_reference.content}</strong></div>
                       {/if}
                     {/if}
                   </div>
@@ -1716,8 +1796,58 @@
           <span class="inspector-label">Deine Vertiefung</span>
           <strong>{destinationInterest.label}</strong>
           <small>{journeyStage.title} · {destinationInterest.description}</small>
-          <button type="button" class="destination-interest-remove" on:click={() => void removeSelectedDestinationInterest()} disabled={isLoading || authoringDirty}>Vertiefung entfernen</button>
-          {#if authoringDirty}<small>Sichere oder verwirf deine Änderungen, bevor du die Vertiefung entfernst.</small>{/if}
+          <button type="button" class="destination-interest-remove" on:click={() => void removeSelectedDestinationInterest()} disabled={isLoading || authoringDirty || interestEntryDirty}>Vertiefung entfernen</button>
+          {#if authoringDirty || interestEntryDirty}<small>Sichere oder verwirf deine Änderungen, bevor du die Vertiefung entfernst.</small>{/if}
+        </section>
+      {/if}
+
+      {#if selectedPage?.type === 'destination_interest' && selectedInterestEntrySchema}
+        <section class="inspector-card interest-entry-authoring-card" aria-label="Einträge dieser Vertiefung">
+          <span class="inspector-label">Inhalte</span>
+          <strong>{selectedInterestEntrySchema.singularLabel}</strong>
+          <small>Füge einen konkreten Eintrag hinzu. Studio hält zusammengehörige Angaben zusammen und entscheidet selbst über eine oder zwei Boxen.</small>
+
+          <div class="interest-entry-authoring-list">
+            {#each selectedInterestEntries as entry, index (entry.id)}
+              <div class="interest-entry-authoring-row">
+                <button type="button" on:click={() => beginInterestEntry(entry)} disabled={interestEntryDirty || authoringDirty || destinationDirty}>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{entry.title}</strong>
+                </button>
+                <button type="button" class="interest-entry-remove" on:click={() => void removeInterestEntry(entry.id)} disabled={interestEntryDirty || authoringDirty || destinationDirty}>Entfernen</button>
+              </div>
+            {/each}
+          </div>
+
+          {#if interestEntryDraft}
+            <div class="interest-entry-editor">
+              <div class="authoring-heading">
+                <span>{selectedInterestEntries.some((entry) => entry.id === interestEntryDraft?.id) ? 'Bearbeiten' : 'Neu'}</span>
+                <strong>{selectedInterestEntrySchema.singularLabel}</strong>
+              </div>
+              <label>
+                <span>{selectedInterestEntrySchema.titleLabel}</span>
+                <input value={interestEntryDraft.title} on:input={updateInterestEntryTitle} placeholder={selectedInterestEntrySchema.titlePlaceholder} />
+              </label>
+              {#each selectedInterestEntrySchema.fields as field}
+                <label>
+                  <span>{field.label}</span>
+                  {#if field.multiline}
+                    <textarea rows="3" value={interestEntryDraft.fields[field.id] ?? ''} on:input={(event) => updateInterestEntryField(field.id, event)} placeholder={field.placeholder}></textarea>
+                  {:else}
+                    <input value={interestEntryDraft.fields[field.id] ?? ''} on:input={(event) => updateInterestEntryField(field.id, event)} placeholder={field.placeholder} />
+                  {/if}
+                </label>
+              {/each}
+              <div class="interest-entry-editor-actions">
+                <button type="button" on:click={cancelInterestEntry}>Abbrechen</button>
+                <button type="button" class="authoring-save" on:click={() => void saveInterestEntry()} disabled={interestEntrySaveState === 'saving'}>{interestEntrySaveState === 'saving' ? 'Sichern …' : 'Eintrag sichern'}</button>
+              </div>
+              {#if interestEntryDirty}<small class="saveDirty">● Nicht gesichert</small>{/if}
+            </div>
+          {:else}
+            <button type="button" class="interest-entry-add" on:click={() => beginInterestEntry()} disabled={authoringDirty || destinationDirty}>{`+ ${selectedInterestEntrySchema.addLabel}`}</button>
+          {/if}
         </section>
       {/if}
 
@@ -1815,7 +1945,7 @@
           <small>Wähle den Teil der Geschichte, an dem du gerade arbeiten möchtest.</small>
 
           <div class="story-component-list">
-            {#each storyPresent as component}
+            {#each visibleStoryPresent as component}
               <button
                 class="story-component-row story-component-present story-component-action"
                 class:active={activeAuthoringComponent === component.type}
@@ -1886,14 +2016,14 @@
           {/if}
 
           <div class="authoring-progress">
-            <span>Story Fortschritt</span>
-            <strong>{authoredCount} von {storyPresent.length} Story-Elementen authoriert · {authoringProgress}%</strong>
+            <span>{structuredInterestPage ? 'Vertiefung' : 'Story Fortschritt'}</span>
+            <strong>{structuredInterestPage ? `${selectedInterestEntries.length} ${selectedInterestEntrySchema?.singularLabel ?? 'Einträge'} angelegt` : `${authoredCount} von ${storyPresent.length} Story-Elementen authoriert · ${authoringProgress}%`}</strong>
           </div>
 
-          {#if storyAvailable.length > 0}
+          {#if visibleStoryAvailable.length > 0}
             <div class="story-optional">
               <span>Optional möglich</span>
-              <strong>{storyAvailable.map((component) => component.label).join(' · ')}</strong>
+              <strong>{visibleStoryAvailable.map((component) => component.label).join(' · ')}</strong>
             </div>
           {/if}
 

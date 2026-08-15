@@ -1,3 +1,5 @@
+> **Build 028 · Interest Entry Authoring Fix:** Interest Pages werden jetzt über wiederholbare semantische Einträge authoriert: „Fotospot hinzufügen“, „Route hinzufügen“ usw. Erst danach öffnet sich die passende Maske. Studio entscheidet selbst zwischen einer gemeinsamen oder zwei Editorial-Boxen und nutzt kompakte Typografie nur bei echtem Platzdruck. Text-Clipping ist unzulässig; Companion und Footer bleiben harte Anker.
+
 > **Build 028 · Hiking & Nature Polish:** Route, Start, Dauer, Schwierigkeit, Naturziel und Streckenhinweis bleiben jetzt als ein Tourenmodul zusammen. Companion und Footer sind harte Anker. Nur Interest Pages dürfen für dichte Praxisinhalte auf eine definierte kompakte Sekundärtypografie wechseln; alle anderen Seiten sind ausdrücklich ausgeschlossen.
 
 > **Build 026 · World Expression Polish:** Thematische Vertiefungsseiten erben jetzt die vollständige Editorial-World-Expression. Die Seite bleibt weiß; Fjord bzw. Ostsee prägen Typografie, Akzente und redaktionelle Flächen.
@@ -14,14 +16,14 @@
 
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 028 – Hiking & Nature Experience · Polish
+**Aktueller Stand:** Build 028 – Interest Entry Authoring Fix
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
-**Studio:** 0.26.0-alpha.1
-**Projektformat:** `.nls` 0.13.0
+**Studio:** 0.28.0-alpha.3
+**Projektformat:** `.nls` 0.14.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -410,3 +412,7 @@ Die dünne Editorial-Linie bleibt erhalten, wird für Photography Interest Pages
 Build 028 macht **Wandern & Natur** zum zweiten fachlich ausgebauten Destination-Interest-Archetyp. Routen und Touren stehen im Mittelpunkt; Startpunkt, Dauer und Schwierigkeit bleiben in der Seitenkomposition direkt der jeweiligen Route zugeordnet. Aussichtspunkte/Naturziele, Streckenhinweise und ein optionaler Karten-/Ortsbezug ergänzen die Reisebegleitung. Studio bleibt bewusst kein GPX-Manager und kein Outdoor-Navigator.
 
 Die aktive Editorial World, die weiße Grundseite, Companion-/Footer-Safe-Zonen und Capacity Protection gelten unverändert. Das `.nls`-Format steigt auf **0.13.0**. Projekte aus Build 027 / 0.12.0 werden beim Öffnen migriert; bestehende Wandern-&-Natur-Seiten erhalten die neuen Story Components, ohne dass Studio Inhalte erfindet.
+### Build 028 · Inspector UX Language Fix
+
+Interest-Einträge folgen nun auch im Inspector der Northern-Lines-UX-Language: Einträge und „+ … hinzufügen“-Aktionen bleiben präsent, aber ruhig; Entfernen ist klar sekundär. Die Begleiter-Statuswerte Platz/Pose/Spiegelung sind auf Labelgröße reduziert, sauber ausgerichtet und nur über Fettschrift hervorgehoben. Keine Änderung am `.nls`-Format.
+
