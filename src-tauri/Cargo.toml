@@ -1,6 +1,6 @@
 [package]
 name = "northern-lines-studio"
-version = "0.28.0-alpha.3"
+version = "0.31.0-alpha.1"
 description = "Northern Lines Studio – Travel Publishing workspace"
 authors = ["Northern Lines"]
 edition = "2021"

@@ -1,3 +1,5 @@
+> **Build 031 · Travel Companion Foundation: Licht:** Studio führt wiederverwendbare Travel Companion Pages als dritte Seitengattung ein. Die Seite „Licht“ enthält einen kuratierten, recherchierten Northern-Lines-Kern zu Goldenem Licht, Blauer Stunde, ziviler Dämmerung und bedecktem Himmel. Nur ein kurzer optionaler Reisehinweis wird projektspezifisch authoriert; orts- und datumsabhängige Sonnenzeiten bleiben ausdrücklich außerhalb des statischen Kerns.
+
 > **Build 029 · Interest Page Header & Intro Fix:** Interest Pages nennen das Interest nur noch einmal als blauen Seitenanker. Der Ort ist der Seitentitel; die Einleitung ist direkt im Vertiefungs-Inspector editierbar. `Wandern & Natur` ist der kanonische Anker. Die Änderung gilt für alle Interest-Archetypen und spart vertikalen Seitenraum.
 
 > **Build 028 · Interest Entry Authoring Fix:** Interest Pages werden jetzt über wiederholbare semantische Einträge authoriert: „Fotospot hinzufügen“, „Route hinzufügen“ usw. Erst danach öffnet sich die passende Maske. Studio entscheidet selbst zwischen einer gemeinsamen oder zwei Editorial-Boxen und nutzt kompakte Typografie nur bei echtem Platzdruck. Text-Clipping ist unzulässig; Companion und Footer bleiben harte Anker.
@@ -18,14 +20,14 @@
 
 > **Build 025B · Ostsee Editorial World PoC:** Northern Lines Studio besitzt erstmals zwei freigegebene Editorial Worlds. Fjord und Ostsee teilen dieselbe adaptive Layout Grammar und dieselben semantischen Signets; Typografie, Palette, Extension Expression und Companion wechseln world-spezifisch. Der Wechsel ist persistent und verändert keine Reiseinhalte. Build 024 wird damit zugleich als Milestone Build dokumentiert.
 
-**Aktueller Stand:** Build 029 – Culture & History Experience + Interest Page Header & Intro Fix
+**Aktueller Stand:** Build 031 – Travel Companion Foundation: Licht
 
 > **Build 025A – Bude ausgekehrt:** Der freigegebene Build-024-Stand bleibt visuell und semantisch unverändert. Das gewachsene CSS wurde nach Verantwortlichkeiten modularisiert und bekannte historische Overrides wurden in autoritative Grammar-Regeln konsolidiert. Diese Phase schafft die saubere technische Basis für Build 025B – Ostsee Editorial World PoC.
 
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
-**Studio:** 0.29.0-alpha.2
-**Projektformat:** `.nls` 0.14.0
+**Studio:** 0.31.0-alpha.1
+**Projektformat:** `.nls` 0.15.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und

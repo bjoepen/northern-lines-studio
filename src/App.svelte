@@ -40,6 +40,7 @@
   import { DESTINATION_INTEREST_DEFINITIONS, destinationInterestDefinition, destinationInterestKindsForStage, destinationInterestLabel } from './lib/destination-interests';
   import { emptyInterestEntry, interestEntryContentLength, interestEntrySchema, interestPageLayoutState } from './lib/destination-interests/entries';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
+  import { CURATED_LIGHT_GUIDANCE, CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -780,6 +781,14 @@
     authoringSaveState = 'idle';
   }
 
+  function closeAuthoringPanel() {
+    if (authoringDirty) return;
+    activeAuthoringComponent = null;
+    authoringDraft = '';
+    authoringStatus = 'empty';
+    authoringSaveState = 'idle';
+  }
+
   async function saveAuthoring(): Promise<boolean> {
     if (!project || !selectedPage || !activeAuthoringComponent) return false;
     authoringSaveState = 'saving';
@@ -1292,6 +1301,7 @@
               class:hiking-nature-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'hiking_nature'}
               class:culture-history-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culture_history'}
               class:culinary-local-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culinary_local'}
+              class:light-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1570,6 +1580,31 @@
                     <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
                   </div>
                 {/if}
+              {:else if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
+                <div class="light-companion-preview">
+                  <div class="page-rule light-companion-page-rule"></div>
+                  <p class="eyebrow">Reisebegleitung</p>
+                  <h1>Licht</h1>
+                  <p class="light-companion-deck">Natürliches Licht verändert Stimmung, Farbe und Tiefe eines Motivs. Diese Seite bleibt bewusst allgemein: Sie begleitet jedes Travelbook mit kuratiertem Wissen, statt dieselben Grundlagen für jede Reise neu zu erzählen.</p>
+                  {#if selectedPage.authoring?.introduction?.content?.trim()}
+                    <p class="light-companion-journey-note"><span>Für diese Reise</span>{selectedPage.authoring.introduction.content}</p>
+                  {/if}
+
+                  <div class="light-phase-grid" aria-label="Kuratiertes Wissen zu Lichtphasen">
+                    {#each CURATED_LIGHT_PHASES as phase (phase.id)}
+                      <section class="light-phase-card">
+                        <header><strong>{phase.label}</strong><small>{phase.orientation}</small></header>
+                        <p>{phase.description}</p>
+                        <p>{phase.photography}</p>
+                      </section>
+                    {/each}
+                  </div>
+
+                  <section class="light-companion-guidance" aria-label="Für unterwegs">
+                    <span class="light-companion-section-label">Für unterwegs</span>
+                    <ul>{#each CURATED_LIGHT_GUIDANCE as guidance}<li>{guidance}</li>{/each}</ul>
+                  </section>
+                </div>
               {:else}
                 <div class="page-rule"></div>
                 <p class="eyebrow">{preview.eyebrow}</p>
@@ -1966,6 +2001,34 @@
         </section>
       {/if}
 
+      {#if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
+        <section class="inspector-card light-companion-inspector" aria-label="Reisebegleitung Licht">
+          <span class="inspector-label">Reisebegleitung</span>
+          <strong>Licht</strong>
+          <small>Der kuratierte Kern ist Teil von Northern Lines und wird wiederverwendet. Ergänze nur, was für diese konkrete Reise wichtig ist.</small>
+          <div class="light-companion-curated-facts">
+            <span>Kernwissen</span><strong>kuratiert</strong>
+            <span>Lichtphasen</span><strong>{CURATED_LIGHT_PHASES.length} vorhanden</strong>
+            <span>Reisebezug</span><strong>optional</strong>
+          </div>
+          <div class="light-companion-inspector-note">
+            <span class="inspector-label">Für diese Reise</span>
+            {#if activeAuthoringComponent === 'introduction'}
+              <textarea bind:value={authoringDraft} rows="3" placeholder="Zum Beispiel: Im norwegischen Sommer bleiben die Übergänge lange weich." aria-label="Reisehinweis zu Licht"></textarea>
+              <div class="interest-introduction-actions">
+                <button type="button" class="interest-entry-back" on:click={closeAuthoringPanel} disabled={authoringDirty}>Zurück</button>
+                <button type="button" class="authoring-save" on:click={saveAuthoring} disabled={authoringSaveState === 'saving'}>{authoringSaveState === 'saving' ? 'Sichern …' : 'Hinweis sichern'}</button>
+              </div>
+              {#if authoringDirty}<small class="authoring-context-hint">Sichere deinen Hinweis, bevor du zurückgehst.</small>{/if}
+              <small class:saveOk={authoringSaveState === 'saved'} class:saveDirty={authoringDirty}>{authoringDirty ? '● Nicht gesichert' : authoringSaveState === 'saved' ? 'Gespeichert' : 'Bereit zum Bearbeiten'}</small>
+            {:else}
+              {#if selectedPage.authoring?.introduction?.content?.trim()}<p>{selectedPage.authoring.introduction.content}</p>{/if}
+              <button type="button" class="interest-introduction-edit" on:click={() => editStoryComponent('introduction')}>{selectedPage.authoring?.introduction?.content?.trim() ? 'Hinweis bearbeiten' : '+ Reisehinweis ergänzen'}</button>
+            {/if}
+          </div>
+        </section>
+      {/if}
+
       {#if editorialWorld && selectedPage?.type !== 'destination'}
         <section class="inspector-card world-inspector-card">
           <span class="inspector-label">Reference World</span>
@@ -2053,7 +2116,7 @@
         </section>
       {/if}
 
-      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage}
+      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage && !(selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light')}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
           <strong>Deine Geschichte</strong>

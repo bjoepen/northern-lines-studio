@@ -12,7 +12,7 @@ export const storyComponentDefinitions: Readonly<Record<EditorialComponentId, St
   knowledge: { type: 'knowledge', role: 'knowledge', description: 'Bringt kuratiertes Northern-Lines-Wissen in die Seite.' },
   souvenirs: { type: 'souvenirs', role: 'practical', description: 'Ergänzt regionale Mitbringsel und persönliche Reiseideen.' },
   qr: { type: 'qr', role: 'orientation', description: 'Verbindet die gedruckte Seite mit einem konkreten digitalen Ziel.' },
-  light_phases: { type: 'light_phases', role: 'photography', description: 'Ordnet Lichtphasen als fotografische und emotionale Orientierung.' },
+  light_phases: { type: 'light_phases', role: 'knowledge', description: 'Bewahrt kuratiertes Northern-Lines-Wissen zu Lichtphasen als wiederverwendbare Reisebegleitung.' },
   weather_guidance: { type: 'weather_guidance', role: 'practical', description: 'Macht Wetterbedingungen als Teil der Reise verständlich.' },
   workflow_steps: { type: 'workflow_steps', role: 'workflow', description: 'Bewahrt einen wiederverwendbaren fotografischen Arbeitsablauf.' },
   workflow_tip: { type: 'workflow_tip', role: 'workflow', description: 'Ergänzt einen kurzen praxiserprobten Hinweis zum Workflow.' },

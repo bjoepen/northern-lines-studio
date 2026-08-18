@@ -19,7 +19,7 @@ must(css, '.interest-entry-grid.interest-entry-stacked', 'Separate stacked-entry
 must(css, '.interest-density-tight', 'Bounded Interest compact state is missing.');
 must(rust, 'fn migrate_interest_entries', 'Legacy line authoring needs a loss-preserving structured migration.');
 must(rust, 'fn save_interest_entries', 'Rust structured entry command is missing.');
-must(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.14.0";', 'Structured Interest entries must use .nls 0.14.0.');
+must(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.15.0";', 'Structured Interest entries remain supported in current .nls format.');
 must(dna, 'Der Nutzer beschreibt den Eintrag. Studio komponiert die Darstellung.', 'Product DNA must state the structured authoring principle.');
 console.log('Interest Entry Authoring Consistency Gate: \x1b[32mPASS\x1b[0m');
 console.log('Add entry → semantic form → adaptive composition → persistence');

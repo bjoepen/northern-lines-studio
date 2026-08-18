@@ -1,0 +1,160 @@
+/* Build 031 — Travel Companion Foundation: Licht */
+.a5-page.light-companion-page {
+  background: #fff;
+}
+
+.light-companion-preview {
+  position: relative;
+  height: 100%;
+  padding: 54px 44px 72px;
+  box-sizing: border-box;
+  color: var(--world-ink);
+}
+
+.light-companion-page-rule {
+  width: 58px;
+  height: 1px;
+  margin-bottom: 12px;
+  background: color-mix(in srgb, var(--world-accent) 70%, transparent);
+}
+
+.light-companion-preview .eyebrow {
+  margin: 0 0 5px;
+  color: var(--world-accent);
+}
+
+.light-companion-preview h1 {
+  margin: 0;
+  max-width: 78%;
+}
+
+.light-companion-deck {
+  margin: 9px 0 0;
+  max-width: 82%;
+  font-family: var(--world-body-family);
+  font-size: 12px;
+  line-height: 1.42;
+  color: var(--world-quiet);
+}
+
+.light-companion-journey-note {
+  margin: 13px 0 0;
+  max-width: 82%;
+  padding-left: 11px;
+  border-left: 2px solid color-mix(in srgb, var(--world-accent) 42%, transparent);
+  font-family: var(--world-body-family);
+  font-size: 10px;
+  line-height: 1.42;
+  color: var(--world-ink);
+}
+
+.light-companion-journey-note span,
+.light-companion-section-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 7.6px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--world-accent);
+}
+
+.light-phase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 19px;
+}
+
+.light-phase-card {
+  min-height: 112px;
+  padding: 11px 12px 10px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--world-accent) 7%, #fff);
+}
+
+.light-phase-card header {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 7px;
+}
+
+.light-phase-card header strong {
+  font-family: var(--world-heading-family);
+  font-size: 11.25px;
+  line-height: 1.2;
+  color: var(--world-ink);
+}
+
+.light-phase-card header small {
+  font-family: var(--world-body-family);
+  font-size: 7.8px;
+  line-height: 1.25;
+  color: var(--world-accent);
+}
+
+.light-phase-card p {
+  margin: 0 0 5px;
+  font-family: var(--world-body-family);
+  font-size: 8.2px;
+  line-height: 1.34;
+  color: var(--world-ink);
+}
+
+.light-phase-card p:last-child {
+  margin-bottom: 0;
+  color: var(--world-quiet);
+}
+
+.light-companion-guidance {
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+}
+
+.light-companion-guidance ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.light-companion-guidance li {
+  font-family: var(--world-body-family);
+  font-size: 7.7px;
+  line-height: 1.34;
+  color: var(--world-quiet);
+}
+
+.baltic-page .light-phase-card {
+  background: color-mix(in srgb, var(--baltic-sand, #e7d5bd) 48%, #fff);
+}
+
+.light-companion-inspector-note {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.light-companion-inspector-note textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.light-companion-curated-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.light-companion-curated-facts span {
+  color: var(--world-quiet, #75868e);
+}
+
+.light-companion-curated-facts strong {
+  font-weight: 650;
+}

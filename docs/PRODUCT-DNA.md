@@ -1950,3 +1950,23 @@ Eine Interest Page darf nicht allein wegen einer abstrakten Zeichenanzahl, einer
 - Erst wenn keine zulässige Komposition in `comfortable` bzw. der einen erlaubten Interest-Page-Stufe `tight` geometrisch passt, folgt `overflow`.
 
 Der verbindliche Regressionstest ist **Geiranger · Wandern & Natur** mit den beiden Routen `Fosseråsa → Storsæterfossen` und `Skagehola → Skageflå → Homlong`. Der vollständige Hinweis `Sehr steile und teilweise ausgesetzte Abschnitte; Trittsicherheit erforderlich.` darf allein keinen Overflow auslösen.
+
+## Build 031 · Travel Companion Pages
+
+Northern Lines Studio unterscheidet verbindlich drei redaktionelle Seitengattungen:
+
+- **Destination Pages** erzählen den Ort.
+- **Interest Pages** vertiefen ein persönliches Interesse am Ort.
+- **Travel Companion Pages** bewahren kuratiertes, wiederverwendbares Wissen, das viele oder alle Travelbooks begleitet.
+
+> **Wiederkehrendes Wissen wird nicht bei jeder Reise neu erfunden. Es wird kuratiert, belegt und ruhig wiederverwendet.**
+
+Travel Companion Pages dürfen einen kurzen, optionalen reisespezifischen Hinweis tragen. Dieser Hinweis ergänzt den kuratierten Kern, ersetzt ihn aber nicht. Destination-spezifische oder datumsabhängige Aussagen dürfen nicht als allgemeine Wahrheit in den Kern eingebrannt werden.
+
+Für kuratierte Companion-Inhalte gilt zusätzlich:
+
+1. Aussagen müssen auf belastbaren Quellen beruhen.
+2. Quellenherkunft wird intern dokumentiert und bleibt mit dem kuratierten Inhalt nachvollziehbar.
+3. Colloquiale Begriffe wie Goldene oder Blaue Stunde werden nicht als astronomisch exakt definiert dargestellt.
+4. Zeit- und ortsabhängige Werte gehören in eine spätere date/location-aware Ebene, nicht in statischen Companion-Text.
+5. Die globalen Content-Fit-, Safe-Zone- und Composition-Regeln gelten unverändert. Travel Companion Pages erhalten keine Sondererlaubnis für Clipping oder freie Typografie-Skalierung.
