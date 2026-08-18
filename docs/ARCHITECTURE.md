@@ -186,3 +186,10 @@ For structured two-entry content the shared Interest grammar evaluates balanced 
 A layout candidate is invalid if it requires clipping, arbitrary typography scaling, content overflow beyond its editorial surface, or borrowing Companion/Footer safe zones. Density is evaluated only after candidate composition. If the finite grammar is exhausted, the page reports overflow.
 
 Structured semantic entries remain separate layout units. The renderer must not collapse unrelated entries into one generic catch-all box merely to simplify placement. This implements the editorial rule: **Nicht sammeln, sondern erzählen.**
+
+
+## Build 031 — Travel Companion Content Boundary
+
+Travel Companion Pages are a first-class editorial page category for reusable Northern Lines knowledge. Their curated core lives in Studio code/content resources, not in destination data and not as duplicated authoring inside every `.nls` project. A project may persist only explicitly travel-specific additions such as the optional `introduction` note on the Light companion page.
+
+The rule is: **curated truth is product content; personal travel context is project content.** Date/location-dependent calculations remain a future service layer and must not be hard-coded as static truth.

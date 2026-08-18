@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.14.0
+**Current format:** `.nls` 0.15.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -238,7 +238,7 @@ The `hiking_nature` destination-interest archetype gains dedicated Story Compone
 
 Opening a Build-027 project updates `formatVersion` to 0.13.0. Existing `hiking_nature` interest pages receive the Build-028 component declarations. Existing content, Photography pages, Journey, Destination data, World selection and extensions remain unchanged; the migration invents no hiking content.
 
-## Build 028 Structured Interest Entry Authoring Fix (`0.14.0`)
+## Build 028 Structured Interest Entry Authoring Fix (`0.15.0`)
 
 Interest Pages persist repeated semantic entries directly on the page as `interestEntries`. The entry owns the fields that belong together; layout geometry is not stored.
 
@@ -273,13 +273,24 @@ Allowed entry kinds in the shared Foundation are:
 
 Each entry stores semantic text only. One-box/two-box composition, `comfortable`/`tight` density, World colours, Companion position and Footer geometry remain derived Grammar/World responsibilities.
 
-### Migration 0.13.0 → 0.14.0
+### Migration 0.13.0 → 0.15.0
 
 Opening a Build-028/0.13.0 project creates structured entries from the existing line-based Photography and Hiking authoring data. Matching rows are associated by their existing order. The legacy authoring content remains in the project for lossless compatibility; Studio does not invent new travel content. New edits use the structured entry model.
 
 
-## Build 029 – Culture & History Experience (`0.14.0`)
-No format migration is required. Build 029 uses the existing structured `interestEntries` model introduced with 0.14.0. `culture_history` entries use kind `culture_place`; their field map may contain `category`, `why`, `guidance`, `timeReference`, and `placeReference`. Missing optional fields remain absent/empty; Studio invents no cultural content.
+## Build 029 – Culture & History Experience (`0.15.0`)
+No format migration is required. Build 029 uses the existing structured `interestEntries` model introduced with 0.15.0. `culture_history` entries use kind `culture_place`; their field map may contain `category`, `why`, `guidance`, `timeReference`, and `placeReference`. Missing optional fields remain absent/empty; Studio invents no cultural content.
 
-## Build 030 – Culinary & Local Experience (`0.14.0`)
+## Build 030 – Culinary & Local Experience (`0.15.0`)
 `culinary_recommendation` uses the existing `DestinationInterestEntry` structure. Typical semantic field keys are `category`, `why`, `try`, `guidance`, `timePrice`, and `placeReference`. No migration is required because `fields` is an extensible string map.
+
+
+## 0.15.0 — Travel Companion Foundation
+
+Existing `knowledge` pages with `knowledgeType: "photography_light"` are normalized to the Light Travel Companion component contract:
+
+```json
+["title", "light_phases", "photography", "introduction"]
+```
+
+`introduction` is optional project-specific context (`Für diese Reise`). The curated Light core is deliberately **not duplicated into project.json**. Build 030 / 0.14.0 projects migrate without inventing an introduction.

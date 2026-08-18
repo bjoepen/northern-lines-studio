@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
-const CURRENT_FORMAT_VERSION: &str = "0.14.0";
+const CURRENT_FORMAT_VERSION: &str = "0.15.0";
+const BUILD_030_FORMAT_VERSION: &str = "0.14.0";
 const BUILD_028_FORMAT_VERSION: &str = "0.13.0";
 const BUILD_027_FORMAT_VERSION: &str = "0.12.0";
 const BUILD_026_FORMAT_VERSION: &str = "0.11.0";
@@ -315,7 +316,7 @@ fn infer_components(page: &StudioPage) -> Vec<String> {
         "destination_interest" if page.destination_interest_kind.as_deref() == Some("photography") => &["title", "introduction", "photo_spots", "photo_light", "photo_motifs", "photo_guidance", "photo_focal_lengths", "photo_place_reference"],
         "destination_interest" if page.destination_interest_kind.as_deref() == Some("hiking_nature") => &["title", "introduction", "hike_routes", "hike_start_points", "hike_durations", "hike_difficulties", "hike_highlights", "hike_guidance", "hike_place_reference"],
         "destination_interest" => &["title", "introduction"],
-        "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["hero", "title", "light_phases", "photography", "quote"],
+        "knowledge" if page.knowledge_type.as_deref() == Some("photography_light") => &["title", "light_phases", "photography", "introduction"],
         "knowledge" if page.knowledge_type.as_deref() == Some("travel_weather") => &["hero", "title", "weather_guidance", "photography"],
         "workflow" => &["title", "workflow_steps", "workflow_tip"],
         "notes" => &["title", "notes_area"],
@@ -516,9 +517,21 @@ fn ensure_interest_entries(project: &mut StudioProject) {
     }
 }
 
+
+fn ensure_light_companion_components(project: &mut StudioProject) {
+    for page in project.page_manifest.iter_mut().filter(|page| page.page_type == "knowledge" && page.knowledge_type.as_deref() == Some("photography_light")) {
+        page.components = infer_components(page);
+    }
+}
+
 fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> {
     match project.format_version.as_str() {
         CURRENT_FORMAT_VERSION => { ensure_interest_entries(&mut project); }
+        BUILD_030_FORMAT_VERSION => {
+            project.migrated_from_version = Some(BUILD_030_FORMAT_VERSION.into());
+            project.format_version = CURRENT_FORMAT_VERSION.into();
+            ensure_interest_entries(&mut project);
+        }
         BUILD_028_FORMAT_VERSION => {
             project.migrated_from_version = Some(BUILD_028_FORMAT_VERSION.into());
             project.format_version = CURRENT_FORMAT_VERSION.into();
@@ -639,6 +652,7 @@ fn migrate_project(mut project: StudioProject) -> Result<StudioProject, String> 
     ensure_journey_planning_page(&mut project);
     ensure_destination_profiles(&mut project);
     ensure_interest_entries(&mut project);
+    ensure_light_companion_components(&mut project);
     project.legacy_editorial_world = None;
     Ok(project)
 }
@@ -1542,6 +1556,7 @@ mod tests {
             edition: Some("1.0".into()),
             language: "de".into(),
             editorial_world_id: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_030_FORMAT_VERSION
                 || version == BUILD_026_FORMAT_VERSION
                 || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
@@ -1557,6 +1572,7 @@ mod tests {
                 None
             },
             legacy_editorial_world: if version == CURRENT_FORMAT_VERSION
+                || version == BUILD_030_FORMAT_VERSION
                 || version == BUILD_026_FORMAT_VERSION
                 || version == BUILD_025_FORMAT_VERSION
                 || version == BUILD_023_FORMAT_VERSION
@@ -1596,7 +1612,7 @@ mod tests {
                         kind: "destination".into(),
                         title: "Bergen".into(),
                         country: Some("Norway".into()),
-                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
+                        destination_id: (version == CURRENT_FORMAT_VERSION || version == BUILD_030_FORMAT_VERSION || version == BUILD_026_FORMAT_VERSION || version == BUILD_025_FORMAT_VERSION || version == BUILD_023_FORMAT_VERSION || version == BUILD_021_FORMAT_VERSION).then(|| "destination-bergen".into()),
                     }],
                 })
             } else {
