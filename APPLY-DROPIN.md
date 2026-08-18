@@ -1,18 +1,12 @@
-# APPLY DROP-IN — Northern Lines Studio Build 031 Fix
+# APPLY DROP-IN — Northern Lines Studio Build 031 Page Geometry Regression Fix
 
-This polish fix refines **Travel Companion · Licht** so the page follows Northern Lines more closely:
-
-- removes the redundant top rule and the extra `Reisebegleitung` eyebrow
-- gives **Licht** a calmer, more compact headline treatment
-- reduces empty space above the content
-- arranges the curated light modules in a quieter, denser editorial composition
-- keeps Companion and Footer protected
+This fix removes the accidental second inner safe-zone from the Travel Companion page `Licht`.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b fix/build-031-light-layout-polish
+git checkout -b fix/build-031-page-geometry
 ```
 
 ## 2. Dry Run
@@ -21,15 +15,17 @@ Assuming the ZIP was unpacked in `~/Downloads`:
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-031-Light-Layout-Polish-Fix-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-031-Page-Geometry-Regression-Fix-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
+
+Expected changed/new areas are limited to the Light layout, its consistency gate and documentation.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-031-Light-Layout-Polish-Fix-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-031-Page-Geometry-Regression-Fix-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -40,13 +36,13 @@ cd ~/Projekte/northern-lines-studio
 pnpm run consistency:travel-companion-light
 ```
 
-Expected result:
+Expected:
 
 ```text
 Travel Companion · Licht Consistency Gate: PASS
 ```
 
-`PASS` should appear in green.
+`PASS` must appear in green.
 
 ## 5. Full Gates
 
@@ -65,13 +61,13 @@ cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Expected app target:
+Expected target:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
-Manual fallback if required:
+Manual fallback:
 
 ```bash
 pnpm tauri build --bundles app
@@ -79,18 +75,19 @@ pnpm tauri build --bundles app
 
 ## 7. Real-World Test
 
-1. Open a travelbook and select **Licht**.
-2. Verify the page starts directly with **Licht** and no longer shows the redundant eyebrow.
-3. Confirm the top rule is gone and the upper whitespace feels tighter.
-4. Confirm the curated modules present a compact three-across composition with the fourth module in a calmer supporting row.
-5. Verify Companion and Footer remain untouched.
-6. Add an optional note under **Für diese Reise**, save, close, and reopen.
-7. Confirm the note persists and the base curated knowledge remains unchanged.
+1. Open `Bergen` and note the real usable A5 content width.
+2. Switch to `Licht`.
+3. Confirm that `Licht` now uses the same physical A5 content box and does not appear as a smaller page inside the page.
+4. Confirm there is no additional all-around inner safe-zone.
+5. Confirm the three top knowledge cards use the available width cleanly.
+6. Confirm `Bedeckter Himmel` uses the next row without crowding Companion or Footer.
+7. Switch Fjord ↔ Ostsee and verify World Expression remains intact.
+8. Verify no clipping or overflow.
 
 ## 8. Commit & Push
 
 ```bash
 git add .
-git commit -m "fix: polish travel companion light layout"
-git push -u origin fix/build-031-light-layout-polish
+git commit -m "fix: restore shared A5 geometry for light companion"
+git push -u origin fix/build-031-page-geometry
 ```

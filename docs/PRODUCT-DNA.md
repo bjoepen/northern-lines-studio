@@ -1970,3 +1970,19 @@ Für kuratierte Companion-Inhalte gilt zusätzlich:
 3. Colloquiale Begriffe wie Goldene oder Blaue Stunde werden nicht als astronomisch exakt definiert dargestellt.
 4. Zeit- und ortsabhängige Werte gehören in eine spätere date/location-aware Ebene, nicht in statischen Companion-Text.
 5. Die globalen Content-Fit-, Safe-Zone- und Composition-Regeln gelten unverändert. Travel Companion Pages erhalten keine Sondererlaubnis für Clipping oder freie Typografie-Skalierung.
+
+## Build 031 Fix · Page Geometry ist einmalig, nicht verschachtelt
+
+Die physische A5-Seite besitzt bereits ihre verbindliche Seitengeometrie. Einzelne Seitentypen dürfen innerhalb dieser Geometrie **keine zweite pauschale, umlaufende Safe-Zone** erzeugen.
+
+> **Safe-Zones sind semantisch, nicht dekorativ.**
+
+Verbindlich gilt:
+
+- die Bindungsreserve wirkt nur dort, wo sie physisch erforderlich ist;
+- Companion- und Footer-Zonen bleiben eigene harte Schutzbereiche;
+- Seitentypen dürfen nicht zusätzlich rundum Innenabstand reservieren und dadurch die nutzbare A5-Fläche künstlich verkleinern;
+- Content Fit wird innerhalb der gemeinsamen Seitengeometrie bewertet;
+- Ruhe entsteht durch Komposition und Hierarchie, nicht durch das Schrumpfen der nutzbaren Seite.
+
+**Regressionstest:** Die Travel-Companion-Seite `Licht` muss dieselbe physische A5-Content-Fläche nutzen können wie eine Destination Page wie `Bergen`. Eine zweite innere Rahmengeometrie ist unzulässig.

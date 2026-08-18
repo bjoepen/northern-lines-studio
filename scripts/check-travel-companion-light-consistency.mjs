@@ -15,9 +15,10 @@ const checks = [
   ['travel-specific note uses introduction semantics', grammar.includes("optional('introduction', 'Für diese Reise')")],
   ['Build 030 migrates to 0.15.0', rust.includes('const CURRENT_FORMAT_VERSION: &str = "0.15.0";') && rust.includes('const BUILD_030_FORMAT_VERSION: &str = "0.14.0";')],
   ['light components are normalized on migration', rust.includes('ensure_light_companion_components') && rust.includes('["title", "light_phases", "photography", "introduction"]')],
-  ['light page follows compact editorial layout', css.includes('padding: 38px 44px 72px') && css.includes('grid-template-columns: repeat(3, minmax(0, 1fr));')],
+  ['light page follows shared A5 geometry', css.includes('padding: 0;') && css.includes('grid-template-columns: repeat(3, minmax(0, 1fr));')],
   ['light preview no longer introduces extra page rule or redundant eyebrow', !app.includes('light-companion-page-rule') && !app.includes('<p class="eyebrow">Reisebegleitung</p>')],
   ['Product DNA records reusable companion principle', dna.includes('Travel Companion Pages') && dna.includes('kuratiertes, wiederverwendbares Wissen')],
+  ['Product DNA forbids nested page safe zones', dna.includes('Page Geometry ist einmalig, nicht verschachtelt') && dna.includes('Safe-Zones sind semantisch, nicht dekorativ')],
   ['Native HTML default controls not introduced in light page', !app.includes('<button>Abbrechen</button>')]
 ];
 

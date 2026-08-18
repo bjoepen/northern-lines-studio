@@ -6,7 +6,7 @@
 .light-companion-preview {
   position: relative;
   height: 100%;
-  padding: 38px 44px 72px;
+  padding: 0;
   box-sizing: border-box;
   color: var(--world-ink);
 }
@@ -14,15 +14,15 @@
 .light-companion-preview h1 {
   margin: 0;
   max-width: 78%;
-  font-size: 31px;
+  font-size: 34px;
   line-height: 1.06;
 }
 
 .light-companion-deck {
   margin: 10px 0 0;
-  max-width: 84%;
+  max-width: 88%;
   font-family: var(--world-body-family);
-  font-size: 11.4px;
+  font-size: 11.8px;
   line-height: 1.4;
   color: var(--world-quiet);
 }
@@ -72,14 +72,14 @@
 
 .light-phase-card header strong {
   font-family: var(--world-heading-family);
-  font-size: 9.9px;
+  font-size: 10.5px;
   line-height: 1.14;
   color: var(--world-ink);
 }
 
 .light-phase-card header small {
   font-family: var(--world-body-family);
-  font-size: 6.9px;
+  font-size: 7.4px;
   line-height: 1.2;
   color: var(--world-accent);
 }
@@ -87,7 +87,7 @@
 .light-phase-card p {
   margin: 0 0 4px;
   font-family: var(--world-body-family);
-  font-size: 7.05px;
+  font-size: 7.9px;
   line-height: 1.3;
   color: var(--world-ink);
 }
@@ -100,7 +100,7 @@
 .light-phase-card:last-child {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 110px 1fr;
+  grid-template-columns: 112px minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 12px;
   row-gap: 3px;
   align-items: start;
@@ -111,7 +111,7 @@
 }
 
 .light-phase-card:last-child header {
-  grid-row: 1 / span 2;
+  grid-row: auto;
   margin: 0;
 }
 
@@ -132,7 +132,7 @@
 
 .light-companion-guidance li {
   font-family: var(--world-body-family);
-  font-size: 7.05px;
+  font-size: 7.5px;
   line-height: 1.3;
   color: var(--world-quiet);
 }
