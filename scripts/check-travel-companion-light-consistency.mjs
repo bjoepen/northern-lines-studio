@@ -13,7 +13,7 @@ const checks = [
   ['research provenance stays with content', light.includes('NOAA Global Monitoring Laboratory') && light.includes('Met Office') && light.includes('timeanddate.com')],
   ['light page uses Travel Companion grammar', grammar.includes("name: 'Travel Companion · Licht'")],
   ['travel-specific note uses introduction semantics', grammar.includes("optional('introduction', 'Für diese Reise')")],
-  ['Build 030 migrates to 0.15.0', rust.includes('const CURRENT_FORMAT_VERSION: &str = "0.15.0";') && rust.includes('const BUILD_030_FORMAT_VERSION: &str = "0.14.0";')],
+  ['Build 031 remains supported after Build 032 migration', rust.includes('const CURRENT_FORMAT_VERSION: &str = "0.16.0";') && rust.includes('const BUILD_031_FORMAT_VERSION: &str = "0.15.0";')],
   ['light components are normalized on migration', rust.includes('ensure_light_companion_components') && rust.includes('["title", "light_phases", "photography", "introduction"]')],
   ['light page follows shared A5 geometry', css.includes('padding: 0;') && css.includes('grid-template-columns: repeat(3, minmax(0, 1fr));')],
   ['light preview no longer introduces extra page rule or redundant eyebrow', !app.includes('light-companion-page-rule') && !app.includes('<p class="eyebrow">Reisebegleitung</p>')],

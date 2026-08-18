@@ -1,0 +1,133 @@
+/* Build 032 — Travel Companion Master: Wetter */
+.a5-page.weather-companion-page {
+  background: #fff;
+}
+
+.weather-companion-preview {
+  position: relative;
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  color: var(--world-ink);
+}
+
+.weather-companion-preview h1 {
+  margin: 0;
+  max-width: 72%;
+  font-size: 30px;
+  line-height: 1.05;
+}
+
+.weather-companion-deck {
+  margin: 10px 0 0;
+  max-width: 92%;
+  font-family: var(--world-body-family);
+  font-size: 10.9px;
+  line-height: 1.38;
+  color: var(--world-quiet);
+}
+
+.weather-situation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  align-items: start;
+}
+
+.weather-situation-card {
+  min-height: 0;
+  padding: 8px 9px 7px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--world-accent) 7%, #fff);
+}
+
+.weather-situation-card header {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 5px;
+}
+
+.weather-situation-card header strong {
+  font-family: var(--world-heading-family);
+  font-size: 9.8px;
+  line-height: 1.12;
+  color: var(--world-ink);
+}
+
+.weather-situation-card header small {
+  font-family: var(--world-body-family);
+  font-size: 6.9px;
+  line-height: 1.2;
+  color: var(--world-accent);
+}
+
+.weather-situation-card p {
+  margin: 0 0 4px;
+  font-family: var(--world-body-family);
+  font-size: 7.2px;
+  line-height: 1.28;
+  color: var(--world-ink);
+}
+
+.weather-situation-card p:last-child {
+  margin-bottom: 0;
+  color: var(--world-quiet);
+}
+
+.weather-situation-card:last-child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0;
+  align-items: start;
+}
+
+.weather-situation-card:last-child > * {
+  margin: 0;
+}
+
+.weather-situation-card:last-child header {
+  margin: 0;
+}
+
+.weather-companion-journey-note {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  max-width: 100%;
+}
+
+.weather-companion-journey-note span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 7.4px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--world-accent);
+}
+
+.weather-companion-journey-note p {
+  margin: 0;
+  font-family: var(--world-body-family);
+  font-size: 8.5px;
+  line-height: 1.35;
+  color: var(--world-ink);
+}
+
+.baltic-page .weather-situation-card {
+  background: color-mix(in srgb, var(--baltic-sand, #e7d5bd) 48%, #fff);
+}
+
+.weather-companion-inspector-note {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.weather-companion-inspector-note textarea {
+  width: 100%;
+  resize: vertical;
+}

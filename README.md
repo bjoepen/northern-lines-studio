@@ -26,8 +26,8 @@
 
 > **Build 024 Adaptive Grammar Polish:** Die Seitenwirkung bleibt stabil, aber Title- und Extension-Komposition reagieren nun innerhalb kuratierter Grammar-Zustände auf reale Textlängen. Lange Ortsnamen werden nicht mitten im Wort getrennt; Weite kann intern 50/50, 60/40, 70/30 oder gestapelt komponieren. Editorial Extension Zones reagieren analog ausgeglichen, asymmetrisch oder gestapelt.
 
-**Studio:** 0.31.0-alpha.1
-**Projektformat:** `.nls` 0.15.0
+**Studio:** 0.32.0-alpha.1
+**Projektformat:** `.nls` 0.16.0
 
 Northern Lines Studio ist eine spezialisierte Desktop-Anwendung für Travel Publishing.
 Es ist kein allgemeines DTP-Programm. Studio begleitet eine Reise redaktionell und
@@ -437,3 +437,7 @@ Studio entscheidet Layoutvarianten jetzt nach Content Fit: alle für einen Seite
 
 ### Build 030 geometric content-fit correction
 Capacity Protection no longer treats raw character count as a reason to reject an otherwise valid Interest Page composition. The Geiranger two-route case with the complete Skageflå safety note remains renderable; overflow is reserved for content that no allowed composition can fit inside the protected page geometry.
+
+## Build 032 — Travel Companion Wetter
+
+`Wetter` ist der zweite Seitentyp auf dem freigegebenen Travel Companion Master. Der kuratierte Kern bleibt wiederverwendbar; konkrete Reisehinweise werden optional im Projekt gespeichert. Die Recherchebasis liegt unter `docs/research/BUILD-032-WEATHER-RESEARCH.md`.

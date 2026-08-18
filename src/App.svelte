@@ -41,6 +41,7 @@
   import { emptyInterestEntry, interestEntryContentLength, interestEntrySchema, interestPageLayoutState } from './lib/destination-interests/entries';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
   import { CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
+  import { CURATED_WEATHER_SITUATIONS } from './lib/travel-companion-weather';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -1302,6 +1303,7 @@
               class:culture-history-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culture_history'}
               class:culinary-local-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culinary_local'}
               class:light-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
+              class:weather-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'travel_weather'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1597,6 +1599,28 @@
 
                   {#if selectedPage.authoring?.introduction?.content?.trim()}
                     <section class="light-companion-journey-note" aria-label="Für diese Reise">
+                      <span>Für diese Reise</span>
+                      <p>{selectedPage.authoring.introduction.content}</p>
+                    </section>
+                  {/if}
+                </div>
+              {:else if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'travel_weather'}
+                <div class="weather-companion-preview">
+                  <h1>Wetter</h1>
+                  <p class="weather-companion-deck">Wetter verändert Tempo, Sicht und Aufenthalt draußen. Diese Seite bündelt allgemeine Orientierung zu Regen, Wind, Nebel und Wolken – ohne eine konkrete Reise vorwegzunehmen.</p>
+
+                  <div class="weather-situation-grid" aria-label="Kuratiertes Wissen zu Wettersituationen">
+                    {#each CURATED_WEATHER_SITUATIONS as situation (situation.id)}
+                      <section class="weather-situation-card">
+                        <header><strong>{situation.label}</strong><small>{situation.orientation}</small></header>
+                        <p>{situation.description}</p>
+                        <p>{situation.travel}</p>
+                      </section>
+                    {/each}
+                  </div>
+
+                  {#if selectedPage.authoring?.introduction?.content?.trim()}
+                    <section class="weather-companion-journey-note" aria-label="Für diese Reise">
                       <span>Für diese Reise</span>
                       <p>{selectedPage.authoring.introduction.content}</p>
                     </section>
@@ -1999,11 +2023,11 @@
       {/if}
 
       {#if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
-        <section class="inspector-card light-companion-inspector" aria-label="Reisebegleitung Licht">
+        <section class="inspector-card travel-companion-inspector light-companion-inspector" aria-label="Reisebegleitung Licht">
           <span class="inspector-label">Reisebegleitung</span>
-          <div class="light-companion-inspector-title">Licht</div>
+          <div class="travel-companion-inspector-title">Licht</div>
           <small>Der kuratierte Kern ist Teil von Northern Lines und wird wiederverwendet. Ergänze nur, was für diese konkrete Reise wichtig ist.</small>
-          <div class="light-companion-curated-facts">
+          <div class="travel-companion-curated-facts">
             <span>Kernwissen</span><strong>kuratiert</strong>
             <span>Lichtphasen</span><strong>{CURATED_LIGHT_PHASES.length} vorhanden</strong>
             <span>Reisebezug</span><strong>optional</strong>
@@ -2012,6 +2036,34 @@
             <span class="inspector-label">Für diese Reise</span>
             {#if activeAuthoringComponent === 'introduction'}
               <textarea bind:value={authoringDraft} rows="3" placeholder="Zum Beispiel: Im norwegischen Sommer bleiben die Übergänge lange weich." aria-label="Reisehinweis zu Licht"></textarea>
+              <div class="interest-introduction-actions">
+                <button type="button" class="interest-entry-back" on:click={closeAuthoringPanel} disabled={authoringDirty}>Zurück</button>
+                <button type="button" class="authoring-save" on:click={saveAuthoring} disabled={authoringSaveState === 'saving'}>{authoringSaveState === 'saving' ? 'Sichern …' : 'Hinweis sichern'}</button>
+              </div>
+              {#if authoringDirty}<small class="authoring-context-hint">Sichere deinen Hinweis, bevor du zurückgehst.</small>{/if}
+              <small class:saveOk={authoringSaveState === 'saved'} class:saveDirty={authoringDirty}>{authoringDirty ? '● Nicht gesichert' : authoringSaveState === 'saved' ? 'Gespeichert' : 'Bereit zum Bearbeiten'}</small>
+            {:else}
+              {#if selectedPage.authoring?.introduction?.content?.trim()}<p>{selectedPage.authoring.introduction.content}</p>{/if}
+              <button type="button" class="interest-introduction-edit" on:click={() => editStoryComponent('introduction')}>{selectedPage.authoring?.introduction?.content?.trim() ? 'Hinweis bearbeiten' : '+ Reisehinweis ergänzen'}</button>
+            {/if}
+          </div>
+        </section>
+      {/if}
+
+      {#if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'travel_weather'}
+        <section class="inspector-card travel-companion-inspector weather-companion-inspector" aria-label="Reisebegleitung Wetter">
+          <span class="inspector-label">Reisebegleitung</span>
+          <div class="travel-companion-inspector-title">Wetter</div>
+          <small>Der kuratierte Kern ist Teil von Northern Lines und wird wiederverwendet. Ergänze nur, was für diese konkrete Reise wichtig ist.</small>
+          <div class="travel-companion-curated-facts">
+            <span>Kernwissen</span><strong>kuratiert</strong>
+            <span>Wettersituationen</span><strong>{CURATED_WEATHER_SITUATIONS.length} vorhanden</strong>
+            <span>Reisebezug</span><strong>optional</strong>
+          </div>
+          <div class="weather-companion-inspector-note">
+            <span class="inspector-label">Für diese Reise</span>
+            {#if activeAuthoringComponent === 'introduction'}
+              <textarea bind:value={authoringDraft} rows="3" placeholder="Zum Beispiel: Vor längeren Etappen an der Küste noch einmal Wind, Sicht und Niederschlag prüfen." aria-label="Reisehinweis zu Wetter"></textarea>
               <div class="interest-introduction-actions">
                 <button type="button" class="interest-entry-back" on:click={closeAuthoringPanel} disabled={authoringDirty}>Zurück</button>
                 <button type="button" class="authoring-save" on:click={saveAuthoring} disabled={authoringSaveState === 'saving'}>{authoringSaveState === 'saving' ? 'Sichern …' : 'Hinweis sichern'}</button>
@@ -2113,7 +2165,7 @@
         </section>
       {/if}
 
-      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage && !(selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light')}
+      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage && !(selectedPage?.type === 'knowledge' && (selectedPage.knowledgeType === 'photography_light' || selectedPage.knowledgeType === 'travel_weather'))}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
           <strong>Deine Geschichte</strong>

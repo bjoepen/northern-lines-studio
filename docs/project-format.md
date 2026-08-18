@@ -1,6 +1,6 @@
 # Northern Lines Studio Project Format
 
-**Current format:** `.nls` 0.15.0
+**Current format:** `.nls` 0.16.0
 
 An `.nls` document is an open package whose primary manifest is `project.json`. The project stores the journey and the author's editorial decisions. It does not duplicate Studio's World Library or Editorial Grammar Library and it does not contain Publisher render jobs as primary project data.
 
@@ -294,3 +294,13 @@ Existing `knowledge` pages with `knowledgeType: "photography_light"` are normali
 ```
 
 `introduction` is optional project-specific context (`Für diese Reise`). The curated Light core is deliberately **not duplicated into project.json**. Build 030 / 0.14.0 projects migrate without inventing an introduction.
+
+## 0.16.0 — Travel Companion Weather
+
+Build 032 erweitert die Travel-Companion-Grammatik für `travel_weather` um den optionalen Authoring-Baustein `introduction` für **Für diese Reise**.
+
+Migration 0.15.0 → 0.16.0:
+- bestehende Wetterseiten erhalten die Komponenten `title`, `weather_guidance`, `photography`, `introduction`;
+- bestehende Lichtseiten bleiben unverändert erhalten;
+- es wird kein Reisehinweis erfunden;
+- bestehende Destination- und Interest-Daten werden nicht verändert.

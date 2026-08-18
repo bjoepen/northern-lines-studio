@@ -36,7 +36,7 @@ mustContain(css, 'max-height: none', 'Structured routes must not be clipped by a
 mustContain(css, '.interest-entry-two-up', 'Studio must support a two-box composition.');
 mustContain(css, '.interest-entry-grid.interest-entry-stacked', 'Studio must support separate stacked route composition.');
 mustContain(css, '.a5-page.destination-interest-page .editorial-footer', 'Interest-page footer must remain a hard page anchor.');
-mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.15.0";', 'Structured entry persistence must remain supported in the current .nls format.');
+mustContain(rust, 'const CURRENT_FORMAT_VERSION: &str = "0.16.0";', 'Structured entry persistence must remain supported in the current .nls format.');
 mustContain(rust, 'const BUILD_028_FORMAT_VERSION: &str = "0.13.0";', '0.13.0 migration source must remain explicit.');
 mustContain(format, '0.14.0', 'Project format documentation must mention 0.14.0.');
 mustContain(dna, 'Ausschließlich Interest Pages', 'Product DNA must bound compact typography to Interest Pages only.');
