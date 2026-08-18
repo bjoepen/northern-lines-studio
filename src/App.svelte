@@ -1582,8 +1582,6 @@
                 {/if}
               {:else if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
                 <div class="light-companion-preview">
-                  <div class="page-rule light-companion-page-rule"></div>
-                  <p class="eyebrow">Reisebegleitung</p>
                   <h1>Licht</h1>
                   <p class="light-companion-deck">Natürliches Licht verändert Stimmung, Farbe und Tiefe eines Motivs. Diese Seite bleibt bewusst allgemein: Sie begleitet jedes Travelbook mit kuratiertem Wissen, statt dieselben Grundlagen für jede Reise neu zu erzählen.</p>
                   {#if selectedPage.authoring?.introduction?.content?.trim()}
