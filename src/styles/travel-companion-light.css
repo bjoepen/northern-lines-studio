@@ -121,7 +121,7 @@
   background: color-mix(in srgb, var(--baltic-sand, #e7d5bd) 48%, #fff);
 }
 
-.light-companion-inspector-title {
+.travel-companion-inspector-title {
   font-size: 13px;
   line-height: 1.25;
   font-weight: 650;
@@ -139,7 +139,7 @@
   resize: vertical;
 }
 
-.light-companion-curated-facts {
+.travel-companion-curated-facts {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 5px 10px;
@@ -147,10 +147,15 @@
   font-size: 11px;
 }
 
-.light-companion-curated-facts span {
+.travel-companion-curated-facts span {
   color: var(--world-quiet, #75868e);
 }
 
-.light-companion-curated-facts strong {
+.travel-companion-curated-facts strong {
+  margin: 0;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.35;
   font-weight: 650;
+  color: var(--world-ink);
 }

@@ -1986,3 +1986,34 @@ Verbindlich gilt:
 - Ruhe entsteht durch Komposition und Hierarchie, nicht durch das Schrumpfen der nutzbaren Seite.
 
 **Regressionstest:** Die Travel-Companion-Seite `Licht` muss dieselbe physische A5-Content-Fläche nutzen können wie eine Destination Page wie `Bergen`. Eine zweite innere Rahmengeometrie ist unzulässig.
+
+## Build 032 · Travel Companion Master
+
+`Licht` ist die erste freigegebene Ausprägung des **Travel Companion Master**. `Wetter` übernimmt dieselbe Grammar; der spätere Fotografie-Workshop folgt demselben Master, ohne die fachlichen Inhalte zu kopieren.
+
+Verbindlich für Travel Companion Pages:
+
+- weiße Seitenfläche und vollständige World Expression;
+- ruhiger, kompakter Seitentitel ohne redundanten Seitentyp-Kicker;
+- kurze redaktionelle Einleitung;
+- ein kleiner, kuratierter Wissenskern aus semantisch getrennten Modulen;
+- drei Module nebeneinander sind erlaubt und bevorzugt, wenn Content Fit und Lesbarkeit dies tragen;
+- weitere Module werden adaptiv darunter komponiert;
+- ein optionaler Bereich **„Für diese Reise“** ergänzt nur den konkreten Reisebezug;
+- nicht vorhandene persönliche Ergänzungen reservieren keinen dekorativen Platz, gleichzeitig darf der kuratierte Kern die Seite nicht so füllen, dass sinnvolle Ergänzungen prinzipiell unmöglich werden;
+- Companion- und Footer-Safe-Zonen bleiben hart;
+- keine zweite umlaufende Safe-Zone;
+- Content Fit entscheidet über die Komposition.
+
+> **Der Master ist eine Grammar, kein Inhaltstemplate.**
+
+`Licht`, `Wetter` und der Fotografie-Workshop teilen Seitensystem, Hierarchie und UX Language. Ihre Wissensmodule bleiben fachlich eigenständig und werden jeweils fundiert recherchiert.
+
+### Travel Companion Inspector
+
+Der Inspector bleibt UI und darf nicht wie eine zweite Druckseite auftreten. Titel und Statuswerte sind deshalb ruhig gesetzt:
+
+- Titel wie `Licht` oder `Wetter`: kompakte UI-Typografie, semibold;
+- Werte wie `kuratiert`, `4 vorhanden`, `optional`: gleiche Größenordnung wie die zugehörigen Labels, nur durch Gewicht hervorgehoben;
+- keine große Serifentitel-Typografie für Inspector-Werte;
+- Beschreibung bleibt klein, ruhig und erklärend.
