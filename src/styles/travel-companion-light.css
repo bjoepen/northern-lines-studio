@@ -1,4 +1,4 @@
-/* Build 031 — Travel Companion Foundation: Licht · Layout Polish Fix */
+/* Build 031 — Travel Companion Foundation: Licht · Capacity & Inspector Fix */
 .a5-page.light-companion-page {
   background: #fff;
 }
@@ -13,33 +13,28 @@
 
 .light-companion-preview h1 {
   margin: 0;
-  max-width: 78%;
-  font-size: 34px;
-  line-height: 1.06;
+  max-width: 72%;
+  font-size: 30px;
+  line-height: 1.05;
 }
 
 .light-companion-deck {
   margin: 10px 0 0;
-  max-width: 88%;
+  max-width: 92%;
   font-family: var(--world-body-family);
-  font-size: 11.8px;
-  line-height: 1.4;
+  font-size: 10.9px;
+  line-height: 1.38;
   color: var(--world-quiet);
 }
 
 .light-companion-journey-note {
-  margin: 12px 0 0;
-  max-width: 84%;
-  padding-left: 11px;
-  border-left: 2px solid color-mix(in srgb, var(--world-accent) 42%, transparent);
-  font-family: var(--world-body-family);
-  font-size: 9.5px;
-  line-height: 1.4;
-  color: var(--world-ink);
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  max-width: 100%;
 }
 
-.light-companion-journey-note span,
-.light-companion-section-label {
+.light-companion-journey-note span {
   display: block;
   margin-bottom: 4px;
   font-size: 7.4px;
@@ -49,17 +44,25 @@
   color: var(--world-accent);
 }
 
+.light-companion-journey-note p {
+  margin: 0;
+  font-family: var(--world-body-family);
+  font-size: 8.5px;
+  line-height: 1.35;
+  color: var(--world-ink);
+}
+
 .light-phase-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
   align-items: start;
 }
 
 .light-phase-card {
   min-height: 0;
-  padding: 9px 10px 8px;
+  padding: 8px 9px 7px;
   box-sizing: border-box;
   background: color-mix(in srgb, var(--world-accent) 7%, #fff);
 }
@@ -67,19 +70,19 @@
 .light-phase-card header {
   display: grid;
   gap: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .light-phase-card header strong {
   font-family: var(--world-heading-family);
-  font-size: 10.5px;
-  line-height: 1.14;
+  font-size: 9.8px;
+  line-height: 1.12;
   color: var(--world-ink);
 }
 
 .light-phase-card header small {
   font-family: var(--world-body-family);
-  font-size: 7.4px;
+  font-size: 6.9px;
   line-height: 1.2;
   color: var(--world-accent);
 }
@@ -87,8 +90,8 @@
 .light-phase-card p {
   margin: 0 0 4px;
   font-family: var(--world-body-family);
-  font-size: 7.9px;
-  line-height: 1.3;
+  font-size: 7.2px;
+  line-height: 1.28;
   color: var(--world-ink);
 }
 
@@ -100,9 +103,9 @@
 .light-phase-card:last-child {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 12px;
-  row-gap: 3px;
+  grid-template-columns: 108px minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0;
   align-items: start;
 }
 
@@ -111,34 +114,18 @@
 }
 
 .light-phase-card:last-child header {
-  grid-row: auto;
   margin: 0;
-}
-
-.light-companion-guidance {
-  margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
-}
-
-.light-companion-guidance ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-}
-
-.light-companion-guidance li {
-  font-family: var(--world-body-family);
-  font-size: 7.5px;
-  line-height: 1.3;
-  color: var(--world-quiet);
 }
 
 .baltic-page .light-phase-card {
   background: color-mix(in srgb, var(--baltic-sand, #e7d5bd) 48%, #fff);
+}
+
+.light-companion-inspector-title {
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 650;
+  color: var(--world-ink);
 }
 
 .light-companion-inspector-note {
