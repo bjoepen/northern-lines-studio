@@ -40,7 +40,7 @@
   import { DESTINATION_INTEREST_DEFINITIONS, destinationInterestDefinition, destinationInterestKindsForStage, destinationInterestLabel } from './lib/destination-interests';
   import { emptyInterestEntry, interestEntryContentLength, interestEntrySchema, interestPageLayoutState } from './lib/destination-interests/entries';
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
-  import { CURATED_LIGHT_GUIDANCE, CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
+  import { CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -1584,9 +1584,6 @@
                 <div class="light-companion-preview">
                   <h1>Licht</h1>
                   <p class="light-companion-deck">Natürliches Licht verändert Stimmung, Farbe und Tiefe eines Motivs. Diese Seite bleibt bewusst allgemein: Sie begleitet jedes Travelbook mit kuratiertem Wissen, statt dieselben Grundlagen für jede Reise neu zu erzählen.</p>
-                  {#if selectedPage.authoring?.introduction?.content?.trim()}
-                    <p class="light-companion-journey-note"><span>Für diese Reise</span>{selectedPage.authoring.introduction.content}</p>
-                  {/if}
 
                   <div class="light-phase-grid" aria-label="Kuratiertes Wissen zu Lichtphasen">
                     {#each CURATED_LIGHT_PHASES as phase (phase.id)}
@@ -1598,10 +1595,12 @@
                     {/each}
                   </div>
 
-                  <section class="light-companion-guidance" aria-label="Für unterwegs">
-                    <span class="light-companion-section-label">Für unterwegs</span>
-                    <ul>{#each CURATED_LIGHT_GUIDANCE as guidance}<li>{guidance}</li>{/each}</ul>
-                  </section>
+                  {#if selectedPage.authoring?.introduction?.content?.trim()}
+                    <section class="light-companion-journey-note" aria-label="Für diese Reise">
+                      <span>Für diese Reise</span>
+                      <p>{selectedPage.authoring.introduction.content}</p>
+                    </section>
+                  {/if}
                 </div>
               {:else}
                 <div class="page-rule"></div>
@@ -2002,7 +2001,7 @@
       {#if selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
         <section class="inspector-card light-companion-inspector" aria-label="Reisebegleitung Licht">
           <span class="inspector-label">Reisebegleitung</span>
-          <strong>Licht</strong>
+          <div class="light-companion-inspector-title">Licht</div>
           <small>Der kuratierte Kern ist Teil von Northern Lines und wird wiederverwendet. Ergänze nur, was für diese konkrete Reise wichtig ist.</small>
           <div class="light-companion-curated-facts">
             <span>Kernwissen</span><strong>kuratiert</strong>
