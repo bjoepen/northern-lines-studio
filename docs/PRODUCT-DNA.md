@@ -2017,3 +2017,23 @@ Der Inspector bleibt UI und darf nicht wie eine zweite Druckseite auftreten. Tit
 - Werte wie `kuratiert`, `4 vorhanden`, `optional`: gleiche Größenordnung wie die zugehörigen Labels, nur durch Gewicht hervorgehoben;
 - keine große Serifentitel-Typografie für Inspector-Werte;
 - Beschreibung bleibt klein, ruhig und erklärend.
+
+
+## Travel Companion Master · Fotografie-Workshop (Build 033)
+
+Der Fotografie-Workshop folgt der gemeinsamen Travel-Companion-Seitengeometrie, ist aber **vollständig kuratiert**.
+
+Verbindlich:
+
+- keine Softwarevorgabe (kein Luminar-, ON1-, Lightroom- oder anderer Produktworkflow),
+- kein reisespezifisches Authoring,
+- keine festen Kamera-Rezepte wie pauschale Blenden-, ISO- oder Brennweitenwerte,
+- vier kuratierte Themenwelten: **Sehen · Gestalten · Belichten · Unterwegs**,
+- der Workshop vermittelt Entscheidungen, nicht Rezepte,
+- Licht und Wetter dürfen als benachbarte Companion-Themen referenziert werden, ohne deren Inhalte zu wiederholen,
+- die gemeinsame A5-Geometrie, Companion-Safe-Zone und Footer-Safe-Zone bleiben verbindlich,
+- der Inspector zeigt kuratierte Fakten in ruhiger UI-Typografie und keine Authoring-Maske.
+
+Leitsatz:
+
+> **Erst sehen und entscheiden. Dann die Kamera dafür arbeiten lassen.**
