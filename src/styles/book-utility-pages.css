@@ -1,0 +1,219 @@
+/* Build 037 · Contents + Notes
+   Curated Accent is deliberately weaker than Curated Hero. It belongs to the
+   active Editorial World, never to project content, and yields space first. */
+.a5-page.contents-page,
+.a5-page.notes-page {
+  background: #fff;
+  padding-top: 46px;
+}
+
+.contents-preview,
+.notes-preview {
+  min-height: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: var(--world-ink, #172a34);
+}
+
+.contents-head,
+.notes-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.contents-head .eyebrow,
+.notes-head .eyebrow {
+  margin-bottom: 8px;
+  color: var(--world-accent, #547181);
+}
+
+.contents-head h1,
+.notes-head h1 {
+  max-width: none;
+  font-size: 31px;
+  line-height: 1.03;
+}
+
+.contents-deck,
+.notes-deck {
+  max-width: 220px;
+  margin: 10px 0 0;
+  font-family: var(--world-body-family, Georgia, serif);
+  color: var(--world-quiet, #75868e);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.curated-world-accent {
+  display: block;
+  width: 100%;
+  height: 70px;
+  object-fit: contain;
+  object-position: center;
+  border: 0;
+  border-radius: 0;
+  opacity: .9;
+  filter: saturate(.88) contrast(.96);
+}
+
+.contents-accent { align-self: start; }
+.notes-accent { height: 76px; }
+
+.contents-list {
+  min-height: 0;
+  display: grid;
+  gap: 11px;
+  padding-top: 4px;
+}
+
+.contents-group {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.contents-group-label {
+  padding-top: 2px;
+  color: var(--world-accent, #547181);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.contents-group > div { display: grid; gap: 4px; }
+
+.contents-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, auto) minmax(16px, 1fr) 14px;
+  gap: 6px;
+  align-items: baseline;
+  font-family: var(--world-body-family, Georgia, serif);
+  color: var(--world-ink, #172a34);
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.contents-order {
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 7px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .05em;
+}
+
+.contents-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.contents-leader {
+  align-self: center;
+  height: 1px;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--world-accent, #547181) 45%, transparent) .65px, transparent .8px);
+  background-size: 4px 1px;
+  background-repeat: repeat-x;
+}
+
+.contents-page-number {
+  text-align: right;
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 8px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.notes-head { margin-bottom: 16px; }
+
+.notes-layout {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+
+.notes-main,
+.notes-side > section {
+  border: 1px solid color-mix(in srgb, var(--world-accent, #547181) 25%, #fff);
+  background: color-mix(in srgb, var(--world-accent, #547181) 2.5%, #fff);
+}
+
+.notes-main {
+  min-height: 0;
+  padding: 10px 10px 8px;
+}
+
+.notes-main > span,
+.notes-side > section > span {
+  display: block;
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.notes-lines {
+  height: calc(100% - 17px);
+  margin-top: 8px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 17px, color-mix(in srgb, var(--world-accent, #547181) 18%, transparent) 17.5px, transparent 18px);
+}
+
+.notes-side {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 88px 88px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.notes-side > section { padding: 9px 8px; min-height: 0; }
+.notes-mini-lines {
+  height: calc(100% - 16px);
+  margin-top: 8px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 15px, color-mix(in srgb, var(--world-accent, #547181) 17%, transparent) 15.5px, transparent 16px);
+}
+
+.notes-dot-grid {
+  height: calc(100% - 18px);
+  margin-top: 8px;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--world-accent, #547181) 22%, transparent) .7px, transparent .8px);
+  background-size: 10px 10px;
+}
+
+/* Notes keeps the companion, but the writing geometry reserves its zone rather
+   than allowing a late overlap. */
+.a5-page.notes-page .companion-zone-bottom-left {
+  left: 31px;
+  bottom: 50px;
+  width: 52px;
+  height: 62px;
+}
+
+.a5-page.notes-page .page-companion { max-height: 58px; }
+
+/* Contents is companion-free by contract. Curated Accent is the only world
+   image and remains clearly subordinate to navigation. */
+.a5-page.contents-page .editorial-footer,
+.a5-page.notes-page .editorial-footer {
+  position: relative;
+  z-index: 4;
+}
+
+@media (max-height: 720px) {
+  .curated-world-accent { height: 62px; }
+  .contents-head, .notes-head { grid-template-columns: minmax(0, 1fr) 94px; gap: 16px; margin-bottom: 14px; }
+}

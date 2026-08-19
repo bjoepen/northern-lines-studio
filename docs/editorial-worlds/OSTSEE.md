@@ -46,3 +46,8 @@ Die Layout Grammar bleibt identisch zu Fjord. Ostsee erhält keine eigene Sonder
 ## Destination Interest Pages
 
 Build 026 uses the same destination-interest grammar in Ostsee. Interest semantics stay identical to Fjord while Ostsee contributes its typography, Fischotter and warm Hanse/Backstein/Bernstein expression on the same white page surface.
+
+
+## Curated Accent
+
+Utility pages such as Inhaltsverzeichnis and Notizen may use one fixed, world-owned **Curated Accent**. It is intentionally smaller and quieter than a Curated Hero, cannot be changed by the user, and yields space before navigation, writing capacity, Companion or Footer are compromised.

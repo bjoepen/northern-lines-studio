@@ -2101,3 +2101,12 @@ Curated Heroes sind feste Bestandteile einer Editorial World, keine Nutzer-Asset
 - Switching Worlds changes only the curated visual expression; the page semantics and authoring model remain unchanged.
 - Ostsee inherits the Fjord header-flow, Workshop size reference, Content Fit and Capacity Protection rules.
 - Ostsee expression remains lighter, sandier, more horizontal and Hanseatic/coastal while the physical page surface stays `#FFFFFF`.
+
+
+## Curated Accent (Build 037)
+
+- Curated Accent is distinct from Curated Hero: it is deliberately smaller, quieter and subordinate to page function.
+- Contents and Notes use fixed world-owned accents; users cannot choose, replace, hide or upload them.
+- Contents remains typography/navigation first. Notes remains writing-space first.
+- At capacity pressure, Curated Accent yields before navigation, writing space, Companion or Footer.
+- Physical content-page surface stays literal `#FFFFFF`.

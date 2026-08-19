@@ -471,3 +471,8 @@ Fjord Interest Pages and the curated Fotografie-Workshop now use fixed world-own
 ### Build 036 — Ostsee Curated Heroes
 
 The approved Ostsee World now ships its own fixed curated heroes for all four Interest Pages and the Fotografie-Workshop. It inherits the Fjord head-flow grammar and Capacity Protection while expressing the Baltic visual language. See `docs/BUILD-036-OSTSEE-CURATED-HEROES.md`.
+
+
+### Build 037 — Inhaltsverzeichnis & Notizen
+
+Adds production-oriented Contents and Notes grammars with world-owned Curated Accents. Contents is generated from the travelbook structure; Notes provides one large writing area plus Schnellnotiz, Ideen and Skizze.
