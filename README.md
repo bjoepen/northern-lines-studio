@@ -462,3 +462,7 @@ The final Build-034 cleanup keeps the successful Workshop real-world layout inta
 - a dedicated final gate protects white content-page surfaces and version parity.
 
 No `.nls` migration is required.
+
+### Build 035 — Fjord Curated Heroes
+
+Fjord Interest Pages and the curated Fotografie-Workshop now use fixed world-owned miniature heroes in the Northern Lines Hero style. The hero is not user-editable, does not become a persistent page column, and never overrides Content Fit, Companion or Footer safe zones. See `docs/BUILD-035-FJORD-CURATED-HEROES.md`.

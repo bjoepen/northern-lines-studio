@@ -1,38 +1,27 @@
-# APPLY DROP-IN — Northern Lines Studio Build 034 Final Consistency Cleanup
+# APPLY DROP-IN — Northern Lines Studio Build 035
 
-This cleanup follows the successful Build-034 Workshop real-world test. It introduces **no new feature** and does not change `.nls` data.
-
-It fixes four release-consistency issues:
-
-- Fjord Destination Page surface: historical cream → literal `#FFFFFF`
-- Fjord semantic `paperTone` → `#FFFFFF`
-- stale white-surface gate corrected
-- Tauri/Cargo version metadata synchronized to `0.34.0-alpha.1`
+Build 035 adds the approved fixed **Fjord Curated Heroes** to the four Interest Pages and the Fotografie-Workshop. The hero is owned by the Fjord World, is not user-editable, and affects only the page header flow.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b fix/build-034-final-consistency-cleanup
+git checkout -b feat/build-035-fjord-curated-heroes
 ```
 
 ## 2. Dry Run
 
-Assuming the ZIP was unpacked in `~/Downloads`:
-
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-034-Final-Consistency-Cleanup-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-035-Fjord-Curated-Heroes-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
-
-Review the changed files. There are no intentional file deletions.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-034-Final-Consistency-Cleanup-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-035-Fjord-Curated-Heroes-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -40,34 +29,27 @@ rsync -av \
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm consistency
+pnpm run consistency:build-035-heroes
 ```
 
-Expected final gate:
+Expected:
 
 ```text
-Build 034 Final Consistency Gate: PASS
+Build 035 Fjord Curated Heroes Consistency Gate: PASS
 ```
 
-`PASS` must appear in green.
-
-The Destination Imagery gate must also still report:
-
-```text
-Destination Imagery Consistency Gate: PASS
-```
+`PASS` must be green.
 
 ## 5. Full Gates
 
 ```bash
+pnpm consistency
 pnpm check
 pnpm test
 pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
-
-All must pass locally before release acceptance.
 
 ## 6. Install macOS App
 
@@ -76,7 +58,7 @@ cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Expected app target:
+Expected target:
 
 ```text
 /Applications/Northern Lines Studio.app
@@ -88,19 +70,33 @@ Manual fallback:
 pnpm tauri build --bundles app
 ```
 
-## 7. Real-World Test
+## 7. Real-World / Visual Approval Test
 
-1. Open **Bergen** in **Fjord**.
-2. Confirm the physical A5 page surface is **true white**, not cream.
-3. Switch to **Ostsee** and confirm the page remains white while typography, accents and semantic content surfaces change with the World.
-4. Open at least one Interest Page and `Licht`, `Wetter`, `Fotografie-Workshop`; confirm the physical page surface remains white.
-5. Re-check the Workshop capacity result: four core worlds + `Licht & Wetter` bridge visible, Companion and Footer untouched.
-6. Verify the built macOS app reports version `0.34.0-alpha.1`.
+Use **Fjord** and check these pages:
+
+1. Fotografie
+2. Wandern & Natur
+3. Kultur & Geschichte
+4. Kulinarik & Lokal
+5. Fotografie-Workshop
+
+Verify for each:
+
+- the curated hero appears automatically;
+- there is no hero control in the Inspector;
+- the hero occupies only the upper-right header area;
+- intro text may flow beside/under it;
+- subsequent content returns to the established full page geometry;
+- Companion and Footer remain unchanged and protected;
+- the page surface stays literal white;
+- switching away from Fjord does not reuse the Fjord hero.
+
+**Do not merge before visual approval.**
 
 ## 8. Commit & Push
 
 ```bash
 git add .
-git commit -m "fix: finalize build 034 consistency cleanup"
-git push -u origin fix/build-034-final-consistency-cleanup
+git commit -m "feat: add fixed Fjord curated heroes"
+git push -u origin feat/build-035-fjord-curated-heroes
 ```

@@ -138,3 +138,19 @@
 .photography-workshop-inspector .travel-companion-inspector-title {
   margin-top: 4px;
 }
+
+/* Build 035 · Fjord Curated Workshop Hero
+   Uses the workshop's previously free upper-right area as the maximum reference size. */
+.photography-workshop-preview .curated-hero-flow-workshop .curated-world-hero {
+  width: 34%;
+  max-width: 136px;
+  margin: 0 0 7px 14px;
+}
+
+.photography-workshop-preview .curated-hero-flow-workshop h1 {
+  max-width: none;
+}
+
+.photography-workshop-preview .curated-hero-flow-workshop .photography-workshop-deck {
+  max-width: none;
+}
