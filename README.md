@@ -441,3 +441,8 @@ Capacity Protection no longer treats raw character count as a reason to reject a
 ## Build 032 — Travel Companion Wetter
 
 `Wetter` ist der zweite Seitentyp auf dem freigegebenen Travel Companion Master. Der kuratierte Kern bleibt wiederverwendbar; konkrete Reisehinweise werden optional im Projekt gespeichert. Die Recherchebasis liegt unter `docs/research/BUILD-032-WEATHER-RESEARCH.md`.
+
+
+## Build 033 · Kuratierter Fotografie-Workshop
+
+Der bisherige programmspezifisch gedachte Fotografie-Workflow wird als vollständig kuratierter, programmneutraler Workshop erzählt. Vier Themenwelten – **Sehen, Gestalten, Belichten, Unterwegs** – vermitteln fotografische Entscheidungen ohne feste Einstellungsrezepte oder Softwarevorgaben. Licht und Wetter werden als benachbarte Travel-Companion-Themen referenziert, nicht dupliziert.

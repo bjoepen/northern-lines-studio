@@ -149,7 +149,7 @@ export function pageRoleLabel(role: PageRole | undefined): string {
     case 'journey_planning': return 'Reiseplanung';
     case 'destination': return 'Reiseziel';
     case 'journey_knowledge': return 'Reisebegleitung';
-    case 'workflow': return 'Fotografie-Workflow';
+    case 'workflow': return 'Fotografie-Workshop';
     case 'notes': return 'Notizen';
     case 'closing_memory': return 'Abschluss';
     default: return '–';

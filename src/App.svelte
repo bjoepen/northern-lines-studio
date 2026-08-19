@@ -42,6 +42,7 @@
   import { clampInspectorWidth, INSPECTOR_DEFAULT_WIDTH, INSPECTOR_WIDTH_STORAGE_KEY, parseStoredInspectorWidth } from './lib/inspector-layout';
   import { CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
   import { CURATED_WEATHER_SITUATIONS } from './lib/travel-companion-weather';
+  import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -116,6 +117,11 @@
   let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorResizing = false;
   const journeyWorlds = availableEditorialWorlds();
+
+  function displayPageTitle(page: StudioPage | null | undefined): string {
+    if (!page) return 'Keine Seite ausgewählt';
+    return page.type === 'workflow' ? 'Fotografie-Workshop' : page.title;
+  }
 
   function applyInspectorWidth(width: number) {
     inspectorPreferredWidth = clampInspectorWidth(width, window.innerWidth);
@@ -1250,7 +1256,7 @@
                 >
                   <span class="page-order">{String(visiblePageNumber(page)).padStart(2, '0')}</span>
                   <span>
-                    <strong>{page.title}</strong>
+                    <strong>{displayPageTitle(page)}</strong>
                     <small>{page.type === 'destination_interest' ? 'Vertiefung' : pageRoleLabel(page.role)}</small>
                   </span>
                 </button>
@@ -1277,7 +1283,7 @@
       <div class="canvas-header">
         <div>
           <span>Editorial Workspace</span>
-          <strong>{selectedPage?.title ?? 'Keine Seite ausgewählt'}</strong>
+          <strong>{displayPageTitle(selectedPage)}</strong>
         </div>
         <small>{editorialWorld
           ? `${editorialWorld.name} · ${selectedPage?.type === 'destination'
@@ -1304,6 +1310,7 @@
               class:culinary-local-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'culinary_local'}
               class:light-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
               class:weather-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'travel_weather'}
+              class:photography-workshop-page={selectedPage?.type === 'workflow'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1625,6 +1632,27 @@
                       <p>{selectedPage.authoring.introduction.content}</p>
                     </section>
                   {/if}
+                </div>
+              {:else if selectedPage?.type === 'workflow'}
+                <div class="photography-workshop-preview">
+                  <h1>Fotografie-Workshop</h1>
+                  <p class="photography-workshop-deck">Vier Fragen für bewusstere Bilder unterwegs. Der Workshop vermittelt keine festen Rezepte und schreibt keine Software vor – er ordnet Entscheidungen vom ersten Blick bis zur kurzen Kontrolle nach der Aufnahme.</p>
+
+                  <div class="photography-workshop-flow" aria-label="Vier kuratierte Themenwelten des Fotografie-Workshops">
+                    {#each CURATED_WORKSHOP_WORLDS as world, index (world.id)}
+                      <section class="photography-workshop-card">
+                        <header>
+                          <span>{String(index + 1).padStart(2, '0')}</span>
+                          <div><strong>{world.label}</strong><small>{world.question}</small></div>
+                        </header>
+                        <p class="photography-workshop-orientation">{world.orientation}</p>
+                        <p>{world.description}</p>
+                        <p class="photography-workshop-practice">{world.practice}</p>
+                      </section>
+                    {/each}
+                  </div>
+
+                  <p class="photography-workshop-bridge"><span>Licht & Wetter</span>{CURATED_WORKSHOP_BRIDGE}</p>
                 </div>
               {:else}
                 <div class="page-rule"></div>
@@ -2078,6 +2106,19 @@
         </section>
       {/if}
 
+      {#if selectedPage?.type === 'workflow'}
+        <section class="inspector-card travel-companion-inspector photography-workshop-inspector" aria-label="Fotografie-Workshop">
+          <span class="inspector-label">Fotografie</span>
+          <div class="travel-companion-inspector-title">Fotografie-Workshop</div>
+          <small>Vollständig kuratierte Northern-Lines-Praxis. Keine Softwarevorgabe, kein reisespezifisches Authoring und keine festen Einstellungsrezepte.</small>
+          <div class="travel-companion-curated-facts">
+            <span>Kernwissen</span><strong>kuratiert</strong>
+            <span>Themenwelten</span><strong>{CURATED_WORKSHOP_WORLDS.length} vorhanden</strong>
+            <span>Reisebezug</span><strong>nicht vorgesehen</strong>
+          </div>
+        </section>
+      {/if}
+
       {#if editorialWorld && selectedPage?.type !== 'destination'}
         <section class="inspector-card world-inspector-card">
           <span class="inspector-label">Reference World</span>
@@ -2165,7 +2206,7 @@
         </section>
       {/if}
 
-      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage && !(selectedPage?.type === 'knowledge' && (selectedPage.knowledgeType === 'photography_light' || selectedPage.knowledgeType === 'travel_weather'))}
+      {#if storyStructure && selectedPage?.type !== 'destination' && !structuredInterestPage && selectedPage?.type !== 'workflow' && !(selectedPage?.type === 'knowledge' && (selectedPage.knowledgeType === 'photography_light' || selectedPage.knowledgeType === 'travel_weather'))}
         <section class="inspector-card story-card" aria-label="Story Components">
           <span class="inspector-label">Story</span>
           <strong>Deine Geschichte</strong>

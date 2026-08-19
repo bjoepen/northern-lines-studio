@@ -909,7 +909,7 @@ fn create_nls_project(parent_path: String, title: String, editorial_world_id: St
         starter_page("page-planning", 4, "planning", "journey_planning", "Reiseplanung", "content/pages/004-planning.md", "planning", None),
         starter_page("page-light", 10, "knowledge", "journey_knowledge", "Licht", "content/pages/010-light.md", "light", Some("photography_light")),
         starter_page("page-weather", 11, "knowledge", "journey_knowledge", "Wetter", "content/pages/011-weather.md", "weather", Some("travel_weather")),
-        starter_page("page-workflow", 20, "workflow", "workflow", "Fotografie-Workflow", "content/pages/020-workflow.md", "workflow", None),
+        starter_page("page-workflow", 20, "workflow", "workflow", "Fotografie-Workshop", "content/pages/020-workflow.md", "workflow", None),
         starter_page("page-notes", 30, "notes", "notes", "Notizen", "content/pages/030-notes.md", "notes", None),
         starter_page("page-closing", 40, "closing", "closing_memory", "Die Reise bleibt", "content/pages/040-closing.md", "closing", None),
     ];

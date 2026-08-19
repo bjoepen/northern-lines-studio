@@ -209,8 +209,8 @@ const previewCopy: Record<PageType, PreviewContent> = {
   },
   workflow: {
     eyebrow: 'Fotografie',
-    heading: 'Workflow',
-    body: 'Ein wiederverwendbarer Northern-Lines-Workflow für die Bildentwicklung.'
+    heading: 'Fotografie-Workshop',
+    body: 'Vier kuratierte Themenwelten für bewusstere fotografische Entscheidungen unterwegs.'
   },
   notes: {
     eyebrow: 'Field Notes',

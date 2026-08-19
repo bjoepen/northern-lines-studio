@@ -1,12 +1,12 @@
-# APPLY DROP-IN — Northern Lines Studio Build 032
+# APPLY DROP-IN — Northern Lines Studio Build 033
 
-Build 032 introduces **Travel Companion · Wetter** on the master established by `Licht` and fixes the Travel Companion Inspector typography.
+Build 033 turns the existing photography workflow page into a fully curated, program-neutral **Fotografie-Workshop**.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b feat/build-032-travel-companion-weather
+git checkout -b feat/build-033-curated-photography-workshop
 ```
 
 ## 2. Dry Run
@@ -15,17 +15,17 @@ Assuming the ZIP was unpacked in `~/Downloads`:
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-032-Travel-Companion-Weather-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-033-Curated-Photography-Workshop-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-Review the list. Build 032 intentionally adds the new weather companion module, documentation, tests and migration support. It does not intentionally delete files.
+Review the list carefully. Build 033 does not intentionally delete existing files.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-032-Travel-Companion-Weather-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-033-Curated-Photography-Workshop-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -33,16 +33,16 @@ rsync -av \
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm consistency
+pnpm run consistency
 ```
 
 Expected new result:
 
 ```text
-Travel Companion · Wetter Consistency Gate: PASS
+Travel Companion · Fotografie-Workshop Consistency Gate: PASS
 ```
 
-All `PASS` status words must remain green.
+`PASS` must be displayed in green.
 
 ## 5. Full Gates
 
@@ -54,7 +54,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-All gates must pass before acceptance.
+All gates must pass before the build is accepted.
 
 ## 6. Install macOS App
 
@@ -77,23 +77,20 @@ pnpm tauri build --bundles app
 
 ## 7. Real-World Test
 
-Use an existing Build-031 `.nls` travelbook.
-
-1. Open the travelbook and confirm migration from `.nls` 0.15.0 to 0.16.0.
-2. Open **Licht** and verify the page remains visually unchanged from the approved Build-031 master.
-3. In the Inspector, verify `Licht`, `kuratiert`, `4 vorhanden`, and `optional` now use calm UI typography and no oversized serif values.
-4. Open **Wetter**.
-5. Confirm these curated modules are visible and fully readable: **Regen & Nässe**, **Wind & Böen**, **Nebel & Sicht**, **Wolken & Wandel**.
-6. Confirm the page uses the same Travel Companion Master geometry as `Licht`: white page, compact title, three modules across where content fit permits, fourth module below, Companion and Footer protected.
-7. Add a short **Für diese Reise** note, save, close the travelbook, reopen it, and verify the note persisted.
-8. Confirm no destination-specific forecast or invented regional weather claim appears in the curated core.
-9. Switch Fjord ↔ Ostsee and verify full World Expression while the page surface stays white.
-10. Inspect the right column for accidental native HTML/default-control styling.
+1. Open the Norway project and select **Fotografie-Workshop**.
+2. Confirm the page contains exactly four curated worlds: **Sehen**, **Gestalten**, **Belichten**, **Unterwegs**.
+3. Confirm there is no software-specific language (Luminar, ON1, Lightroom, Photoshop).
+4. Confirm no authoring mask is offered for the workshop.
+5. Confirm the short **Licht & Wetter** bridge is present without duplicating the Light/Weather companion pages.
+6. Switch Fjord ↔ Ostsee and verify the World Expression remains intact.
+7. Verify Companion and Footer stay in their protected zones.
+8. Confirm the Inspector uses calm UI typography and reports `kuratiert`, `4 vorhanden`, `nicht vorgesehen`.
+9. Run the Native UI Consistency Check and confirm no default HTML control styling leaked into the visible flow.
 
 ## 8. Commit & Push
 
 ```bash
 git add .
-git commit -m "feat: add curated weather travel companion"
-git push -u origin feat/build-032-travel-companion-weather
+git commit -m "feat: add curated photography workshop"
+git push -u origin feat/build-033-curated-photography-workshop
 ```
