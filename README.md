@@ -466,3 +466,8 @@ No `.nls` migration is required.
 ### Build 035 — Fjord Curated Heroes
 
 Fjord Interest Pages and the curated Fotografie-Workshop now use fixed world-owned miniature heroes in the Northern Lines Hero style. The hero is not user-editable, does not become a persistent page column, and never overrides Content Fit, Companion or Footer safe zones. See `docs/BUILD-035-FJORD-CURATED-HEROES.md`.
+
+
+### Build 036 — Ostsee Curated Heroes
+
+The approved Ostsee World now ships its own fixed curated heroes for all four Interest Pages and the Fotografie-Workshop. It inherits the Fjord head-flow grammar and Capacity Protection while expressing the Baltic visual language. See `docs/BUILD-036-OSTSEE-CURATED-HEROES.md`.
