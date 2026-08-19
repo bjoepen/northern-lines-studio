@@ -2051,3 +2051,20 @@ Binding rules:
 - Capacity decisions are based on real layout geometry, not abstract character counts.
 
 > **Neue Grammar erbt Capacity Protection. Sie definiert sie nicht neu.**
+
+## Build 034 Final · Literal White Content Surfaces & Version Parity
+
+The final Build-034 consistency review makes the existing white-page rule mechanically enforceable.
+
+> **World Expression colours content surfaces. The physical editorial page remains white.**
+
+Binding rules:
+
+- Fjord Destination Pages use literal `#FFFFFF`; historical cream values such as `#fffdfa` and `#f8f7f3` are not valid paper surfaces.
+- Ostsee Destination Pages use literal `#FFFFFF` as well.
+- Destination Interest Pages and Travel Companion content pages remain white; World expression continues through typography, accents, signets, curated heroes and semantic content surfaces.
+- `paperTone` is a semantic contract and must agree with the visible physical page surface.
+- A Consistency Gate may never call a cream paper value a “white” surface.
+- The app version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the root package entry in `Cargo.lock` must match before release packaging.
+
+This rule applies to editorial/content pages. Dedicated cover artwork remains governed by the Cover grammar.
