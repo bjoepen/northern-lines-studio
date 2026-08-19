@@ -15,7 +15,10 @@ const CURATED_ACCENTS_BY_WORLD: Partial<Record<string, Record<CuratedAccentKey, 
   baltic: BALTIC_CURATED_ACCENTS
 };
 
-export function curatedAccentFor(worldId: string | undefined, key: CuratedAccentKey): string | null {
+export function curatedAccentFor(
+  worldId: string | undefined,
+  key: CuratedAccentKey
+): string | null {
   if (!worldId) return null;
   return CURATED_ACCENTS_BY_WORLD[worldId]?.[key] ?? null;
 }

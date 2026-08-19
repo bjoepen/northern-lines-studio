@@ -476,3 +476,7 @@ The approved Ostsee World now ships its own fixed curated heroes for all four In
 ### Build 037 — Inhaltsverzeichnis & Notizen
 
 Adds production-oriented Contents and Notes grammars with world-owned Curated Accents. Contents is generated from the travelbook structure; Notes provides one large writing area plus Schnellnotiz, Ideen and Skizze.
+
+### Build 038 — Orientierung & Erinnerungen
+
+The utility pages now use Northern Lines Travel Language: **Orientierung** replaces the visible Inhaltsverzeichnis label and is deliberately image-free; **Erinnerungen** replaces Notizen and keeps one subordinate world-owned accent. Fjord and Ostsee curated imagery now shares the same soft watercolor-edge treatment. No `.nls` migration is required.

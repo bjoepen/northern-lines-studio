@@ -304,3 +304,7 @@ Migration 0.15.0 → 0.16.0:
 - bestehende Lichtseiten bleiben unverändert erhalten;
 - es wird kein Reisehinweis erfunden;
 - bestehende Destination- und Interest-Daten werden nicht verändert.
+
+## Build 038 compatibility note
+
+The visible labels **Orientierung** and **Erinnerungen** do not change persisted identifiers. Existing projects continue to use page type/role identifiers `contents` and `notes`. No migration is required.

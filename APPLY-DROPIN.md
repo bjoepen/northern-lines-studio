@@ -1,48 +1,53 @@
-# APPLY DROP-IN — Northern Lines Studio Build 037
+# APPLY DROP-IN — Northern Lines Studio Build 038
 
-Build 037 implements the approved **Inhaltsverzeichnis** and **Notizen** grammar plus fixed world-specific **Curated Accents** for Fjord and Ostsee.
+Build 038 introduces **Orientierung**, **Erinnerungen** and the approved soft watercolor edge treatment for curated Fjord/Ostsee imagery.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b feat/build-037-contents-notes-curated-accents
+git checkout -b feat/build-038-orientation-memories-soft-world-imagery
 ```
 
 ## 2. Dry Run
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-037-Contents-Notes-Curated-Accents-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-038-Orientation-Memories-Soft-World-Imagery-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-No intentional deletions are required.
+Build 038 intentionally removes the obsolete Orientation accent files. Remove them after the dry run:
+
+```bash
+rm -f ~/Projekte/northern-lines-studio/public/design-library/worlds/fjord/curated-accents/contents.png
+rm -f ~/Projekte/northern-lines-studio/public/design-library/worlds/baltic/curated-accents/contents.png
+```
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-037-Contents-Notes-Curated-Accents-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-038-Orientation-Memories-Soft-World-Imagery-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-## 4. Build-specific Consistency Gate
+## 4. Build-specific gate
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm consistency:build-037-utility-pages
+pnpm run consistency:build-038
 ```
 
 Expected:
 
 ```text
-Build 037 Contents & Notes Consistency Gate: PASS
+Build 038 Orientation & Memories Consistency Gate: PASS
 ```
 
-`PASS` must appear green.
+`PASS` must appear in green.
 
-## 5. Full Gates
+## 5. Full gates
 
 ```bash
 pnpm consistency
@@ -53,50 +58,46 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-## 6. Install macOS App
+## 6. Build & install macOS app
 
 ```bash
 cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Target:
+Expected target:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
-## 7. Real-world / Visual Test
+## 7. Visual real-world test — STOP/GO
 
-Test **both Fjord and Ostsee**.
+### Orientierung
+1. Open Fjord → **Orientierung**.
+2. Confirm there is **no image** on this page.
+3. Confirm title, groups and page numbers are calm and fully readable.
+4. Switch to Ostsee: World typography/accent changes, but no image appears.
 
-### Inhaltsverzeichnis
+### Erinnerungen
+1. Open **Erinnerungen** in Fjord.
+2. Confirm the Curated Accent has a soft watercolor edge and opens into white space.
+3. Confirm the writing area remains the dominant surface.
+4. Switch to Ostsee and confirm the world-owned image changes while using the same soft-edge treatment.
 
-- page surface is literal white;
-- page list is automatically derived from the current Travelbook;
-- section hierarchy and page numbers remain the visual priority;
-- Curated Accent appears small in the upper-right area and is clearly subordinate;
-- there is no image control in the Inspector;
-- no Companion appears on Contents;
-- Footer stays protected.
+### Curated Heroes
+1. Check one Interest Page and the Fotografie-Workshop in Fjord and Ostsee.
+2. Confirm the previously approved size/flow is unchanged.
+3. Confirm Ostsee no longer reads as a hard rectangular image tile; its edge language matches Fjord.
+4. Confirm Companion and Footer are unchanged.
 
-### Notizen
+**STOP** on clipping, hard tile edges, wrong visible page names, or any Companion/Footer displacement.  
+**GO** only after visual approval.
 
-- page surface is literal white;
-- large main writing area remains dominant;
-- secondary areas are exactly `Schnellnotiz`, `Ideen`, `Skizze`;
-- Curated Accent remains small and secondary;
-- Companion and Footer do not overlap any writing area;
-- there is no image control in the Inspector.
-
-Switch Worlds and confirm only the accent expression changes; structure and semantics remain identical.
-
-**Wait for visual approval before merge.**
-
-## 8. Commit & Push
+## 8. Commit & push
 
 ```bash
 git add .
-git commit -m "feat: add contents and notes curated accents"
-git push -u origin feat/build-037-contents-notes-curated-accents
+git commit -m "feat: add orientation memories and soft world imagery"
+git push -u origin feat/build-038-orientation-memories-soft-world-imagery
 ```
