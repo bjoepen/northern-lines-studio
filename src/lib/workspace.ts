@@ -66,7 +66,7 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   memories: {
     id: 'memories',
     label: 'Erinnerungen',
-    description: 'Notizen und Abschluss'
+    description: 'Erinnerungen und Abschluss'
   }
 };
 
@@ -150,7 +150,7 @@ export function pageRoleLabel(role: PageRole | undefined): string {
     case 'destination': return 'Reiseziel';
     case 'journey_knowledge': return 'Reisebegleitung';
     case 'workflow': return 'Fotografie-Workshop';
-    case 'notes': return 'Notizen';
+    case 'notes': return 'Erinnerungen';
     case 'closing_memory': return 'Abschluss';
     default: return '–';
   }

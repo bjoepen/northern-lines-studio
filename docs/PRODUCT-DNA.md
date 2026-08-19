@@ -2110,3 +2110,11 @@ Curated Heroes sind feste Bestandteile einer Editorial World, keine Nutzer-Asset
 - Contents remains typography/navigation first. Notes remains writing-space first.
 - At capacity pressure, Curated Accent yields before navigation, writing space, Companion or Footer.
 - Physical content-page surface stays literal `#FFFFFF`.
+
+## Build 038 — Orientierung, Erinnerungen & Soft World Imagery
+
+- User-facing `Inhaltsverzeichnis` becomes **Orientierung**. The page is image-free by contract; navigation is the content.
+- User-facing `Notizen` becomes **Erinnerungen**. Its large writing area remains primary; one fixed world-owned Curated Accent may support atmosphere.
+- Internal `.nls` identifiers remain `contents` and `notes` for compatibility.
+- Curated world imagery must not read as a hard rectangular card. Fjord and Ostsee use the same softly feathered watercolor-edge treatment while retaining their own World Expression.
+- White space is part of the World language: the image opens into the literal white page rather than closing itself inside a box.

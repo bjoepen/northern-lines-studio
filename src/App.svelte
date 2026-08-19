@@ -1688,15 +1688,12 @@
                   <header class="contents-head">
                     <div>
                       <p class="eyebrow">Orientierung</p>
-                      <h1>Inhaltsverzeichnis</h1>
+                      <h1>Orientierung</h1>
                       <p class="contents-deck">Deine Reise auf einen Blick. Ruhig geordnet, damit du schnell findest, was dich unterwegs begleitet.</p>
                     </div>
-                    {#if curatedAccentFor(editorialWorld?.id, 'contents')}
-                      <img class="curated-world-accent contents-accent" src={curatedAccentFor(editorialWorld?.id, 'contents') ?? ''} alt="" aria-hidden="true" />
-                    {/if}
                   </header>
 
-                  <div class="contents-list" aria-label="Inhaltsübersicht">
+                  <div class="contents-list" aria-label="Orientierung">
                     {#each sections as section}
                       {@const tocPages = section.pages.filter((page) => page.type !== 'cover' && page.type !== 'contents')}
                       {#if tocPages.length}
@@ -1722,7 +1719,7 @@
                   <header class="notes-head">
                     <div>
                       <p class="eyebrow">Erinnerungen</p>
-                      <h1>Notizen</h1>
+                      <h1>Erinnerungen</h1>
                       <p class="notes-deck">Ideen, Eindrücke und kleine Beobachtungen. Genug Struktur für Orientierung – und genug Freiheit für das, was unterwegs entsteht.</p>
                     </div>
                     {#if curatedAccentFor(editorialWorld?.id, 'notes')}
@@ -1730,9 +1727,9 @@
                     {/if}
                   </header>
 
-                  <div class="notes-layout" aria-label="Notizbereiche">
+                  <div class="notes-layout" aria-label="Erinnerungsbereiche">
                     <section class="notes-main" aria-label="Freie Notizen">
-                      <span>Freie Notizen</span>
+                      <span>Freie Erinnerungen</span>
                       <div class="notes-lines" aria-hidden="true"></div>
                     </section>
                     <aside class="notes-side">

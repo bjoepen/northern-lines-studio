@@ -184,7 +184,7 @@ const previewCopy: Record<PageType, PreviewContent> = {
   },
   contents: {
     eyebrow: 'Orientierung',
-    heading: 'Inhaltsverzeichnis',
+    heading: 'Orientierung',
     body: 'Eine statische Vorschau der geplanten Seitenstruktur.'
   },
   planning: {
@@ -214,7 +214,7 @@ const previewCopy: Record<PageType, PreviewContent> = {
   },
   notes: {
     eyebrow: 'Field Notes',
-    heading: 'Notizen',
+    heading: 'Erinnerungen',
     body: 'Raum für Beobachtungen, Motive und Erinnerungen.'
   },
   closing: {

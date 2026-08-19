@@ -7,7 +7,7 @@ const pages: StudioPage[] = [
   { id: 'bergen', order: 10, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination-standard', journeyStage: 'bergen' },
   { id: 'light', order: 30, type: 'knowledge', role: 'journey_knowledge', title: 'Licht', content: 'light.md', layout: 'knowledge-light' },
   { id: 'on1', order: 50, type: 'workflow', role: 'workflow', title: 'ON1 Photo RAW', content: 'on1.md', layout: 'workflow-on1' },
-  { id: 'notes', order: 90, type: 'notes', role: 'notes', title: 'Notizen', content: 'notes.md', layout: 'notes-standard' },
+  { id: 'notes', order: 90, type: 'notes', role: 'notes', title: 'Erinnerungen', content: 'notes.md', layout: 'notes-standard' },
   { id: 'closing', order: 99, type: 'closing', role: 'closing_memory', title: 'Abschluss', content: 'closing.md', layout: 'closing-memory' }
 ];
 

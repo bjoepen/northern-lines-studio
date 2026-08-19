@@ -1,6 +1,6 @@
-/* Build 037 · Contents + Notes
-   Curated Accent is deliberately weaker than Curated Hero. It belongs to the
-   active Editorial World, never to project content, and yields space first. */
+/* Build 038 · Orientierung + Erinnerungen
+   Orientierung is deliberately image-free. Erinnerungen keeps one subordinate
+   world-owned Curated Accent. World imagery uses soft watercolor alpha edges. */
 .a5-page.contents-page,
 .a5-page.notes-page {
   background: #fff;
@@ -19,11 +19,13 @@
 .contents-head,
 .notes-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 104px;
   gap: 20px;
   align-items: start;
   margin-bottom: 20px;
 }
+
+.contents-head { grid-template-columns: minmax(0, 1fr); }
+.notes-head { grid-template-columns: minmax(0, 1fr) 104px; }
 
 .contents-head .eyebrow,
 .notes-head .eyebrow {
@@ -60,7 +62,6 @@
   filter: saturate(.88) contrast(.96);
 }
 
-.contents-accent { align-self: start; }
 .notes-accent { height: 76px; }
 
 .contents-list {
@@ -205,8 +206,7 @@
 
 .a5-page.notes-page .page-companion { max-height: 58px; }
 
-/* Contents is companion-free by contract. Curated Accent is the only world
-   image and remains clearly subordinate to navigation. */
+/* Orientierung is companion-free and image-free by contract. */
 .a5-page.contents-page .editorial-footer,
 .a5-page.notes-page .editorial-footer {
   position: relative;
@@ -215,5 +215,6 @@
 
 @media (max-height: 720px) {
   .curated-world-accent { height: 62px; }
-  .contents-head, .notes-head { grid-template-columns: minmax(0, 1fr) 94px; gap: 16px; margin-bottom: 14px; }
+  .contents-head { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 14px; }
+  .notes-head { grid-template-columns: minmax(0, 1fr) 94px; gap: 16px; margin-bottom: 14px; }
 }
