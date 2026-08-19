@@ -1,11 +1,17 @@
-/* Build 033 — Curated Photography Workshop */
+/* Build 034 — Photography Workshop Capacity Protection Regression Fix */
 .a5-page.photography-workshop-page {
   background: #fff;
 }
 
+/*
+ * Workshop content must participate in the existing A5 flex geometry.
+ * It must never claim 100% of the page independently of Footer/Companion.
+ */
 .photography-workshop-preview {
   position: relative;
-  height: 100%;
+  flex: 0 1 auto;
+  min-height: 0;
+  height: auto;
   padding: 0;
   box-sizing: border-box;
   color: var(--world-ink);
@@ -14,43 +20,43 @@
 .photography-workshop-preview h1 {
   margin: 0;
   max-width: 82%;
-  font-size: 29px;
-  line-height: 1.05;
+  font-size: 28px;
+  line-height: 1.04;
 }
 
 .photography-workshop-deck {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   max-width: 94%;
   font-family: var(--world-body-family);
-  font-size: 10.6px;
-  line-height: 1.38;
+  font-size: 10.2px;
+  line-height: 1.34;
   color: var(--world-quiet);
 }
 
 .photography-workshop-flow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 14px;
+  gap: 7px;
+  margin-top: 11px;
 }
 
 .photography-workshop-card {
-  padding: 9px 10px 8px;
+  padding: 7px 9px 6px;
   background: color-mix(in srgb, var(--world-accent) 7%, #fff);
   box-sizing: border-box;
 }
 
 .photography-workshop-card header {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 6px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 5px;
   align-items: start;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .photography-workshop-card header > span {
   font-family: var(--world-body-family);
-  font-size: 7px;
+  font-size: 6.8px;
   font-weight: 700;
   letter-spacing: .12em;
   color: var(--world-accent);
@@ -63,29 +69,29 @@
 
 .photography-workshop-card header strong {
   font-family: var(--world-heading-family);
-  font-size: 10.8px;
-  line-height: 1.12;
+  font-size: 10.4px;
+  line-height: 1.1;
   color: var(--world-ink);
 }
 
 .photography-workshop-card header small {
   font-family: var(--world-body-family);
-  font-size: 7.1px;
-  line-height: 1.2;
+  font-size: 6.9px;
+  line-height: 1.18;
   color: var(--world-accent);
 }
 
 .photography-workshop-card p {
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   font-family: var(--world-body-family);
-  font-size: 7.45px;
-  line-height: 1.3;
+  font-size: 7.15px;
+  line-height: 1.24;
   color: var(--world-ink);
 }
 
 .photography-workshop-card .photography-workshop-orientation {
-  margin-bottom: 5px;
-  font-size: 6.8px;
+  margin-bottom: 4px;
+  font-size: 6.55px;
   font-weight: 650;
   letter-spacing: .02em;
   color: var(--world-quiet);
@@ -96,24 +102,33 @@
   color: var(--world-quiet);
 }
 
+/*
+ * Secondary bridge content yields space before core workshop content.
+ * It also clears the bottom-left Companion safe zone instead of spanning it.
+ */
 .photography-workshop-bridge {
-  margin: 10px 0 0;
-  padding-top: 8px;
+  margin: 6px 0 0 72px;
+  padding-top: 5px;
   border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
   font-family: var(--world-body-family);
-  font-size: 7.5px;
-  line-height: 1.34;
+  font-size: 7.05px;
+  line-height: 1.25;
   color: var(--world-quiet);
 }
 
 .photography-workshop-bridge span {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 7.1px;
+  display: inline;
+  margin: 0;
+  font-size: 6.9px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .11em;
   text-transform: uppercase;
   color: var(--world-accent);
+  white-space: nowrap;
 }
 
 .baltic-page .photography-workshop-card {

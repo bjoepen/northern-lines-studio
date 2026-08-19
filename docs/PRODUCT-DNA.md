@@ -2037,3 +2037,17 @@ Verbindlich:
 Leitsatz:
 
 > **Erst sehen und entscheiden. Dann die Kamera dafür arbeiten lassen.**
+
+## Build 034 · Global Capacity Inheritance for New Page Grammars
+
+New page grammars, curated heroes and secondary editorial elements must inherit the existing Content Fit and Safe-Zone contract. A newly introduced layout path may never bypass Capacity Protection.
+
+Binding rules:
+
+- Core content, Companion and Footer have priority over decorative or secondary elements.
+- A secondary bridge, curated hero or similar supportive element yields space before core content is compressed.
+- A page grammar must participate in the shared A5 geometry; it may not claim an independent full-page height that competes with Footer or Companion.
+- If no allowed composition fits the real geometric content area, Studio uses the established travel-language overflow state instead of clipping or overlap.
+- Capacity decisions are based on real layout geometry, not abstract character counts.
+
+> **Neue Grammar erbt Capacity Protection. Sie definiert sie nicht neu.**
