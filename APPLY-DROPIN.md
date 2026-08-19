@@ -1,29 +1,29 @@
-# APPLY DROP-IN — Northern Lines Studio Build 036
+# APPLY DROP-IN — Northern Lines Studio Build 037
 
-Build 036 adds the approved fixed **Ostsee Curated Heroes** and applies the Fjord Curated Hero contract to the Baltic World.
+Build 037 implements the approved **Inhaltsverzeichnis** and **Notizen** grammar plus fixed world-specific **Curated Accents** for Fjord and Ostsee.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b feat/build-036-ostsee-curated-heroes
+git checkout -b feat/build-037-contents-notes-curated-accents
 ```
 
 ## 2. Dry Run
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-036-Ostsee-Curated-Heroes-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-037-Contents-Notes-Curated-Accents-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-Review the changed files. No intentional deletion is required.
+No intentional deletions are required.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-036-Ostsee-Curated-Heroes-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-037-Contents-Notes-Curated-Accents-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -31,16 +31,16 @@ rsync -av \
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm run consistency:build-036-ostsee-heroes
+pnpm consistency:build-037-utility-pages
 ```
 
 Expected:
 
 ```text
-Build 036 Ostsee Curated Heroes Consistency Gate: PASS
+Build 037 Contents & Notes Consistency Gate: PASS
 ```
 
-`PASS` must be green.
+`PASS` must appear green.
 
 ## 5. Full Gates
 
@@ -60,33 +60,36 @@ cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Expected target:
+Target:
 
 ```text
 /Applications/Northern Lines Studio.app
 ```
 
-## 7. Real-World / Visual Approval Test
+## 7. Real-world / Visual Test
 
-Switch the active Editorial World to **Ostsee** and inspect:
+Test **both Fjord and Ostsee**.
 
-1. Fotografie
-2. Wandern & Natur
-3. Kultur & Geschichte
-4. Kulinarik & Lokal
-5. Fotografie-Workshop
+### Inhaltsverzeichnis
 
-Verify:
+- page surface is literal white;
+- page list is automatically derived from the current Travelbook;
+- section hierarchy and page numbers remain the visual priority;
+- Curated Accent appears small in the upper-right area and is clearly subordinate;
+- there is no image control in the Inspector;
+- no Companion appears on Contents;
+- Footer stays protected.
 
-- the correct Ostsee hero appears automatically;
-- no hero controls are exposed in the Inspector;
-- the hero occupies only the upper-right head flow;
-- intro copy may wrap beside / below it;
-- modules resume their existing full-width geometry after the intro;
-- Companion and Footer remain unchanged;
-- page surface stays literal white;
-- switching back to Fjord restores the corresponding Fjord hero;
-- the Workshop remains the worst-case capacity reference without clipping or overlap.
+### Notizen
+
+- page surface is literal white;
+- large main writing area remains dominant;
+- secondary areas are exactly `Schnellnotiz`, `Ideen`, `Skizze`;
+- Curated Accent remains small and secondary;
+- Companion and Footer do not overlap any writing area;
+- there is no image control in the Inspector.
+
+Switch Worlds and confirm only the accent expression changes; structure and semantics remain identical.
 
 **Wait for visual approval before merge.**
 
@@ -94,6 +97,6 @@ Verify:
 
 ```bash
 git add .
-git commit -m "feat: add fixed Ostsee curated heroes"
-git push -u origin feat/build-036-ostsee-curated-heroes
+git commit -m "feat: add contents and notes curated accents"
+git push -u origin feat/build-037-contents-notes-curated-accents
 ```

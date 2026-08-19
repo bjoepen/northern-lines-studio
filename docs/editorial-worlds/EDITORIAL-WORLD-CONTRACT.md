@@ -34,3 +34,8 @@ World Assets sind semantisch oder charakteristisch. Es gibt keine frei wachsende
 ## Destination Interest Pages · Build 026
 
 Every released Editorial World must support the shared `destination_interest` grammar. Interest semantics are World-independent: **Fotografie**, **Wandern & Natur**, **Kultur & Geschichte** and **Kulinarik & Lokal** remain the same when a Travelbook changes World. Typography, Companion, accents and Editorial Treatments may change through World Expression; authored content and interest kind do not.
+
+
+## Curated Accent
+
+Utility pages such as Inhaltsverzeichnis and Notizen may use one fixed, world-owned **Curated Accent**. It is intentionally smaller and quieter than a Curated Hero, cannot be changed by the user, and yields space before navigation, writing capacity, Companion or Footer are compromised.

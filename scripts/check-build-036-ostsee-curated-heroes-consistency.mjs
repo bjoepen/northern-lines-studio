@@ -31,7 +31,7 @@ const checks = [
   ['workshop maximum-size reference remains 136px', workshopCss.includes('max-width: 136px')],
   ['hero remains non-interactive', interestCss.includes('pointer-events: none') && interestCss.includes('user-select: none')],
   ['Product DNA records both World-owned hero sets', dna.includes('Ostsee Curated Heroes') && dna.includes('Fjord')],
-  ['version parity is 0.36.0-alpha.1', pkg.version === '0.36.0-alpha.1' && tauri.version === '0.36.0-alpha.1' && cargo.includes('version = "0.36.0-alpha.1"') && cargoLock.includes('name = "northern-lines-studio"\nversion = "0.36.0-alpha.1"')]
+  ['version parity remains synchronized', pkg.version === tauri.version && cargo.includes(`version = "${pkg.version}"`) && cargoLock.includes(`name = "northern-lines-studio"\nversion = "${pkg.version}"`)]
 ];
 
 let failed = false;

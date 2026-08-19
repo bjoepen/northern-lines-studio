@@ -35,3 +35,8 @@ Die Heroes sind World-Assets und ausdrücklich keine Nutzer-Assets. Sie beeinflu
 Der Fotografie-Workshop ist die verbindliche Größen- und Capacity-Referenz für diese Hero-Familie.
 
 Vollständiger Contract: `docs/editorial-worlds/FJORD-CURATED-HERO-CONTRACT.md`.
+
+
+## Curated Accent
+
+Utility pages such as Inhaltsverzeichnis and Notizen may use one fixed, world-owned **Curated Accent**. It is intentionally smaller and quieter than a Curated Hero, cannot be changed by the user, and yields space before navigation, writing capacity, Companion or Footer are compromised.

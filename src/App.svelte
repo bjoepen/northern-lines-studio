@@ -44,6 +44,7 @@
   import { CURATED_WEATHER_SITUATIONS } from './lib/travel-companion-weather';
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
   import { curatedHeroFor } from './lib/curated-heroes';
+  import { curatedAccentFor } from './lib/curated-accents';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -1312,6 +1313,8 @@
               class:light-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'photography_light'}
               class:weather-companion-page={selectedPage?.type === 'knowledge' && selectedPage.knowledgeType === 'travel_weather'}
               class:photography-workshop-page={selectedPage?.type === 'workflow'}
+              class:contents-page={selectedPage?.type === 'contents'}
+              class:notes-page={selectedPage?.type === 'notes'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
               in:fade={{ duration: 190 }}
             >
@@ -1679,6 +1682,65 @@
                   </div>
 
                   <p class="photography-workshop-bridge"><span>Licht & Wetter</span>{CURATED_WORKSHOP_BRIDGE}</p>
+                </div>
+              {:else if selectedPage?.type === 'contents' && project}
+                <div class="contents-preview">
+                  <header class="contents-head">
+                    <div>
+                      <p class="eyebrow">Orientierung</p>
+                      <h1>Inhaltsverzeichnis</h1>
+                      <p class="contents-deck">Deine Reise auf einen Blick. Ruhig geordnet, damit du schnell findest, was dich unterwegs begleitet.</p>
+                    </div>
+                    {#if curatedAccentFor(editorialWorld?.id, 'contents')}
+                      <img class="curated-world-accent contents-accent" src={curatedAccentFor(editorialWorld?.id, 'contents') ?? ''} alt="" aria-hidden="true" />
+                    {/if}
+                  </header>
+
+                  <div class="contents-list" aria-label="Inhaltsübersicht">
+                    {#each sections as section}
+                      {@const tocPages = section.pages.filter((page) => page.type !== 'cover' && page.type !== 'contents')}
+                      {#if tocPages.length}
+                        <section class="contents-group">
+                          <span class="contents-group-label">{section.label}</span>
+                          <div>
+                            {#each tocPages as page}
+                              <div class="contents-row">
+                                <span class="contents-order">{String(visiblePageNumber(page)).padStart(2, '0')}</span>
+                                <strong>{displayPageTitle(page)}</strong>
+                                <span class="contents-leader" aria-hidden="true"></span>
+                                <span class="contents-page-number">{visiblePageNumber(page)}</span>
+                              </div>
+                            {/each}
+                          </div>
+                        </section>
+                      {/if}
+                    {/each}
+                  </div>
+                </div>
+              {:else if selectedPage?.type === 'notes'}
+                <div class="notes-preview">
+                  <header class="notes-head">
+                    <div>
+                      <p class="eyebrow">Erinnerungen</p>
+                      <h1>Notizen</h1>
+                      <p class="notes-deck">Ideen, Eindrücke und kleine Beobachtungen. Genug Struktur für Orientierung – und genug Freiheit für das, was unterwegs entsteht.</p>
+                    </div>
+                    {#if curatedAccentFor(editorialWorld?.id, 'notes')}
+                      <img class="curated-world-accent notes-accent" src={curatedAccentFor(editorialWorld?.id, 'notes') ?? ''} alt="" aria-hidden="true" />
+                    {/if}
+                  </header>
+
+                  <div class="notes-layout" aria-label="Notizbereiche">
+                    <section class="notes-main" aria-label="Freie Notizen">
+                      <span>Freie Notizen</span>
+                      <div class="notes-lines" aria-hidden="true"></div>
+                    </section>
+                    <aside class="notes-side">
+                      <section><span>Schnellnotiz</span><div class="notes-mini-lines" aria-hidden="true"></div></section>
+                      <section><span>Ideen</span><div class="notes-mini-lines" aria-hidden="true"></div></section>
+                      <section class="notes-sketch"><span>Skizze</span><div class="notes-dot-grid" aria-hidden="true"></div></section>
+                    </aside>
+                  </div>
                 </div>
               {:else}
                 <div class="page-rule"></div>
