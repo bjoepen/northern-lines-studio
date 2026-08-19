@@ -1,12 +1,12 @@
-# APPLY DROP-IN — Northern Lines Studio Build 033
+# APPLY DROP-IN — Northern Lines Studio Build 034 Capacity Protection Regression Fix
 
-Build 033 turns the existing photography workflow page into a fully curated, program-neutral **Fotografie-Workshop**.
+This fix restores the established Capacity Protection contract for the curated **Fotografie-Workshop**.
 
 ## 1. Branch
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-git checkout -b feat/build-033-curated-photography-workshop
+git checkout -b fix/build-034-workshop-capacity-protection
 ```
 
 ## 2. Dry Run
@@ -15,17 +15,17 @@ Assuming the ZIP was unpacked in `~/Downloads`:
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-033-Curated-Photography-Workshop-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-034-Workshop-Capacity-Protection-Fix-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
-Review the list carefully. Build 033 does not intentionally delete existing files.
+Build 034 intentionally changes only the workshop layout policy, its regression gate and documentation. No files are intentionally deleted.
 
 ## 3. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-033-Curated-Photography-Workshop-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-034-Workshop-Capacity-Protection-Fix-DropIn/ \
   ~/Projekte/northern-lines-studio/
 ```
 
@@ -33,16 +33,16 @@ rsync -av \
 
 ```bash
 cd ~/Projekte/northern-lines-studio
-pnpm run consistency
+pnpm consistency
 ```
 
 Expected new result:
 
 ```text
-Travel Companion · Fotografie-Workshop Consistency Gate: PASS
+Workshop Capacity Protection Regression Gate: PASS
 ```
 
-`PASS` must be displayed in green.
+All `PASS` status words must remain green.
 
 ## 5. Full Gates
 
@@ -54,7 +54,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-All gates must pass before the build is accepted.
+All gates must pass before acceptance.
 
 ## 6. Install macOS App
 
@@ -63,7 +63,7 @@ cd ~/Projekte/northern-lines-studio
 ./scripts/install-macos-app.sh
 ```
 
-Expected app target:
+Expected target:
 
 ```text
 /Applications/Northern Lines Studio.app
@@ -77,20 +77,23 @@ pnpm tauri build --bundles app
 
 ## 7. Real-World Test
 
-1. Open the Norway project and select **Fotografie-Workshop**.
-2. Confirm the page contains exactly four curated worlds: **Sehen**, **Gestalten**, **Belichten**, **Unterwegs**.
-3. Confirm there is no software-specific language (Luminar, ON1, Lightroom, Photoshop).
-4. Confirm no authoring mask is offered for the workshop.
-5. Confirm the short **Licht & Wetter** bridge is present without duplicating the Light/Weather companion pages.
-6. Switch Fjord ↔ Ostsee and verify the World Expression remains intact.
-7. Verify Companion and Footer stay in their protected zones.
-8. Confirm the Inspector uses calm UI typography and reports `kuratiert`, `4 vorhanden`, `nicht vorgesehen`.
-9. Run the Native UI Consistency Check and confirm no default HTML control styling leaked into the visible flow.
+Open **Fotografie-Workshop** with the complete curated content.
+
+Verify:
+
+1. `Sehen`, `Gestalten`, `Belichten`, and `Unterwegs` are fully readable.
+2. `Licht & Wetter` stays secondary and no longer enters the Companion zone.
+3. The Papageientaucher remains in its fixed bottom-left safe-zone.
+4. Footer and page number remain fixed and unobstructed.
+5. No content is clipped and no typography is arbitrarily shrunk.
+6. Switch Fjord ↔ Ostsee and confirm the page composition remains stable.
+7. Confirm the known travel-language overflow state remains available for any future composition that genuinely cannot fit.
+8. Check the Inspector for accidental native/default HTML controls before release.
 
 ## 8. Commit & Push
 
 ```bash
 git add .
-git commit -m "feat: add curated photography workshop"
-git push -u origin feat/build-033-curated-photography-workshop
+git commit -m "fix: restore workshop capacity protection"
+git push -u origin fix/build-034-workshop-capacity-protection
 ```

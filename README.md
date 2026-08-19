@@ -446,3 +446,7 @@ Capacity Protection no longer treats raw character count as a reason to reject a
 ## Build 033 · Kuratierter Fotografie-Workshop
 
 Der bisherige programmspezifisch gedachte Fotografie-Workflow wird als vollständig kuratierter, programmneutraler Workshop erzählt. Vier Themenwelten – **Sehen, Gestalten, Belichten, Unterwegs** – vermitteln fotografische Entscheidungen ohne feste Einstellungsrezepte oder Softwarevorgaben. Licht und Wetter werden als benachbarte Travel-Companion-Themen referenziert, nicht dupliziert.
+
+### Build 034 · Workshop Capacity Protection Regression Fix
+
+Build 034 restores the global Content Fit contract for the curated Fotografie-Workshop. The workshop now participates in the shared A5 page geometry instead of claiming an independent full-page height. Secondary `Licht & Wetter` content yields space before core workshop content, Companion or Footer are affected — never after.
