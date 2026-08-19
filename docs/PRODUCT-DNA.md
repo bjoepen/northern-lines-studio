@@ -2079,3 +2079,15 @@ This rule applies to editorial/content pages. Dedicated cover artwork remains go
 - The hero never moves or narrows Companion, Footer or the persistent module grid.
 - Capacity Protection remains authoritative. New hero grammar inherits the same safe-zone and content-fit rules as every other page grammar.
 - Build 035 introduces this contract for the Fjord World first.
+
+## Curated Companion / Interest Hero Rule
+
+Curated Heroes sind feste Bestandteile einer Editorial World, keine Nutzer-Assets.
+
+- World bestimmt das Hero automatisch.
+- Es gibt keine Auswahl, keinen Upload und keine Hero-Galerie.
+- Das Hero wirkt ausschließlich im Kopfbereich.
+- Introtext darf um das Hero fließen; reguläre Inhaltsmodule kehren danach zur vollständigen Grammar zurück.
+- Der Fotografie-Workshop ist die Größenreferenz für den knappsten zulässigen Fall.
+- Hero verliert bei Kapazitätsdruck zuerst Raum; Kerninhalt, Companion und Footer nicht.
+- Jede neue World muss dieselbe Semantik und Grammar erhalten, aber ihre eigene kuratierte visuelle Expression liefern.
