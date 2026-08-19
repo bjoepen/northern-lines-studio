@@ -450,3 +450,15 @@ Der bisherige programmspezifisch gedachte Fotografie-Workflow wird als vollstän
 ### Build 034 · Workshop Capacity Protection Regression Fix
 
 Build 034 restores the global Content Fit contract for the curated Fotografie-Workshop. The workshop now participates in the shared A5 page geometry instead of claiming an independent full-page height. Secondary `Licht & Wetter` content yields space before core workshop content, Companion or Footer are affected — never after.
+
+## Build 034 · Final Consistency Cleanup
+
+The final Build-034 cleanup keeps the successful Workshop real-world layout intact while tightening release consistency:
+
+- Fjord Destination Pages now use literal white `#FFFFFF` instead of the historical cream override.
+- Fjord `paperTone` is aligned to `#FFFFFF`, matching Ostsee and the physical page contract.
+- the stale Destination Imagery gate now verifies literal white correctly;
+- native Tauri/Cargo version metadata is synchronized to `0.34.0-alpha.1`;
+- a dedicated final gate protects white content-page surfaces and version parity.
+
+No `.nls` migration is required.

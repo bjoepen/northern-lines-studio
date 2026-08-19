@@ -4,7 +4,7 @@ export const fjordLayoutSystem: EditorialLayoutSystem = {
   id: 'fjord-layout',
   worldId: 'fjord',
   name: 'Fjord Layout Language',
-  paperTone: '#f8f7f3',
+  paperTone: '#ffffff',
   inkTone: '#1d3039',
   accentTone: '#547b8c',
   quietTone: '#8d9ca2',

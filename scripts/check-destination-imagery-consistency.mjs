@@ -59,8 +59,8 @@ if (!files.styles.includes('--binding-safe-left: 42.57px')) {
 if (!files.styles.includes('.a5-page.destination-page .companion-zone-bottom-left') || !files.styles.includes('left: 34px;')) {
   failures.push('Companion must remain at its invariant Editorial-World position');
 }
-if (!files.styles.includes('.a5-page.fjord-page.destination-page') || !files.styles.includes('background: #fffdfa')) {
-  failures.push('Fjord Destination Pages must keep the approved neutral-white paper surface');
+if (!files.styles.includes('.a5-page.fjord-page.destination-page') || !files.styles.includes('background: #ffffff')) {
+  failures.push('Fjord Destination Pages must use literal white (#FFFFFF) as the physical paper surface');
 }
 if (!files.styles.includes('.destination-hero-placeholder.destination-image-present') || !files.styles.includes('background: transparent')) {
   failures.push('Real imagery must be composed on paper without a coloured image-card background');

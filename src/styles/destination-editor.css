@@ -34,7 +34,7 @@
 .destination-layout-options strong { font-size: 8.5px; color: #314a54; }
 .destination-layout-options small { margin-top: 2px; font-size: 7px; line-height: 1.28; color: #7b8a90; }
 .layout-option-copy { min-width: 0; }
-.layout-miniature { position: relative; display: block; height: 34px; overflow: hidden; border: 1px solid #dce5e7; border-radius: 4px; background: #fffdfa; }
+.layout-miniature { position: relative; display: block; height: 34px; overflow: hidden; border: 1px solid #dce5e7; border-radius: 4px; background: #ffffff; }
 .layout-miniature i { position: absolute; display: block; }
 .layout-miniature-image { background: linear-gradient(145deg, #dce9ec, #9ebbc4); }
 .layout-miniature-copy { background: repeating-linear-gradient(to bottom, #b9c6ca 0 1px, transparent 1px 5px); opacity: .85; }

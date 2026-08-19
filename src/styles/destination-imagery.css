@@ -3,7 +3,7 @@
    the atmospheric colour source; image roles are composed into the page, not
    placed inside coloured media cards. */
 .a5-page.fjord-page.destination-page {
-  background: #fffdfa;
+  background: #ffffff;
 }
 
 /* A real destination image owns its intrinsic geometry inside the allowed
