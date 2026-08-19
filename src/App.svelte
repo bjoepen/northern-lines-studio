@@ -43,6 +43,7 @@
   import { CURATED_LIGHT_PHASES } from './lib/travel-companion-light';
   import { CURATED_WEATHER_SITUATIONS } from './lib/travel-companion-weather';
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
+  import { curatedHeroFor } from './lib/curated-heroes';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -1392,8 +1393,13 @@
                   <div class="destination-interest-preview photography-place-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule photography-page-rule"></div>
                     <p class="eyebrow">{destinationInterest.label}</p>
-                    <h1>{journeyStage.title}</h1>
-                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    <div class="curated-hero-flow">
+                      {#if curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind)}
+                        <img class="curated-world-hero" src={curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind) ?? ''} alt="" aria-hidden="true" />
+                      {/if}
+                      <h1>{journeyStage.title}</h1>
+                      <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    </div>
 
                     {#if interestOverflow}
                       <div class="destination-capacity-stop photography-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
@@ -1449,8 +1455,13 @@
                   <div class="destination-interest-preview hiking-nature-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule hiking-page-rule"></div>
                     <p class="eyebrow">{destinationInterest.label}</p>
-                    <h1>{journeyStage.title}</h1>
-                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    <div class="curated-hero-flow">
+                      {#if curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind)}
+                        <img class="curated-world-hero" src={curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind) ?? ''} alt="" aria-hidden="true" />
+                      {/if}
+                      <h1>{journeyStage.title}</h1>
+                      <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    </div>
 
                     {#if interestOverflow}
                       <div class="destination-capacity-stop hiking-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
@@ -1500,8 +1511,13 @@
                   <div class="destination-interest-preview culture-history-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule culture-history-page-rule"></div>
                     <p class="eyebrow">{destinationInterest.label}</p>
-                    <h1>{journeyStage.title}</h1>
-                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    <div class="curated-hero-flow">
+                      {#if curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind)}
+                        <img class="curated-world-hero" src={curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind) ?? ''} alt="" aria-hidden="true" />
+                      {/if}
+                      <h1>{journeyStage.title}</h1>
+                      <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    </div>
                     {#if interestOverflow}
                       <div class="destination-capacity-stop culture-history-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
                         <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
@@ -1542,8 +1558,13 @@
                   <div class="destination-interest-preview culinary-local-experience" class:interest-density-tight={interestDensity === 'tight'}>
                     <div class="page-rule culinary-local-page-rule"></div>
                     <p class="eyebrow">{destinationInterest.label}</p>
-                    <h1>{journeyStage.title}</h1>
-                    <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    <div class="curated-hero-flow">
+                      {#if curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind)}
+                        <img class="curated-world-hero" src={curatedHeroFor(editorialWorld?.id, selectedPage.destinationInterestKind) ?? ''} alt="" aria-hidden="true" />
+                      {/if}
+                      <h1>{journeyStage.title}</h1>
+                      <p class="preview-body destination-interest-introduction">{selectedPage.authoring?.introduction?.content || destinationInterestIntroduction(selectedPage.destinationInterestKind, journeyStage.title)}</p>
+                    </div>
                     {#if interestOverflow}
                       <div class="destination-capacity-stop culinary-local-capacity-stop" aria-label="Inhalt passt nicht ruhig auf diese Seite">
                         <strong>Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.</strong>
@@ -1635,8 +1656,13 @@
                 </div>
               {:else if selectedPage?.type === 'workflow'}
                 <div class="photography-workshop-preview">
-                  <h1>Fotografie-Workshop</h1>
-                  <p class="photography-workshop-deck">Vier Fragen für bewusstere Bilder unterwegs. Der Workshop vermittelt keine festen Rezepte und schreibt keine Software vor – er ordnet Entscheidungen vom ersten Blick bis zur kurzen Kontrolle nach der Aufnahme.</p>
+                  <div class="curated-hero-flow curated-hero-flow-workshop">
+                    {#if curatedHeroFor(editorialWorld?.id, 'photography_workshop')}
+                      <img class="curated-world-hero" src={curatedHeroFor(editorialWorld?.id, 'photography_workshop') ?? ''} alt="" aria-hidden="true" />
+                    {/if}
+                    <h1>Fotografie-Workshop</h1>
+                    <p class="photography-workshop-deck">Vier Fragen für bewusstere Bilder unterwegs. Der Workshop vermittelt keine festen Rezepte und schreibt keine Software vor – er ordnet Entscheidungen vom ersten Blick bis zur kurzen Kontrolle nach der Aufnahme.</p>
+                  </div>
 
                   <div class="photography-workshop-flow" aria-label="Vier kuratierte Themenwelten des Fotografie-Workshops">
                     {#each CURATED_WORKSHOP_WORLDS as world, index (world.id)}

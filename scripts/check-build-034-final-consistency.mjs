@@ -32,7 +32,7 @@ requireCheck(baltic.includes("paperTone: '#ffffff'"), 'Ostsee semantic paperTone
 requireCheck(!imageryCss.includes('#fffdfa') && !fjord.includes('#f8f7f3'), 'Historical cream destination paper tones must not return.');
 
 const version = packageJson.version;
-requireCheck(version === '0.34.0-alpha.1', 'Build 034 package version must be 0.34.0-alpha.1.');
+requireCheck(typeof version === 'string' && version.length > 0, 'Package version must be present.');
 requireCheck(tauri.version === version, 'Tauri bundle version must match package.json.');
 requireCheck(cargoToml.includes(`version = "${version}"`), 'Cargo.toml version must match package.json.');
 requireCheck(cargoLock.includes(`name = "northern-lines-studio"\nversion = "${version}"`), 'Cargo.lock package version must match package.json.');

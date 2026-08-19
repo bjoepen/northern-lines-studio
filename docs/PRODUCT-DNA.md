@@ -2068,3 +2068,14 @@ Binding rules:
 - The app version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the root package entry in `Cargo.lock` must match before release packaging.
 
 This rule applies to editorial/content pages. Dedicated cover artwork remains governed by the Cover grammar.
+
+
+## Curated World Heroes (Build 035)
+
+- Interest Pages and the Fotografie-Workshop may use a small curated hero that is owned by the active Editorial World.
+- The user cannot choose, replace, hide or upload this image. It is not travelbook content and is not stored redundantly in `.nls`.
+- The Fotografie-Workshop is the maximum-size reference for this hero family.
+- The hero lives only in the page header. Introductory text may flow around it; all following modules return to the established full content geometry.
+- The hero never moves or narrows Companion, Footer or the persistent module grid.
+- Capacity Protection remains authoritative. New hero grammar inherits the same safe-zone and content-fit rules as every other page grammar.
+- Build 035 introduces this contract for the Fjord World first.

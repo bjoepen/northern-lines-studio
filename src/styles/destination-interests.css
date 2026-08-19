@@ -783,3 +783,34 @@
    All approved two-entry layouts are finite candidates: 1/2–1/2, 1/3–2/3,
    2/3–1/3 and stacked. Each entry keeps its own semantic surface. */
 .interest-entry-stacked { gap: 9px; }
+
+/* Build 035 · Fjord Curated Heroes
+   The hero belongs to the page header only. It never creates a persistent content column. */
+.curated-hero-flow {
+  display: flow-root;
+}
+
+.curated-world-hero {
+  float: right;
+  width: 34%;
+  max-width: 138px;
+  height: auto;
+  margin: 0 0 8px 14px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.curated-hero-flow::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.fjord-page .destination-interest-preview .curated-hero-flow h1 {
+  max-width: none;
+}
+
+.fjord-page .destination-interest-preview .curated-hero-flow .destination-interest-introduction {
+  max-width: none;
+}
