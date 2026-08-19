@@ -2091,3 +2091,13 @@ Curated Heroes sind feste Bestandteile einer Editorial World, keine Nutzer-Asset
 - Der Fotografie-Workshop ist die Größenreferenz für den knappsten zulässigen Fall.
 - Hero verliert bei Kapazitätsdruck zuerst Raum; Kerninhalt, Companion und Footer nicht.
 - Jede neue World muss dieselbe Semantik und Grammar erhalten, aber ihre eigene kuratierte visuelle Expression liefern.
+
+
+## Ostsee Curated Heroes (Build 036)
+
+- The Curated Hero contract is now shared by Fjord and Ostsee.
+- Each Editorial World owns its own fixed five-image set for Fotografie, Wandern & Natur, Kultur & Geschichte, Kulinarik & Lokal and Fotografie-Workshop.
+- The user cannot choose, replace, hide or upload a Curated Hero.
+- Switching Worlds changes only the curated visual expression; the page semantics and authoring model remain unchanged.
+- Ostsee inherits the Fjord header-flow, Workshop size reference, Content Fit and Capacity Protection rules.
+- Ostsee expression remains lighter, sandier, more horizontal and Hanseatic/coastal while the physical page surface stays `#FFFFFF`.

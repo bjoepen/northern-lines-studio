@@ -1,0 +1,17 @@
+c3416bf36a1393bcbcd7beafd6523e5f6f673ca99cf8e691f53d6698e9dd68f5  ./APPLY-DROPIN.md
+9b0699d0e47493296c6f95b85b1d89087f286ba3e79da851f1965bebe439c9a1  ./README.md
+0208fd11072071becbd9f2e2e3edac850eaf9efad702d1ff167e47e0b7ed755a  ./docs/BUILD-036-OSTSEE-CURATED-HEROES.md
+ff3ea841b4728681fbba302863678b2fd2afd4cb5de85b1506169f0ffeb1c897  ./docs/PRODUCT-DNA.md
+17e3138dfab45e1ae620a5229ab9fc1767b231299bed414871609a397f2ac490  ./docs/editorial-worlds/OSTSEE-CURATED-HERO-CONTRACT.md
+59f56eb62424c2444851a7d41301405ee994fb85fd787e347a4fc996a29a0a3e  ./package.json
+eb0cb4cb172908c0f822e3d918c4b2c9e7716f8c203f76aec801ceb91581629e  ./public/design-library/worlds/baltic/curated-heroes/culinary-local.png
+a15e516d424a339102c35f8138d146cde8ee911e1b362f421cdaf89df8503800  ./public/design-library/worlds/baltic/curated-heroes/culture-history.png
+a8c36fd4b22e6be4a330c21c7d8a0b74d9407ede8fd4b56abf9a1d7a7d3f1950  ./public/design-library/worlds/baltic/curated-heroes/hiking-nature.png
+1c89e7091cdf172aa49f83a2d7bc0ad4fc4c4634d694cba0fa9423ad33f4d7a6  ./public/design-library/worlds/baltic/curated-heroes/photography-workshop.png
+15a5c9bfd969128463edda1d83eb93021bc97e05c5d1dcb7d6de9f4e2764cab3  ./public/design-library/worlds/baltic/curated-heroes/photography.png
+05199355c5b064381af83b66adb6f74982cc2536b6dcf63e22a89ed2b99da2e3  ./scripts/check-build-035-curated-heroes-consistency.mjs
+d7fdd236f64a8c7a5a44586060cb1ea9690f18a125fa4f9247b9da65426087fb  ./scripts/check-build-036-ostsee-curated-heroes-consistency.mjs
+e2a842f82e3ae95cfe8bcf7c8c06ccade61c0445c3c9b0d22d6e3cf63c3eb771  ./src-tauri/Cargo.lock
+360effb4d375469c6c3f524f8e4eab1494d748d08416273e5a5122161347c803  ./src-tauri/Cargo.toml
+28e6da70fff6cd4d47cd6481b6eb1b478dd9301fb2cfcefb456075cdfc9fe580  ./src-tauri/tauri.conf.json
+e4e0c986533dc0a241234b9547da13e8687cc0fefea215d3bd85ec361c9163cd  ./src/lib/curated-heroes.ts

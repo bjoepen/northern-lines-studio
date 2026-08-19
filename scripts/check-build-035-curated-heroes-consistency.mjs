@@ -20,7 +20,7 @@ const assetPaths = [
 
 const checks = [
   ['five Fjord curated hero assets exist', assetPaths.every((p) => fs.existsSync(p))],
-  ['hero registry is Fjord-owned', heroes.includes("worldId === 'fjord'") && heroes.includes('FJORD_CURATED_HEROES')],
+  ['hero registry retains Fjord ownership', heroes.includes('FJORD_CURATED_HEROES') && heroes.includes('fjord: FJORD_CURATED_HEROES')],
   ['all four interest archetypes are mapped', ['photography:', 'hiking_nature:', 'culture_history:', 'culinary_local:'].every((x) => heroes.includes(x))],
   ['workshop hero is mapped', heroes.includes('photography_workshop:')],
   ['interest pages render the curated hero in header flow', app.includes('curated-hero-flow') && app.includes('selectedPage.destinationInterestKind')],
@@ -30,7 +30,7 @@ const checks = [
   ['workshop hero uses approved maximum size reference', workshopCss.includes('max-width: 136px')],
   ['hero is non-interactive', interestCss.includes('pointer-events: none') && interestCss.includes('user-select: none')],
   ['Product DNA records curated world hero contract', dna.includes('Curated World Heroes') && dna.includes('cannot choose, replace, hide or upload')],
-  ['version parity is 0.35.0-alpha.1', pkg.version === '0.35.0-alpha.1' && tauri.version === '0.35.0-alpha.1' && cargo.includes('version = "0.35.0-alpha.1"')]
+  ['version parity remains synchronized', pkg.version === tauri.version && cargo.includes(`version = "${pkg.version}"`)]
 ];
 
 let failed = false;
