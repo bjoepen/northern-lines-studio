@@ -1687,7 +1687,6 @@
                 <div class="contents-preview">
                   <header class="contents-head">
                     <div>
-                      <p class="eyebrow">Orientierung</p>
                       <h1>Orientierung</h1>
                       <p class="contents-deck">Deine Reise auf einen Blick. Ruhig geordnet, damit du schnell findest, was dich unterwegs begleitet.</p>
                     </div>
