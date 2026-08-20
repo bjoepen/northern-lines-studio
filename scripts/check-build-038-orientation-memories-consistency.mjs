@@ -20,7 +20,7 @@ const checks = [
   ['Project headings speak Travel Language', project.includes("heading: 'Orientierung'") && project.includes("heading: 'Erinnerungen'")],
   ['Starter pages speak Travel Language', rust.includes('"Orientierung", "content/pages/003-contents.md"') && rust.includes('"Erinnerungen", "content/pages/030-notes.md"')],
   ['Orientation head is single-column', css.includes('.contents-head { grid-template-columns: minmax(0, 1fr); }')],
-  ['Version parity', pkg.version === '0.38.0-alpha.1' && tauri.version === pkg.version && cargo.includes(`version = "${pkg.version}"`)],
+  ['Version parity', tauri.version === pkg.version && cargo.includes(`version = "${pkg.version}"`)],
   ['Fjord memories accent exists', fs.existsSync('public/design-library/worlds/fjord/curated-accents/notes.png')],
   ['Ostsee memories accent exists', fs.existsSync('public/design-library/worlds/baltic/curated-accents/notes.png')],
   ['Orientation accent removed from Fjord', !fs.existsSync('public/design-library/worlds/fjord/curated-accents/contents.png')],

@@ -157,6 +157,15 @@
   padding: 10px 10px 8px;
 }
 
+/* Build 039 · Ostsee memories surface
+   Keep the physical page white. Only the writing boxes receive a very light
+   ochre warmth from the established Baltic Amber/Warm Paper palette. */
+.a5-page.baltic-page.notes-page .notes-main,
+.a5-page.baltic-page.notes-page .notes-side > section {
+  border-color: color-mix(in srgb, var(--baltic-amber) 18%, #ffffff);
+  background: color-mix(in srgb, var(--baltic-amber) 8%, var(--baltic-warm-paper));
+}
+
 .notes-main > span,
 .notes-side > section > span {
   display: block;
