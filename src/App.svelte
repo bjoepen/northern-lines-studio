@@ -1717,7 +1717,6 @@
                 <div class="notes-preview">
                   <header class="notes-head">
                     <div>
-                      <p class="eyebrow">Erinnerungen</p>
                       <h1>Erinnerungen</h1>
                       <p class="notes-deck">Ideen, Eindrücke und kleine Beobachtungen. Genug Struktur für Orientierung – und genug Freiheit für das, was unterwegs entsteht.</p>
                     </div>
