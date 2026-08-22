@@ -1997,9 +1997,14 @@ fn document_proof_temp_output_path(output_path: &Path) -> PathBuf {
 }
 
 fn pdfa_temp_output_path(output_path: &Path) -> PathBuf {
-    let mut temp = output_path.as_os_str().to_os_string();
-    temp.push(".pdfa2b.tmp");
-    PathBuf::from(temp)
+    let mut temp = output_path.to_path_buf();
+    let mut file_name = output_path
+        .file_stem()
+        .unwrap_or_else(|| output_path.as_os_str())
+        .to_os_string();
+    file_name.push(".pdfa2b.tmp.pdf");
+    temp.set_file_name(file_name);
+    temp
 }
 
 fn validate_document_proof_page_requests(
@@ -3155,6 +3160,58 @@ mod tests {
         write_test_pdf_with_content(path, media_box, crop_box, None, vec![Vec::new()]);
     }
 
+    fn write_pdfa_convertible_test_pdf(path: &Path) {
+        let mut document = lopdf::Document::with_version("1.7");
+        let pages_id = document.new_object_id();
+        let page_id = document.new_object_id();
+        let content_id = document.add_object(lopdf::Stream::new(
+            lopdf::Dictionary::new(),
+            b"q 1 0 0 1 10 20 cm Q".to_vec(),
+        ));
+        let profile_id = document.add_object(lopdf::Stream::new(
+            lopdf::dictionary! {
+                "N" => 3,
+                "Alternate" => "DeviceRGB"
+            },
+            b"sRGB IEC61966-2.1 profile".to_vec(),
+        ));
+        let resources_id = document.add_object(lopdf::Dictionary::new());
+        let a5_box = lopdf::Object::Array(vec![
+            lopdf::Object::Real(0.0),
+            lopdf::Object::Real(0.0),
+            lopdf::Object::Real(A5_WIDTH_PT as f32),
+            lopdf::Object::Real(A5_HEIGHT_PT as f32),
+        ]);
+        document.objects.insert(
+            page_id,
+            lopdf::Object::Dictionary(lopdf::dictionary! {
+                "Type" => "Page",
+                "Parent" => lopdf::Object::Reference(pages_id),
+                "MediaBox" => a5_box.clone(),
+                "CropBox" => a5_box,
+                "Resources" => lopdf::Object::Reference(resources_id),
+                "Contents" => content_id
+            }),
+        );
+        document.objects.insert(
+            pages_id,
+            lopdf::Object::Dictionary(lopdf::dictionary! {
+                "Type" => "Pages",
+                "Kids" => vec![lopdf::Object::Reference(page_id)],
+                "Count" => 1
+            }),
+        );
+        let catalog_id = document.add_object(lopdf::dictionary! {
+            "Type" => "Catalog",
+            "Pages" => lopdf::Object::Reference(pages_id)
+        });
+        document.trailer.set("Root", catalog_id);
+        assert!(document.objects.contains_key(&profile_id));
+        document
+            .save(path)
+            .expect("save PDF/A-convertible test pdf");
+    }
+
     fn pdf_box(width: i64, height: i64) -> lopdf::Object {
         lopdf::Object::Array(vec![
             lopdf::Object::Integer(0),
@@ -3582,6 +3639,59 @@ mod tests {
     }
 
     #[test]
+    fn pdfa_temp_output_path_keeps_pdf_extension_for_atomic_candidate() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("travelbook.pdf");
+
+        let candidate = pdfa_temp_output_path(&output);
+
+        assert_eq!(candidate, temp.path().join("travelbook.pdfa2b.tmp.pdf"));
+        assert_eq!(
+            candidate
+                .extension()
+                .and_then(|extension| extension.to_str()),
+            Some("pdf")
+        );
+        assert_eq!(candidate.parent(), output.parent());
+        assert_ne!(candidate, output);
+    }
+
+    #[test]
+    fn pdfa_export_uses_pdf_temp_candidate_and_atomically_moves_final_output() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let source = temp.path().join("standard.pdf");
+        write_pdfa_convertible_test_pdf(&source);
+        let output = temp.path().join("travelbook-pdfa.pdf");
+        let candidate = pdfa_temp_output_path(&output);
+
+        assert!(source.exists());
+        assert_eq!(
+            output.extension().and_then(|extension| extension.to_str()),
+            Some("pdf")
+        );
+        assert_eq!(
+            candidate
+                .extension()
+                .and_then(|extension| extension.to_str()),
+            Some("pdf")
+        );
+        assert!(pdfa::convert_to_pdfa2b(&source, &candidate).is_ok());
+        assert!(candidate.exists());
+        fs::remove_file(&candidate).expect("remove accepted candidate before export");
+
+        let result = export_studio_pdfa2b(StudioPdfA2bExportRequest {
+            source_path: source.to_string_lossy().into_owned(),
+            output_path: output.to_string_lossy().into_owned(),
+        })
+        .expect("pdfa export succeeds");
+
+        assert_eq!(result.page_count, 1);
+        assert_eq!(result.profile, "PDF/A-2b");
+        assert!(output.exists());
+        assert!(!candidate.exists());
+    }
+
+    #[test]
     fn pdfa_export_failure_does_not_leave_final_or_candidate_output() {
         let temp = tempfile::tempdir().expect("tempdir");
         let source = temp.path().join("standard.pdf");
@@ -3600,7 +3710,15 @@ mod tests {
             output_path: output.to_string_lossy().into_owned(),
         });
 
-        assert!(result.expect_err("pdfa conversion fails").starts_with("PDF_A_"));
+        assert_eq!(
+            pdfa_temp_output_path(&output)
+                .extension()
+                .and_then(|extension| extension.to_str()),
+            Some("pdf")
+        );
+        assert!(result
+            .expect_err("pdfa conversion fails")
+            .starts_with("PDF_A_"));
         assert!(!output.exists());
         assert!(!pdfa_temp_output_path(&output).exists());
     }
