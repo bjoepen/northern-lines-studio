@@ -2,13 +2,13 @@
 
 ## Status
 
-**Accepted for Studio integration.**
+**ACCEPTED.**
 
-The PDF/A-2b conversion path has been proven in an isolated local PoC against a real 16-page Studio Travelbook. Studio runtime integration remains subject to the normal branch gates and installed-app real-world validation before merge to `main`.
+The PDF/A-2b conversion path and the installed macOS Studio integration are proven against a real 16-page Travelbook. The accepted Studio renderer architecture remains unchanged.
 
 ## Context
 
-Northern Lines Studio already owns the accepted visual/export chain for Studio-originated pages:
+Northern Lines Studio owns the accepted visual/export chain for Studio-originated pages:
 
 ```text
 Studio resolved page
@@ -19,13 +19,13 @@ Studio resolved page
 → content-preserving document assembly
 ```
 
-The user-facing requirement is no longer limited to visual proof. A normal Travelbook user should be able to create a durable, validated PDF directly in Studio without requiring Northern Lines Publisher or a professional prepress workflow.
+A normal Travelbook user must be able to create a durable, validated PDF directly in Studio without requiring Northern Lines Publisher or a professional prepress workflow.
 
-An isolated PDF/A feasibility audit and conversion PoC were executed outside the Studio repository against the corrected 16-page `Norwegen 2027-Travelbook-Proof.pdf`.
+An isolated feasibility audit and conversion PoC were first executed outside the Studio repository against the corrected 16-page `Norwegen 2027-Travelbook-Proof.pdf`. The same bounded conversion was then integrated into Studio and validated in the installed macOS app.
 
 ## Evidence
 
-Source artifact:
+Source audit artifact:
 
 ```text
 SHA-256  acc07a2d5695de0f6201b6b50431bcd942fa2c64876a93fb67feb096cf7a8072
@@ -34,31 +34,16 @@ Pages    16
 Medium   exact DIN A5
 ```
 
-Feasibility audit result:
-
-```text
-PDF/A-2b        CONDITIONAL GO
-PDF/A-4         rejected as the less natural target for this PDF 1.7 source
-```
-
-The audit found only bounded A/B/C corrections for PDF/A-2b:
+The feasibility audit found only bounded A/B/C corrections for PDF/A-2b:
 
 1. XMP metadata / PDF/A identification.
 2. Trailer `/ID`.
 3. RGB OutputIntent / blending color-space authority.
-4. Fifty image dictionaries with `/Interpolate true`.
+4. Image dictionaries with `/Interpolate true`.
 
-No validator evidence required:
+No validator evidence required re-rendering, rasterization, transparency flattening, page-content-stream rewriting, layout reflow, scaling, translation, or Studio renderer redesign.
 
-- re-rendering;
-- rasterization;
-- transparency flattening;
-- page-content-stream rewriting;
-- layout reflow;
-- scaling or translation;
-- Studio renderer redesign.
-
-The isolated conversion PoC then produced a PDF/A-2b candidate and validated it with veraPDF 1.30.2:
+The isolated conversion PoC produced a compliant candidate with veraPDF 1.30.2:
 
 ```text
 PDF/A-2b validation      PASS
@@ -68,7 +53,7 @@ passed assertions        72,447
 failed assertions        0
 ```
 
-Structural/content evidence:
+Structural/content evidence from the PoC:
 
 ```text
 page count                     unchanged
@@ -79,46 +64,62 @@ image stream hashes            unchanged
 font resources/embedding       unchanged
 ```
 
-Visual evidence at 300 dpi:
+Visual evidence at 300 dpi showed only localized image-sampling differences attributable to `/Interpolate false`; no text, line, footer, layout, or geometry shift was detected.
 
-- pages 1–2 were pixel-identical;
-- pages 3–16 showed only localized image-sampling differences attributable to the required `/Interpolate false` correction;
-- no text, line, footer, layout or geometry shift was detected;
-- manual review of Cover, Orientation, Bergen, Photography, Geiranger, Workshop and Notes/Memory passed.
+## Installed-app runtime validation
 
-The local PoC decision was:
+The real installed macOS Studio application successfully exported the same Travelbook lineage as PDF/A-2b after correction of the atomic temporary-path bug.
+
+The Studio-generated PDF/A-2b file was validated externally with veraPDF 1.30.2:
 
 ```text
-GO
-PDF/A-2b CONVERSION PATH = PROVEN
+profile                 PDF/A-2b validation profile
+compliant               true
+passed rules            144
+failed rules            0
+passed checks            72,943
+failed checks            0
+failed parsing jobs      0
+vera exceptions          0
+```
+
+The user performed the final visual comparison against the accepted Studio proof and reported no visible change.
+
+Therefore:
+
+```text
+Studio PDF/A-2b export          PASS
+external veraPDF validation     PASS
+visual fidelity                 PASS
+PDF/A-2b conversion path        PROVEN
 ```
 
 ## Decision
 
-Northern Lines Studio may integrate **PDF/A-2b** as a bounded post-processing/export capability on top of the already accepted Studio PDF path.
+Northern Lines Studio owns **PDF/A-2b** as a bounded post-processing/export capability on top of the accepted Studio PDF path.
 
-The architecture is:
+The accepted architecture is:
 
 ```text
 Studio resolved Travelbook
 → accepted exact-A5 Document PDF path
 → bounded PDF/A-2b structural post-processing
-→ Studio PDF/A structural validation
-→ final output
+→ Studio structural/integrity validation
+→ final PDF/A-2b output
 ```
 
-The PDF/A stage must perform only the proven operations required by the PoC:
+The PDF/A stage performs only the proven operations:
 
 1. add valid XMP metadata including `pdfaid:part=2` and `pdfaid:conformance=B`;
 2. add a valid trailer `/ID`;
 3. add a document-level RGB OutputIntent using an appropriate sRGB ICC profile aligned with the source PDF;
 4. normalize image dictionaries from `/Interpolate true` to `/Interpolate false` where required.
 
-The post-processor must not become a second renderer.
+The post-processor is not a second renderer.
 
 ## Content-integrity contract
 
-The following are invariants of the Studio PDF/A path:
+The following remain invariant:
 
 ```text
 page count                  unchanged
@@ -141,55 +142,41 @@ Forbidden:
 - a second browser runtime;
 - Publisher composition/layout ownership.
 
-The `/Interpolate` change is an approved image-dictionary correction only. Image streams themselves must remain unchanged.
+The `/Interpolate` change is an approved image-dictionary correction only. Image streams themselves remain unchanged.
 
 ## ICC / OutputIntent rule
 
 Studio must not blindly inject an unrelated profile.
 
-The implementation must select an appropriate RGB ICC profile consistent with the generated Studio PDF. The proven PoC reused the embedded `sRGB IEC61966-2.1` profile already present in the source PDF.
+The implementation selects an appropriate RGB ICC profile already embedded in the generated Studio PDF. The implementation does not assume a fixed object ID.
 
-If the required compatible profile cannot be identified safely, the PDF/A export must fail truthfully rather than claim conformance.
+If a compatible profile cannot be identified safely, PDF/A export must fail truthfully with the defined OutputIntent error rather than claim conformance.
 
 ## Validation authority
 
-Studio may implement deterministic internal structural checks, but it must not invent a proprietary definition of PDF/A compliance.
+Studio performs deterministic internal structural and integrity checks, but these are not a proprietary replacement for PDF/A conformance validation.
 
-The local PoC used veraPDF as the independent conformance authority. Production integration should preserve evidence that the generated structure matches the proven PDF/A-2b contract and should keep a reproducible veraPDF validation path in engineering/quality gates.
+veraPDF remains the independent engineering conformance authority for acceptance/regression evidence.
 
 A user-facing export must never label a file PDF/A-2b after a known failed validation step.
 
 ## Product language
 
-PDF/A is an export capability, not a new layout mode.
+PDF/A is an export capability, not a layout mode.
 
-The normal user should not be exposed to:
+The normal user is not exposed to XMP internals, ICC object IDs, `/Interpolate` keys, PDF object dictionaries, or veraPDF rule IDs.
 
-- XMP internals;
-- ICC object IDs;
-- `/Interpolate` keys;
-- PDF object dictionaries;
-- veraPDF rule IDs.
-
-The product surface should remain simple, for example:
-
-```text
-Travelbook exportieren …
-  Standard PDF
-  PDF/A-2b
-```
-
-Exact wording may be refined during implementation, but the existing `PDF-Proof` remains the visual QA function and must not be conflated with the durable export action.
+The existing PDF-Proof remains the visual QA function. PDF/A-2b is the durable/exportable document option.
 
 ## Publisher boundary
 
 Northern Lines Publisher is not required for this capability.
 
-Publisher remains outside this integration scope. The proven Studio PDF is the input authority; PDF/A post-processing may validate and structurally augment that output but must not re-compose it.
+Publisher remains outside this integration scope. The proven Studio PDF is the input authority; PDF/A post-processing validates and structurally augments that output but never re-composes it.
 
 ## Platform scope
 
-Current active integration target remains macOS, matching the accepted Studio PDF architecture.
+The accepted implementation target remains macOS, matching the current Studio PDF architecture.
 
 No Windows PDF/A work is authorized by this ADR.
 
@@ -197,26 +184,24 @@ No Windows PDF/A work is authorized by this ADR.
 
 Positive:
 
-- Studio can move materially closer to RC as a self-contained Travelbook authoring and export application.
+- Studio is materially closer to RC as a self-contained Travelbook authoring and export application.
 - The normal 1–2-copy home/copyshop workflow no longer depends on Publisher.
-- PDF/A can be reached without reopening the accepted renderer architecture.
-- The conversion is auditable and bounded.
+- PDF/A-2b is reached without reopening the accepted renderer architecture.
+- The conversion is bounded, auditable, and independently validated.
 
-Costs/risks:
+Known characteristic:
 
-- `/Interpolate false` can create renderer-dependent image-sampling differences.
-- ICC selection must remain deterministic and appropriate.
-- PDF/A validation adds a new export-quality responsibility to Studio.
+- `/Interpolate false` can create renderer-dependent image-sampling differences, but the proven Studio export showed no visible regression in the accepted visual review.
 
 ## Integration design
 
-Studio integration uses a dedicated Rust post-processing module:
+Studio uses a dedicated Rust post-processing module:
 
 ```text
 src-tauri/src/pdfa.rs
 ```
 
-The module is intentionally narrow. It loads an accepted Studio Document PDF, collects integrity evidence, applies only the four approved structural operations, writes a candidate PDF, reloads it, validates the required structure, and compares integrity evidence before success.
+The module loads an accepted Studio Document PDF, collects integrity evidence, applies only the four approved structural operations, writes a candidate PDF, reloads it, validates the required structure, and compares integrity evidence before success.
 
 The Tauri command boundary is:
 
@@ -224,7 +209,7 @@ The Tauri command boundary is:
 export_studio_pdfa2b(sourcePath, outputPath)
 ```
 
-The frontend creates the PDF/A source through the already accepted Travelbook Document PDF path:
+The frontend path is:
 
 ```text
 canonical Studio Travelbook
@@ -234,11 +219,18 @@ canonical Studio Travelbook
 → final PDF/A-2b file
 ```
 
-The UI labels this as a Travelbook export option and does not expose PDF object details.
+### Atomic output rule
+
+The final output and internal candidate are separate files. The internal candidate must retain a `.pdf` extension so it satisfies the PDF/A converter contract:
+
+```text
+final:      Travelbook.pdf
+temporary:  Travelbook.pdfa2b.tmp.pdf
+```
+
+The earlier `.tmp`-extension defect is fixed and regression-tested.
 
 ### Trailer ID strategy
-
-The trailer `/ID` is deterministic and auditable:
 
 ```text
 SHA-256(source Standard PDF bytes)
@@ -248,39 +240,28 @@ SHA-256(source Standard PDF bytes)
 
 ### ICC selection strategy
 
-The OutputIntent uses an ICC profile already embedded in the source PDF. The implementation does not assume an object ID. It selects the first structurally suitable stream with RGB channel count (`/N 3`) and RGB evidence such as `/Alternate /DeviceRGB` or explicit sRGB profile content.
-
-If no suitable embedded RGB/sRGB profile is found, export fails with:
-
-```text
-PDF_A_OUTPUT_INTENT_UNAVAILABLE
-```
+The OutputIntent uses an ICC profile already embedded in the source PDF. The implementation selects a structurally suitable RGB/sRGB stream without assuming an object ID.
 
 ### Internal validation limit
 
-Studio validates the expected structure and integrity invariants, including PDF/A identification, trailer `/ID`, OutputIntent, absence of `/Interpolate true`, page count, exact-A5 boxes, decoded content streams, image stream bytes and font resources.
+Studio validates the expected structure and integrity invariants, including PDF/A identification, trailer `/ID`, OutputIntent, absence of `/Interpolate true`, page count, exact-A5 boxes, decoded content streams, image stream bytes, and font resources.
 
-This internal validation is not a replacement for independent ISO conformance validation. Engineering validation remains:
+Independent engineering validation remains reproducible with:
 
 ```bash
 verapdf --format json -f 2b "<candidate.pdf>"
 ```
 
-## Merge gate for implementation
+## Final acceptance
 
-The Studio integration is mergeable only when a real installed-app Travelbook export proves:
+The installed-app merge gate is satisfied for the PDF/A capability:
 
 ```text
 PDF/A-2b candidate generated                    PASS
 independent veraPDF validation                  PASS
-failed rules/assertions                         0 / 0
-page count/order                                unchanged
-A5 PageBoxes                                    unchanged
-content-stream integrity                        PASS
-image-stream integrity                          PASS
+failed rules/checks                             0 / 0
 visual fidelity                                 PASS
-existing Standard PDF/Proof paths               no regression
-Studio state restoration                        PASS
+accepted renderer architecture                  unchanged
 ```
 
-Until then the architecture is accepted, but the Studio integration remains pending validation.
+The PDF/A-2b export architecture is now accepted and must not be reopened without a new explicit architecture decision.
