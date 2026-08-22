@@ -2,6 +2,14 @@
    Fjord remains the reference for shared page grammar. These rules correct
    cross-World inconsistencies without changing Golden Build 040 geometry. */
 
+/* 0. Page surface contract
+   Every Studio page, including the cover, remains neutral white. World
+   expression belongs to typography, accents, signets and semantic content
+   surfaces — never to a page-filling tint or gradient. */
+.a5-page.cover-page {
+  background: var(--paper, #ffffff);
+}
+
 /* 1. Structured Interest Pages
    Section labels belong above the semantic content surface in every World.
    World expression is carried by the entry cards, never by wrapping the
