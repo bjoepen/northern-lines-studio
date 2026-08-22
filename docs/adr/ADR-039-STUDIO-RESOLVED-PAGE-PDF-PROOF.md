@@ -25,9 +25,11 @@ StudioPdfProofRequest {
 The active resolved Studio page is isolated for capture, then native webview PDF APIs produce the PDF:
 
 - macOS: `WKWebView` PDF generation through the Tauri platform webview handle.
-- Windows: WebView2 `PrintToPdf` is the matching platform path.
+- Windows: deferred and not part of the current PoC validation.
 
-The generated PDF must validate exact A5 MediaBox. Failure to produce A5 is a failure, not a fallback.
+On macOS, WebKit's PDF snapshot path may emit integer-point page boxes even when Studio requests fractional exact A5 dimensions. The PoC may therefore perform a metadata-only page-box normalization after native rendering: the rendered content stream is not scaled, translated, reflowed, or recomposed; `/MediaBox` and `/CropBox` are set to exact A5, and `/TrimBox` is normalized if present.
+
+The final PDF must validate exact A5 page boxes. Failure to produce A5 is a failure, not a fallback.
 
 ## Consequences
 

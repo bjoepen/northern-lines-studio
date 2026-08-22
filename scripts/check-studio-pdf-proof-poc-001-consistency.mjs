@@ -18,6 +18,7 @@ if (capability.permissions?.includes('core:webview:allow-print')) fail('abandone
 if (!capability.permissions?.includes('dialog:allow-save')) fail('save dialog permission missing.');
 if (!app.includes('class="a5-page"')) fail('Studio page authority missing.');
 if (!app.includes("document.body.classList.add('pdf-proof-rendering')")) fail('resolved Studio page is not isolated before PDF capture.');
+if (!app.includes("document.body.classList.remove('pdf-proof-rendering')")) fail('proof capture mode must be restored after completion.');
 if (!app.includes('document.fonts?.ready')) fail('font readiness wait missing.');
 if (!app.includes('PDF_PROOF_ASSET_NOT_READY')) fail('asset readiness failure code missing.');
 if (!app.includes("physicalMedium: 'A5'")) fail('frontend proof request must be A5.');
@@ -33,10 +34,20 @@ if (!css.includes('height: 595.9459459459px')) fail('Build 040 proof capture geo
 if (!css.includes('transform: none !important')) fail('proof capture must remove preview scaling.');
 
 if (!rust.includes('StudioPdfProofRequest')) fail('native proof request contract missing.');
+if (!rust.includes('async fn create_studio_pdf_proof')) fail('PDF proof command must not block native WebKit completion.');
 if (!rust.includes('A5_WIDTH_PT')) fail('native A5 point validation missing.');
-if (!rust.includes('validate_pdf_a5_media_box')) fail('PDF MediaBox validation missing.');
+if (!rust.includes('normalize_pdf_a5_page_boxes')) fail('exact A5 PDF page-box normalization missing.');
+if (!rust.includes('validate_pdf_a5_page_boxes')) fail('PDF page-box validation missing.');
+if (!rust.includes('CropBox')) fail('PDF CropBox validation/normalization missing.');
 if (!rust.includes('WKPDFConfiguration')) fail('macOS WebKit PDF adapter missing.');
 if (!rust.includes('WebView2')) fail('Windows WebView2 path assessment/stub missing.');
+if (!rust.includes('prepare_pdf_proof_output')) fail('proof output must not validate a stale pre-existing PDF after timeout.');
+if (!rust.includes('resolve_pdf_proof_completion')) fail('proof completion must resolve native result/watchdog outcome explicitly.');
+if (!rust.includes('tauri::async_runtime::spawn_blocking')) fail('watchdog wait must not block the UI/WebKit thread.');
+if (!rust.includes('pdf_proof_timeout_is_success_when_written_pdf_validates')) fail('false-timeout regression test missing.');
+if (!rust.includes('pdf_proof_genuine_hang_reports_timeout')) fail('genuine hang timeout regression test missing.');
+if (!rust.includes('pdf_proof_normalizes_webkit_integer_page_boxes_to_exact_a5_metadata')) fail('WebKit integer page-box normalization regression test missing.');
+if (!rust.includes('pdf_proof_rejects_a4_page_box')) fail('A4 page-box rejection regression test missing.');
 for (const code of [
   'PDF_PROOF_NO_PAGE',
   'PDF_PROOF_ASSET_NOT_READY',
@@ -49,6 +60,7 @@ for (const code of [
 
 if (!cargo.includes('[target.\'cfg(target_os = "macos")\'.dependencies]')) fail('macOS adapter dependencies must be platform-scoped.');
 if (!cargo.includes('[target.\'cfg(windows)\'.dependencies]')) fail('Windows adapter dependencies must be platform-scoped.');
+if (!cargo.includes('lopdf = { version = "0.44.0", default-features = false }')) fail('PDF metadata dependency must remain explicit and minimal.');
 
 const deps = JSON.stringify({...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {})});
 for (const forbidden of ['playwright','puppeteer','pdf-lib','pdfjs-dist']) {

@@ -22,7 +22,7 @@ const REFERENCE_WORLD_ID: &str = "fjord";
 const BALTIC_WORLD_ID: &str = "baltic";
 const A5_WIDTH_PT: f64 = 148.0 / 25.4 * 72.0;
 const A5_HEIGHT_PT: f64 = 210.0 / 25.4 * 72.0;
-const A5_SIZE_TOLERANCE_PT: f64 = 0.2;
+const PDF_BOX_TOLERANCE_PT: f64 = 0.01;
 
 fn is_supported_editorial_world(id: &str) -> bool {
     id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
@@ -1526,7 +1526,7 @@ fn read_image_preview(path: String) -> Result<Vec<u8>, String> {
 }
 
 #[tauri::command]
-fn create_studio_pdf_proof(
+async fn create_studio_pdf_proof(
     window: tauri::WebviewWindow,
     request: StudioPdfProofRequest,
 ) -> Result<StudioPdfProofResult, String> {
@@ -1550,8 +1550,15 @@ fn create_studio_pdf_proof(
         }
     }
 
-    render_active_webview_a5_pdf(&window, output_path)?;
-    validate_pdf_a5_media_box(output_path)?;
+    prepare_pdf_proof_output(output_path)?;
+    complete_studio_pdf_proof(
+        render_active_webview_a5_pdf(&window, output_path).await,
+        output_path,
+        |path| {
+            normalize_pdf_a5_page_boxes(path)?;
+            validate_pdf_a5_page_boxes(path)
+        },
+    )?;
 
     Ok(StudioPdfProofResult {
         output_path: request.output_path,
@@ -1560,13 +1567,13 @@ fn create_studio_pdf_proof(
     })
 }
 
-fn render_active_webview_a5_pdf(
+async fn render_active_webview_a5_pdf(
     window: &tauri::WebviewWindow,
     output_path: &Path,
 ) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        return platform_pdf::render_active_webview_a5_pdf(window, output_path);
+        return platform_pdf::render_active_webview_a5_pdf(window, output_path).await;
     }
 
     #[cfg(windows)]
@@ -1578,35 +1585,148 @@ fn render_active_webview_a5_pdf(
     Err("PDF_PROOF_RENDER_FAILED: Diese Plattform hat noch keinen PDF-Proof-Adapter.".into())
 }
 
-fn validate_pdf_a5_media_box(path: &Path) -> Result<(), String> {
-    let bytes = fs::read(path).map_err(|error| format!("PDF_PROOF_WRITE_FAILED: PDF konnte nicht gelesen werden: {error}"))?;
-    let content = String::from_utf8_lossy(&bytes);
-    let media_box_index = content.find("/MediaBox").ok_or_else(|| {
-        "PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine MediaBox.".to_string()
-    })?;
-    let remainder = &content[media_box_index..];
-    let open = remainder.find('[').ok_or_else(|| {
-        "PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist nicht lesbar.".to_string()
-    })?;
-    let close = remainder[open..].find(']').ok_or_else(|| {
-        "PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist nicht lesbar.".to_string()
-    })?;
-    let values: Vec<f64> = remainder[open + 1..open + close]
-        .split_whitespace()
-        .filter_map(|value| value.parse::<f64>().ok())
-        .collect();
-    if values.len() < 4 {
-        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist unvollständig.".into());
+fn prepare_pdf_proof_output(path: &Path) -> Result<(), String> {
+    if path.exists() {
+        fs::remove_file(path).map_err(|error| {
+            format!(
+                "PDF_PROOF_WRITE_FAILED: Vorhandener PDF-Proof konnte nicht ersetzt werden: {error}"
+            )
+        })?;
     }
-    let width = (values[2] - values[0]).abs();
-    let height = (values[3] - values[1]).abs();
-    if (width - A5_WIDTH_PT).abs() > A5_SIZE_TOLERANCE_PT
-        || (height - A5_HEIGHT_PT).abs() > A5_SIZE_TOLERANCE_PT
+    Ok(())
+}
+
+fn complete_studio_pdf_proof<F>(
+    render_result: Result<(), String>,
+    output_path: &Path,
+    validate_written_pdf: F,
+) -> Result<(), String>
+where
+    F: Fn(&Path) -> Result<(), String>,
+{
+    render_result?;
+    validate_written_pdf(output_path)
+}
+
+fn resolve_pdf_proof_completion<F>(
+    wait_result: Result<Result<(), String>, mpsc::RecvTimeoutError>,
+    output_path: &Path,
+    validate_written_pdf: F,
+) -> Result<(), String>
+where
+    F: Fn(&Path) -> Result<(), String>,
+{
+    match wait_result {
+        Ok(render_result) => render_result,
+        Err(mpsc::RecvTimeoutError::Timeout) => {
+            if output_path.exists() {
+                validate_written_pdf(output_path)?;
+                return Ok(());
+            }
+            Err("PDF_PROOF_RENDER_FAILED: PDF-Proof-Erzeugung hat zu lange gedauert.".to_string())
+        }
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            if output_path.exists() {
+                validate_written_pdf(output_path)?;
+                return Ok(());
+            }
+            Err("PDF_PROOF_RENDER_FAILED: WebKit-PDF-Rückmeldung wurde unterbrochen.".to_string())
+        }
+    }
+}
+
+fn exact_a5_pdf_box() -> lopdf::Object {
+    lopdf::Object::Array(vec![
+        lopdf::Object::Integer(0),
+        lopdf::Object::Integer(0),
+        lopdf::Object::Real(A5_WIDTH_PT as f32),
+        lopdf::Object::Real(A5_HEIGHT_PT as f32),
+    ])
+}
+
+fn pdf_box_dimensions(object: &lopdf::Object) -> Result<(f64, f64), String> {
+    let values = object
+        .as_array()
+        .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seitenbox ist nicht lesbar.".to_string())?;
+    if values.len() < 4 {
+        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seitenbox ist unvollständig.".into());
+    }
+    let number = |value: &lopdf::Object| -> Result<f64, String> {
+        match value {
+            lopdf::Object::Integer(value) => Ok(*value as f64),
+            lopdf::Object::Real(value) => Ok(*value as f64),
+            _ => Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seitenbox enthält keinen numerischen Wert.".into()),
+        }
+    };
+    let x0 = number(&values[0])?;
+    let y0 = number(&values[1])?;
+    let x1 = number(&values[2])?;
+    let y1 = number(&values[3])?;
+    Ok(((x1 - x0).abs(), (y1 - y0).abs()))
+}
+
+fn assert_a5_pdf_box(object: &lopdf::Object, box_name: &str) -> Result<(), String> {
+    let (width, height) = pdf_box_dimensions(object)?;
+    if (width - A5_WIDTH_PT).abs() > PDF_BOX_TOLERANCE_PT
+        || (height - A5_HEIGHT_PT).abs() > PDF_BOX_TOLERANCE_PT
     {
         return Err(format!(
-            "PDF_PROOF_PAGE_SIZE_INVALID: PDF ist {:.3} × {:.3} pt statt A5 {:.3} × {:.3} pt.",
-            width, height, A5_WIDTH_PT, A5_HEIGHT_PT
+            "PDF_PROOF_PAGE_SIZE_INVALID: PDF-{} ist {:.3} × {:.3} pt statt A5 {:.3} × {:.3} pt.",
+            box_name, width, height, A5_WIDTH_PT, A5_HEIGHT_PT
         ));
+    }
+    Ok(())
+}
+
+fn normalize_pdf_a5_page_boxes(path: &Path) -> Result<(), String> {
+    let mut document = lopdf::Document::load(path)
+        .map_err(|error| format!("PDF_PROOF_PAGE_SIZE_INVALID: PDF konnte nicht gelesen werden: {error}"))?;
+    let pages = document.get_pages();
+    if pages.is_empty() {
+        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine Seite.".into());
+    }
+    for page_id in pages.values() {
+        let page = document
+            .get_object_mut(*page_id)
+            .map_err(|error| format!("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite konnte nicht gelesen werden: {error}"))?
+            .as_dict_mut()
+            .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite ist nicht lesbar.".to_string())?;
+        page.set("MediaBox", exact_a5_pdf_box());
+        page.set("CropBox", exact_a5_pdf_box());
+        if page.has(b"TrimBox") {
+            page.set("TrimBox", exact_a5_pdf_box());
+        }
+    }
+    document
+        .save(path)
+        .map_err(|error| format!("PDF_PROOF_WRITE_FAILED: PDF-Seitenboxen konnten nicht geschrieben werden: {error}"))?;
+    Ok(())
+}
+
+fn validate_pdf_a5_page_boxes(path: &Path) -> Result<(), String> {
+    let document = lopdf::Document::load(path)
+        .map_err(|error| format!("PDF_PROOF_WRITE_FAILED: PDF konnte nicht gelesen werden: {error}"))?;
+    let pages = document.get_pages();
+    if pages.is_empty() {
+        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine Seite.".into());
+    }
+    for page_id in pages.values() {
+        let page = document
+            .get_object(*page_id)
+            .map_err(|error| format!("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite konnte nicht gelesen werden: {error}"))?
+            .as_dict()
+            .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite ist nicht lesbar.".to_string())?;
+        let media_box = page
+            .get(b"MediaBox")
+            .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine MediaBox.".to_string())?;
+        assert_a5_pdf_box(media_box, "MediaBox")?;
+        let crop_box = page
+            .get(b"CropBox")
+            .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine CropBox.".to_string())?;
+        assert_a5_pdf_box(crop_box, "CropBox")?;
+        if let Ok(trim_box) = page.get(b"TrimBox") {
+            assert_a5_pdf_box(trim_box, "TrimBox")?;
+        }
     }
     Ok(())
 }
@@ -1620,7 +1740,7 @@ mod platform_pdf {
     use objc2_foundation::{NSData, NSError, NSString};
     use objc2_web_kit::{WKPDFConfiguration, WKWebView};
 
-    pub fn render_active_webview_a5_pdf(
+    pub async fn render_active_webview_a5_pdf(
         window: &tauri::WebviewWindow,
         output_path: &Path,
     ) -> Result<(), String> {
@@ -1667,9 +1787,16 @@ mod platform_pdf {
             })
             .map_err(|error| format!("PDF_PROOF_RENDER_FAILED: WebView-Zugriff fehlgeschlagen: {error}"))?;
 
-        receiver
-            .recv_timeout(Duration::from_secs(20))
-            .map_err(|_| "PDF_PROOF_RENDER_FAILED: PDF-Proof-Erzeugung hat zu lange gedauert.".to_string())?
+        let wait_result = tauri::async_runtime::spawn_blocking(move || {
+            receiver.recv_timeout(Duration::from_secs(20))
+        })
+        .await
+        .map_err(|error| format!("PDF_PROOF_RENDER_FAILED: PDF-Proof-Watchdog fehlgeschlagen: {error}"))?;
+
+        resolve_pdf_proof_completion(wait_result, output_path, |path| {
+            normalize_pdf_a5_page_boxes(path)?;
+            validate_pdf_a5_page_boxes(path)
+        })
     }
 }
 
@@ -2331,5 +2458,170 @@ mod tests {
         let mut project = sample_project(CURRENT_FORMAT_VERSION);
         project.page_manifest[0].journey_stage = Some("unknown".into());
         assert!(validate_project(&project).is_err());
+    }
+
+    #[test]
+    fn pdf_proof_success_validates_without_timeout_error() {
+        let result =
+            complete_studio_pdf_proof(Ok(()), Path::new("/tmp/studio-proof-success.pdf"), |_| {
+                Ok(())
+            });
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn pdf_proof_timeout_is_success_when_written_pdf_validates() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("proof.pdf");
+        fs::write(&output, b"%PDF written by delayed native callback").expect("proof");
+
+        let result =
+            resolve_pdf_proof_completion(Err(mpsc::RecvTimeoutError::Timeout), &output, |_| Ok(()));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn pdf_proof_genuine_hang_reports_timeout() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("missing.pdf");
+
+        let result =
+            resolve_pdf_proof_completion(Err(mpsc::RecvTimeoutError::Timeout), &output, |_| Ok(()));
+
+        assert_eq!(
+            result.expect_err("missing file must timeout"),
+            "PDF_PROOF_RENDER_FAILED: PDF-Proof-Erzeugung hat zu lange gedauert."
+        );
+    }
+
+    #[test]
+    fn pdf_proof_render_failure_is_reported() {
+        let result = resolve_pdf_proof_completion(
+            Ok(Err(
+                "PDF_PROOF_RENDER_FAILED: WebKit konnte den PDF-Proof nicht erzeugen.".into(),
+            )),
+            Path::new("/tmp/studio-proof-render-failed.pdf"),
+            |_| Ok(()),
+        );
+
+        assert_eq!(
+            result.expect_err("render failure"),
+            "PDF_PROOF_RENDER_FAILED: WebKit konnte den PDF-Proof nicht erzeugen."
+        );
+    }
+
+    #[test]
+    fn pdf_proof_write_failure_is_reported() {
+        let result = complete_studio_pdf_proof(
+            Err("PDF_PROOF_WRITE_FAILED: PDF-Proof konnte nicht geschrieben werden.".into()),
+            Path::new("/tmp/studio-proof-write-failed.pdf"),
+            |_| Ok(()),
+        );
+
+        assert_eq!(
+            result.expect_err("write failure"),
+            "PDF_PROOF_WRITE_FAILED: PDF-Proof konnte nicht geschrieben werden."
+        );
+    }
+
+    #[test]
+    fn pdf_proof_invalid_page_size_is_reported_after_render_success() {
+        let result = complete_studio_pdf_proof(
+            Ok(()),
+            Path::new("/tmp/studio-proof-invalid-page-size.pdf"),
+            |_| Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF ist 595.000 × 842.000 pt statt A5.".into()),
+        );
+
+        assert_eq!(
+            result.expect_err("page size failure"),
+            "PDF_PROOF_PAGE_SIZE_INVALID: PDF ist 595.000 × 842.000 pt statt A5."
+        );
+    }
+
+    fn write_test_pdf(path: &Path, media_box: lopdf::Object, crop_box: Option<lopdf::Object>) {
+        let mut document = lopdf::Document::with_version("1.7");
+        let pages_id = document.new_object_id();
+        let page_id = document.new_object_id();
+        let content_id = document.add_object(lopdf::Stream::new(lopdf::Dictionary::new(), Vec::new()));
+        let resources_id = document.add_object(lopdf::Dictionary::new());
+        let mut page = lopdf::Dictionary::new();
+        page.set("Type", "Page");
+        page.set("Parent", pages_id);
+        page.set("MediaBox", media_box);
+        if let Some(crop_box) = crop_box {
+            page.set("CropBox", crop_box);
+        }
+        page.set("Contents", content_id);
+        page.set("Resources", resources_id);
+        document.objects.insert(page_id, lopdf::Object::Dictionary(page));
+        document.objects.insert(
+            pages_id,
+            lopdf::Object::Dictionary(lopdf::dictionary! {
+                "Type" => "Pages",
+                "Kids" => vec![lopdf::Object::Reference(page_id)],
+                "Count" => 1
+            }),
+        );
+        let catalog_id = document.add_object(lopdf::dictionary! {
+            "Type" => "Catalog",
+            "Pages" => pages_id
+        });
+        document.trailer.set("Root", catalog_id);
+        document.save(path).expect("save test pdf");
+    }
+
+    fn pdf_box(width: i64, height: i64) -> lopdf::Object {
+        lopdf::Object::Array(vec![
+            lopdf::Object::Integer(0),
+            lopdf::Object::Integer(0),
+            lopdf::Object::Integer(width),
+            lopdf::Object::Integer(height),
+        ])
+    }
+
+    #[test]
+    fn pdf_proof_normalizes_webkit_integer_page_boxes_to_exact_a5_metadata() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("webkit-integer.pdf");
+        write_test_pdf(&output, pdf_box(419, 595), None);
+
+        normalize_pdf_a5_page_boxes(&output).expect("normalize");
+        validate_pdf_a5_page_boxes(&output).expect("exact A5 boxes");
+    }
+
+    #[test]
+    fn pdf_proof_rejects_arbitrary_nearby_page_boxes_without_named_normalization() {
+        let result = assert_a5_pdf_box(&pdf_box(420, 595), "MediaBox");
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn pdf_proof_rejects_a4_page_box() {
+        let result = assert_a5_pdf_box(&pdf_box(595, 842), "MediaBox");
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn pdf_proof_rejects_invalid_pdf_file() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("invalid.pdf");
+        fs::write(&output, b"not a pdf").expect("invalid pdf");
+
+        assert!(validate_pdf_a5_page_boxes(&output).is_err());
+    }
+
+    #[test]
+    fn pdf_proof_removes_stale_target_before_rendering() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("stale.pdf");
+        fs::write(&output, b"old proof").expect("stale proof");
+
+        prepare_pdf_proof_output(&output).expect("remove stale proof");
+
+        assert!(!output.exists());
     }
 }
