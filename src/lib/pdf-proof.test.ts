@@ -6,6 +6,7 @@ import {
   cleanupStudioDocumentPdfProof,
   createStudioPdfProof,
   evaluateRenderedStudioPageReadiness,
+  exportStudioPdfA2b,
   incompleteStudioPageImages,
   prepareStudioDocumentPdfProof,
   restoredDocumentProofPage,
@@ -124,6 +125,27 @@ describe('Studio PDF Proof', () => {
     expect(invoke).toHaveBeenCalledWith('cleanup_studio_document_pdf_proof', {
       stagingPath: '/tmp/document-proof'
     });
+  });
+
+  it('invokes the PDF/A export command with a standard PDF source boundary', async () => {
+    const invoke = vi.fn().mockResolvedValue({
+      outputPath: '/tmp/travelbook-pdfa.pdf',
+      pageCount: 16,
+      profile: 'PDF/A-2b'
+    });
+
+    const result = await exportStudioPdfA2b({
+      sourcePath: '/tmp/travelbook-standard.pdf',
+      outputPath: '/tmp/travelbook-pdfa.pdf'
+    }, invoke);
+
+    expect(invoke).toHaveBeenCalledWith('export_studio_pdfa2b', {
+      request: {
+        sourcePath: '/tmp/travelbook-standard.pdf',
+        outputPath: '/tmp/travelbook-pdfa.pdf'
+      }
+    });
+    expect(result.profile).toBe('PDF/A-2b');
   });
 
   it('uses the canonical Studio publication order instead of raw manifest insertion', () => {
