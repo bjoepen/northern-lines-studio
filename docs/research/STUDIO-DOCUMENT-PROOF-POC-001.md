@@ -1,133 +1,146 @@
 # Studio Document Proof PoC 001
 
-## Scope
+## Status
+
+```text
+PASS / ARCHITECTURE ACCEPTED
+```
 
 PoC 001 extends the accepted macOS single-page PDF proof primitive to a serial multi-page visual proof.
 
+Final architecture:
+
 ```text
-Studio project
--> current Studio pageManifest order
--> one resolved Studio page at a time
--> existing single-page A5 PDF proof command
--> staged validated page PDFs
--> PDF structure assembly
--> final document validation
+canonical Studio publication order
+→ one resolved Studio page at a time
+→ rendered-page identity/readiness gate
+→ accepted single-page A5 PDF proof command
+→ staged validated page PDFs
+→ content-preserving PDF structure assembly
+→ final document validation
+→ atomic final output
 ```
 
-Windows and Publisher are out of scope for this PoC.
+Windows and Publisher are out of scope.
 
 ## Page Order Authority
 
 Studio remains the authority for page count, order and stable page IDs. The raw `project.pageManifest` is the project manifest, not the final publication sequence. Real-world validation proved that its insertion/storage order can differ from the visible book order.
 
-The canonical Studio publication order is now named explicitly:
+The canonical Studio publication order is:
 
 ```text
 publicationOrderedPages(pageManifest, routeStageIds)
 ```
 
-It delegates to the same `groupPages()` sequence already used by:
+It delegates to the same `groupPages()` sequence used by the visible Studio book semantics, including grouped navigation, Orientation and footer page numbers through `travelbookPageNumber()`.
 
-- the visible page navigation;
-- the Orientation page;
-- footer/page-number calculation through `travelbookPageNumber()`.
-
-Document Proof consumes `studioDocumentProofPages(project)`, which now delegates to `publicationOrderedPages(project.pageManifest, project.journey.stages.map(id))`. It does not hardcode a 16-page order and does not infer a separate export order from page types.
+Document Proof consumes `studioDocumentProofPages(project)`, which delegates to `publicationOrderedPages(project.pageManifest, project.journey.stages.map(...))`.
 
 Binding invariant:
 
 ```text
 Studio Orientation order
-==
-Studio footer/page-number order
-==
-Document Proof order
+== Studio footer/page-number order
+== Document Proof order
 ```
 
 ## Serial Orchestration
 
-The frontend document proof action renders pages strictly serially:
+Document Proof renders strictly serially:
 
 ```text
-for each page in project.pageManifest
--> select page
--> wait for resolved page readiness
--> call create_studio_pdf_proof
--> store 0001.pdf, 0002.pdf, ...
+for each page in canonical Studio publication order
+→ select page
+→ await resolved-page readiness
+→ call accepted createStudioPdfProof page primitive
+→ stage 0001.pdf, 0002.pdf, ...
+→ validate page evidence
 ```
 
-There is no parallel rendering, no second WebView, no hidden Studio tree and no second HTML/PDF renderer.
+There is no parallel rendering, no second WebView, no hidden Studio render tree and no second HTML/PDF renderer.
 
-## Readiness
+## Readiness Contract
 
-Before each page render, Studio waits for:
+Before each page render, Studio requires:
 
-- the requested page ID to be the active `selectedPage`;
-- the rendered `.a5-page` to carry the same `data-studio-page-id`;
-- the Svelte DOM update to be committed;
+- requested page ID equals active `selectedPage` ID;
+- rendered `.a5-page` carries the same `data-studio-page-id`;
+- Svelte DOM update committed;
 - one browser layout frame after that commit;
-- `document.fonts.ready` when available;
-- all images inside the identified current `.a5-page` to complete or report `PDF_PROOF_ASSET_NOT_READY`;
-- the page root to be visually stable: visible, opacity `1`, no filter, no running page animation, and in proof mode no preview transform.
+- fonts ready when available;
+- images inside the identified current `.a5-page` complete;
+- page visually stable: visible, opacity `1`, no filter, no running page animation, and proof mode free from preview transform.
 
-No sleeps are used for synchronization. The browser frame boundary is not a time delay; it gives WebKit one layout/paint boundary after Svelte has committed the selected page or proof-mode class change.
+No arbitrary sleeps are used.
 
-The first installed-app Travelbook proof exposed the missing identity contract. The document loop selected a new `selectedPage`, crossed one `tick()`, and then accepted any `.a5-page`. Because the page root used `in:fade={{ duration: 190 }}` and had no page identity attribute, readiness could see `selectedPage.id === requestedPageId` while the rendered page was still stale, not yet fully painted, or in a fade-in opacity state. Image readiness also queried generic `.a5-page img`, so stale page images could satisfy a later page.
-
-The corrected sequence is:
+Corrected sequence:
 
 ```text
 select requested page
--> await Svelte DOM commit
--> await browser layout frame
--> require selectedPage.id == requested page ID
--> require .a5-page[data-studio-page-id] == requested page ID
--> wait for fonts
--> check images only inside that identified page
--> require visual stability
--> enable proof mode
--> await Svelte DOM commit
--> await browser layout frame
--> repeat identity and stability checks under proof CSS
--> call existing single-page renderer
+→ await Svelte DOM commit
+→ await browser layout frame
+→ verify selected/rendered identity
+→ wait for fonts
+→ verify current-page images
+→ verify visual stability
+→ enable proof mode
+→ await commit + layout frame
+→ verify identity/stability again
+→ capture
+→ leave proof mode before next page
 ```
 
-During `pdfProofStatus === 'rendering'`, the normal page `in:fade` duration is `0`. Proof CSS also forces the `.a5-page` root to `opacity: 1` and `filter: none`. This prevents WebKit from capturing a temporary fade opacity or page-root filter state; it does not alter World child styling, layout geometry, typography, content, Companion or footer.
+The first real-world run proved this contract was necessary: stale DOM and `in:fade` opacity could otherwise be captured as blank or washed-out pages.
+
+## Empty-Capture Rejection
+
+Exact A5 alone is not sufficient evidence of a valid staged page.
+
+Before assembly, staged pages also provide structural content evidence:
+
+- content stream count;
+- decoded content byte total;
+- decoded content hashes;
+- page resource count.
+
+A structurally empty staged A5 page fails with the document-proof empty-capture invariant before assembly.
 
 ## Notes/Memory Visual Fidelity
 
-The newest real-world proof showed the Notes/Memory page with large dark writing areas. A single-page Notes proof reproduced the same defect as the Notes page inside the assembled Travelbook proof, so the assembler and page order were ruled out.
+A later real-world run exposed dark/black Notes writing surfaces in both single-page and multi-page proof.
 
-Root cause found in the Studio CSS path:
+The defect was isolated to the Studio CSS used by the Notes/Memory page:
 
-- Notes writing surfaces are `.notes-main`, `.notes-side > section`, `.notes-lines`, `.notes-mini-lines` and `.notes-dot-grid`;
-- the large line/grid children used CSS gradients with `color-mix(..., transparent)` and transparent stops;
-- this technique was not exercised by the accepted Photography Workshop proof;
-- the proof CSS did not intentionally change these Notes surfaces, but the native WKWebView PDF path rendered those transparent mixed gradient surfaces incorrectly as dark/black areas.
+- writing fields used gradients with `color-mix(..., transparent)` and transparent stops;
+- native WKWebView PDF rendered those large transparent mixed gradient fields incorrectly;
+- assembly was ruled out because the single-page Notes proof reproduced the same defect.
 
-The correction keeps the same Notes geometry and semantic World styling but makes the line/grid surfaces PDF-stable:
+Correction:
 
-- each writing box defines `--notes-surface`;
-- line and dot colors mix against that explicit light surface, not `transparent`;
-- gradient gaps use `var(--notes-surface)`, not transparent;
-- Baltic still uses its own amber/warm-paper variables;
-- no global background override was added.
+- explicit `--notes-surface` values;
+- line/dot colors mix against the explicit surface;
+- gradient gaps use the explicit surface instead of transparent;
+- Baltic retains its own warm-paper/amber variables;
+- no global white override, geometry change or renderer change.
+
+Final single-page and multi-page Notes proofs are visually equivalent and user-validated.
 
 ## Single-Page Renderer Reuse
 
-Document Proof calls the existing `createStudioPdfProof()` frontend wrapper for each page. That wrapper invokes the accepted `create_studio_pdf_proof` Tauri command, which performs:
+Every document page calls the accepted `createStudioPdfProof()` frontend wrapper and underlying `create_studio_pdf_proof` Tauri command:
 
 ```text
 native WKWebView PDF
--> metadata-only PageBox normalization
--> exact A5 validation
+→ metadata-only PageBox normalization
+→ exact A5 validation
 ```
 
-The Document Proof implementation does not duplicate or reinterpret the native render path.
+The Document Proof does not duplicate or reinterpret page layout.
 
 ## Staging
 
-Rust prepares a per-operation cache directory:
+Rust prepares a per-operation cache directory outside the repository:
 
 ```text
 ~/Library/Caches/Northern Lines Studio/document-proof-<pid>-<timestamp>/
@@ -142,28 +155,28 @@ Staged page files use deterministic names:
 manifest.json
 ```
 
-The staging directory is outside the source repository. The frontend calls cleanup in `finally`, after success or failure.
+Cleanup is attempted after success or failure.
 
 ## Assembly Integrity
 
-Only staged PDFs that already passed the single-page A5 proof validator may be assembled.
+Only staged PDFs that already passed the single-page A5 validator and structural evidence checks are assembled.
 
-The assembler uses `lopdf`, the existing structured PDF library in this branch. It:
+The assembler uses the existing `lopdf` structural PDF library to:
 
-- loads each staged page PDF;
-- requires each staged PDF to contain exactly one page;
-- records file SHA-256 and decoded content stream hashes;
-- renumbers source objects to avoid object ID collisions;
-- copies source objects into a new PDF;
-- attaches page objects to a new Page Tree in the supplied order;
-- writes the final document to a temp output path;
-- validates the final document before replacing the target path.
+- load each one-page staged PDF;
+- record SHA-256 and decoded content evidence;
+- renumber object IDs to avoid collisions;
+- import PDF objects;
+- attach pages to a new Page Tree in canonical order;
+- write to temporary final output;
+- validate final document;
+- atomically replace the target only after success.
 
-It does not render, scale, translate, crop, reflow, change fonts or rewrite content stream geometry.
+It does not render, scale, translate, crop, reflow, change fonts or rewrite content geometry.
 
 ## Manifest
 
-The staging directory receives `manifest.json` with schema:
+The temporary staging manifest schema is:
 
 ```text
 northern-lines.studio.document-proof.v1
@@ -171,50 +184,80 @@ northern-lines.studio.document-proof.v1
 
 Each page entry records:
 
-- `index`;
-- `page_id`;
-- `title`;
-- staged PDF `sha256`;
-- `width_pt`;
-- `height_pt`;
-- `validation_status`;
-- `content_stream_count`;
-- `decoded_content_bytes`;
-- decoded `decoded_content_hashes`;
-- `resource_count`.
+- index;
+- page ID;
+- title;
+- staged PDF SHA-256;
+- width/height;
+- validation status;
+- content stream count;
+- decoded content bytes;
+- decoded content hashes;
+- resource count.
 
-The manifest contains no x/y layout values.
+No page-layout coordinates are stored.
 
 ## Failure Semantics
 
-Document Proof is atomic from the user-visible output perspective.
+Document Proof is atomic.
 
-If any page render, page validation, assembly, write or final validation fails:
+Any readiness, render, page validation, assembly, write or final validation failure fails the full document proof. A partial new output is not reported as success and does not replace a previously valid requested output.
 
-- the document proof returns failure;
-- the final output path is not reported as success;
-- temp output is removed;
-- an existing target PDF is left untouched until final temp-output replacement;
-- staging cleanup is attempted in the frontend `finally`.
-
-If a page is not ready, the frontend fails the document proof with `PDF_DOCUMENT_PROOF_PAGE_NOT_READY`. If a staged single-page proof is structurally empty even though it has valid A5 page boxes, Rust fails before assembly with `PDF_DOCUMENT_PROOF_EMPTY_CAPTURE`.
+The originally active Studio page and proof/capture state are restored in `finally`.
 
 ## Final Validation
 
-Before success, Rust verifies:
+Before success, Studio verifies:
 
-- final output exists;
-- final PDF is readable;
-- final page count equals manifest page count;
-- every page validates exact A5;
-- manifest page indexes are sequential;
-- manifest page IDs are not duplicated;
-- final decoded per-page content stream hashes match the staged page hashes in order.
+- final PDF readable;
+- final page count equals expected/manifest count;
+- canonical order represented by sequential manifest entries;
+- every page exact A5;
+- no duplicate page IDs;
+- final decoded page content hashes match staged page evidence in order.
 
-## State Restoration
+## Real-World Acceptance Evidence
 
-The frontend records the originally active page ID before export. In `finally`, it removes proof/capture mode and reselects the original page when it still exists in the current `pageManifest`.
+The final installed-app test used the same 16-page Travelbook that exposed earlier failures.
 
-## Publisher
+Final order:
 
-Publisher is not involved in PoC 001. The current goal is to prove a Studio-owned visual document proof from already resolved Studio pages. Publisher validation/staging concepts may be revisited only after real-world Document Proof validation passes.
+```text
+01 Cover
+02 Willkommen
+03 Orientierung
+04 Reiseplanung
+05 Bergen
+06 Fotografie
+07 Kultur & Geschichte
+08 Kulinarik & Lokal
+09 Stavanger
+10 Geiranger
+11 Wandern & Natur
+12 Licht
+13 Wetter
+14 Fotografie-Workshop
+15 Erinnerungen / Notizen
+16 Die Reise bleibt
+```
+
+User validation confirmed:
+
+- all 16 pages present;
+- order correct;
+- exact A5;
+- no accidental blanks;
+- no duplicates/missing pages;
+- Notes page corrected;
+- overall visual fidelity acceptable;
+- remaining known Studio layout findings are pre-existing/non-PoC regressions;
+- one additional layout finding became visible only because the PDF proof provides a larger/physical inspection surface;
+- state restoration and success reporting correct.
+
+## Final Decision
+
+PoC 001 is complete and accepted.
+
+Future work must build on this renderer/orchestration/assembly architecture rather than reopen it as another PDF-renderer experiment.
+
+Publisher integration remains a later, separate contract/production step.
