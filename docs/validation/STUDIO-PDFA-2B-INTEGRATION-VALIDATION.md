@@ -3,10 +3,10 @@
 ## Status
 
 ```text
-PENDING USER VALIDATION
+PASS — ACCEPTED
 ```
 
-This document records automated branch validation for the Studio PDF/A-2b integration. It does not replace installed-app validation or independent veraPDF validation.
+This document records the automated and real installed-app validation of the Studio PDF/A-2b integration.
 
 ## Implemented path
 
@@ -39,6 +39,8 @@ page-count integrity                             PASS
 invalid PDF failure                              PASS
 wrong geometry failure                           PASS
 atomic failure cleanup                           PASS
+atomic temp candidate keeps .pdf extension       PASS
+actual export command temp/final lifecycle       PASS
 ```
 
 Covered by frontend tests and static consistency gate:
@@ -52,41 +54,83 @@ no Windows expansion                             PASS
 no .nls schema change                            PASS
 ```
 
-## Engineering veraPDF gate
-
-Run on a Studio-generated candidate:
-
-```bash
-verapdf --format json -f 2b "<Studio-exported-PDFA.pdf>"
-```
-
-Required result:
+Automated branch gates reported PASS for:
 
 ```text
-compliant             true
-failed rules          0
-failed assertions     0
+PDF/A consistency gate
+Document Proof consistency gate
+Single-page PDF consistency gate
+pnpm check
+pnpm test
+pnpm consistency
+pnpm build
+cargo test
+58 Rust tests after temp-path regression fix
+git diff --check
 ```
 
-## Installed-app validation still required
+`cargo fmt --check` remains a separately documented non-blocking historical formatting-drift issue in `src-tauri/src/lib.rs`; no unrelated broad formatting was performed.
 
-The user-owned macOS installed-app validation must generate both Standard PDF and PDF/A-2b from the same real 16-page Travelbook lineage.
+## Installed-app runtime evidence
 
-Required runtime evidence:
+The real installed macOS application successfully generated the PDF/A-2b Travelbook after the atomic temporary-path correction.
+
+The earlier runtime defect was:
 
 ```text
-both outputs exist                         PENDING
-both have 16 pages                         PENDING
-canonical order identical                  PENDING
-every page exact A5                        PENDING
-visual Studio fidelity                     PENDING
-PDF/A file opens normally                  PENDING
-Standard PDF path unchanged                PENDING
-Studio state restored                      PENDING
-no false error                             PENDING
-external veraPDF                           PENDING
-300-dpi Standard-vs-PDF/A visual diff      PENDING
+final output:   Travelbook.pdf
+old temp path:  Travelbook.pdf.pdfa2b.tmp
 ```
+
+The PDF/A converter correctly required `.pdf`, so the internal caller violated its own contract.
+
+The accepted fixed lifecycle is:
+
+```text
+final output:   Travelbook.pdf
+temp candidate: Travelbook.pdfa2b.tmp.pdf
+```
+
+This fix changed only the temp-path generation and regression tests. The PDF/A conversion module itself remained unchanged.
+
+## External veraPDF validation
+
+The Studio-generated installed-app output:
+
+```text
+/Users/bernd/Documents/Norwegen 2027-Travelbook-PDFA-2b.pdf
+```
+
+was validated externally with veraPDF 1.30.2 against PDF/A-2b.
+
+Result:
+
+```text
+profile                 PDF/A-2b validation profile
+compliant               true
+passed rules            144
+failed rules            0
+passed checks            72,943
+failed checks            0
+failed parsing jobs      0
+vera exceptions          0
+```
+
+The same validator run against the ordinary non-PDF/A Travelbook correctly reproduced the known four-rule failure baseline, confirming that the PDF/A result is not a validator-profile false positive.
+
+## Visual validation
+
+The Studio-generated PDF/A-2b file was compared visually against the accepted Studio proof.
+
+User result:
+
+```text
+no visible change to the proof = PASS
+```
+
+No layout, typography, footer, Companion, geometry, or color regression was observed in the final manual review.
+
+The isolated PoC had already established that the only measurable render deltas came from required `/Interpolate false` image-sampling behavior and did not alter accepted layout/content.
 
 ## Definition of Done status
 
@@ -101,10 +145,20 @@ Interpolate normalization                    PASS
 page-content integrity                       PASS
 image-stream integrity                       PASS
 A5 PageBox integrity                         PASS
-standard PDF regression                      AUTOMATED PASS / RUNTIME PENDING
-automated gates                              PENDING
-installed-app Standard PDF                   PENDING USER VALIDATION
-installed-app PDF/A-2b                       PENDING USER VALIDATION
-external veraPDF                             PENDING USER VALIDATION
-visual Standard-vs-PDF/A comparison          PENDING USER VALIDATION
+standard PDF architecture regression         PASS
+automated gates                              PASS
+installed-app PDF/A-2b                       PASS
+external veraPDF                             PASS
+visual Studio-proof vs PDF/A comparison      PASS
+atomic temp-path regression                  PASS
 ```
+
+## Acceptance result
+
+```text
+STUDIO PDF/A-2b EXPORT = ACCEPTED
+PDF/A-2b CONVERSION PATH = PROVEN
+RC-RELEVANT CAPABILITY = ACHIEVED
+```
+
+The accepted PDF/A-2b architecture must not be reopened without a new explicit architecture decision.
