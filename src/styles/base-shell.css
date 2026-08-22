@@ -7,6 +7,10 @@
   --fjord-blue: #35677f;
   --fjord-soft: #dbe8ee;
   --paper: #fff;
+  --studio-page-width: 420px;
+  --studio-golden-height: 594px;
+  --studio-a5-height: 595.945946px;
+  --studio-a5-extension: 1.945946px;
   --panel: #f7f9fa;
   --line: #ccd6da;
 }
@@ -102,7 +106,7 @@ button { font: inherit; }
 .canvas-header small { font-size: 10px; color: #7d8e96; }
 .preview-stage { flex: 1 1 auto; min-height: 0; min-width: 0; display: grid; place-items: center; overflow: hidden; padding: 4px 0 2px; }
 .page-scale-frame { position: relative; flex: 0 0 auto; transition: width 160ms ease-out, height 160ms ease-out; }
-.a5-page { position: absolute; inset: 0 auto auto 0; transform-origin: top left; width: 420px; height: 594px; padding: 58px 52px 42px; background: var(--paper); box-shadow: 0 8px 30px rgba(31, 53, 64, .16); display: flex; flex-direction: column; }
+.a5-page { position: absolute; inset: 0 auto auto 0; transform-origin: top left; width: var(--studio-page-width); height: var(--studio-a5-height); padding: 58px 52px calc(42px + var(--studio-a5-extension)); background: var(--paper); box-shadow: 0 8px 30px rgba(31, 53, 64, .16); display: flex; flex-direction: column; }
 .a5-page.cover-page { justify-content: center; background: linear-gradient(150deg, #f7faf9 0%, #e9f0ef 100%); }
 .page-rule { width: 54px; height: 3px; background: var(--fjord-blue); margin-bottom: 30px; }
 .eyebrow { margin: 0 0 15px; text-transform: uppercase; letter-spacing: .16em; font-size: 11px; color: #547181; }
@@ -458,7 +462,7 @@ code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .92em; }
 
 .companion-zone-bottom-left {
   left: 34px;
-  bottom: 51px;
+  bottom: calc(51px + var(--studio-a5-extension));
   width: 62px;
   height: 74px;
   display: flex;

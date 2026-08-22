@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { computePreviewScale, PREVIEW_MAX_SCALE } from './preview';
+import { computePreviewScale, PREVIEW_A5_EXTENSION, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH, PREVIEW_GOLDEN_HEIGHT, PREVIEW_MAX_SCALE } from './preview';
 
 describe('responsive A5 preview', () => {
+
+  it('uses an exact DIN A5 logical page ratio while preserving the 594-unit golden composition', () => {
+    expect(PREVIEW_BASE_WIDTH).toBe(420);
+    expect(PREVIEW_GOLDEN_HEIGHT).toBe(594);
+    expect(PREVIEW_BASE_HEIGHT).toBeCloseTo(420 * 210 / 148, 12);
+    expect(PREVIEW_BASE_WIDTH / PREVIEW_BASE_HEIGHT).toBeCloseTo(148 / 210, 12);
+    expect(PREVIEW_A5_EXTENSION).toBeCloseTo((420 * 210 / 148) - 594, 12);
+  });
   it('preserves proportional scaling by returning one uniform scale', () => {
     expect(computePreviewScale(900, 900)).toBeGreaterThan(1);
   });

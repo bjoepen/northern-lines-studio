@@ -1,5 +1,6 @@
 /* Build 021/022 · Layout Resilience & Content Capacity Foundation
-   A5 preview = 420 × 594 px. Build 022 defines 15 mm (~42.57 px) as the
+   Studio Golden Composition = 420 × 594 u inside an exact-A5 page of
+   420 × 595.945946 u. Build 022 defines 15 mm (~42.57 u) as the
    technical minimum binding zone for relevant content. */
 .a5-page.destination-page {
   --binding-safe-left: 42.57px;
@@ -94,7 +95,7 @@
    Editorial-World home established across Fjord pages and is not shifted by the content inset. */
 .a5-page.destination-page .companion-zone-bottom-left {
   left: 34px;
-  bottom: 51px;
+  bottom: calc(51px + var(--studio-a5-extension));
   width: 62px;
   height: 74px;
 }
