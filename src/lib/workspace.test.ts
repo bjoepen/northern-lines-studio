@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioPage, StudioProject } from './project';
-import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, travelbookPageNumber } from './workspace';
+import { editorialWorldFor, groupPages, pageRoleLabel, projectStatus, publicationOrderedPages, travelbookPageNumber } from './workspace';
 
 const pages: StudioPage[] = [
   { id: 'cover', order: 1, type: 'cover', role: 'front_matter', title: 'Cover', content: 'cover.md', layout: 'cover-standard' },
@@ -59,6 +59,51 @@ describe('workspace model', () => {
     expect(travelbookPageNumber(routePages, 'alesund', ['bergen', 'alesund', 'geiranger'])).toBe(5);
     expect(travelbookPageNumber(routePages, 'geiranger', ['bergen', 'alesund', 'geiranger'])).toBe(6);
     expect(travelbookPageNumber(routePages, 'light', ['bergen', 'alesund', 'geiranger'])).toBe(7);
+  });
+
+  it('uses one publication sequence for Orientation and footer page numbers', () => {
+    const mixedPages: StudioPage[] = [
+      { id: 'cover', order: 1, type: 'cover', role: 'front_matter', title: 'Cover', content: 'cover.md', layout: 'cover' },
+      { id: 'welcome', order: 2, type: 'welcome', role: 'front_matter', title: 'Willkommen', content: 'welcome.md', layout: 'welcome' },
+      { id: 'contents', order: 3, type: 'contents', role: 'front_matter', title: 'Orientierung', content: 'contents.md', layout: 'contents' },
+      { id: 'planning', order: 4, type: 'planning', role: 'journey_planning', title: 'Reiseplanung', content: 'planning.md', layout: 'planning' },
+      { id: 'bergen', order: 5, type: 'destination', role: 'destination', title: 'Bergen', content: 'bergen.md', layout: 'destination', journeyStage: 'bergen' },
+      { id: 'geiranger', order: 6, type: 'destination', role: 'destination', title: 'Geiranger', content: 'geiranger.md', layout: 'destination', journeyStage: 'geiranger' },
+      { id: 'stavanger', order: 7, type: 'destination', role: 'destination', title: 'Stavanger', content: 'stavanger.md', layout: 'destination', journeyStage: 'stavanger' },
+      { id: 'light', order: 8, type: 'knowledge', role: 'journey_knowledge', title: 'Licht', content: 'light.md', layout: 'light' },
+      { id: 'weather', order: 9, type: 'knowledge', role: 'journey_knowledge', title: 'Wetter', content: 'weather.md', layout: 'weather' },
+      { id: 'workshop', order: 10, type: 'workflow', role: 'workflow', title: 'Fotografie-Workshop', content: 'workshop.md', layout: 'workflow' },
+      { id: 'notes', order: 11, type: 'notes', role: 'notes', title: 'Erinnerungen', content: 'notes.md', layout: 'notes' },
+      { id: 'closing', order: 12, type: 'closing', role: 'closing_memory', title: 'Die Reise bleibt', content: 'closing.md', layout: 'closing' },
+      { id: 'bergen-photo', order: 13, type: 'destination_interest', role: 'destination', title: 'Fotografie', content: 'photo.md', layout: 'interest', journeyStage: 'bergen', destinationInterestKind: 'photography' },
+      { id: 'geiranger-hike', order: 14, type: 'destination_interest', role: 'destination', title: 'Wandern & Natur', content: 'hike.md', layout: 'interest', journeyStage: 'geiranger', destinationInterestKind: 'hiking_nature' },
+      { id: 'bergen-culture', order: 15, type: 'destination_interest', role: 'destination', title: 'Kultur & Geschichte', content: 'culture.md', layout: 'interest', journeyStage: 'bergen', destinationInterestKind: 'culture_history' },
+      { id: 'bergen-food', order: 16, type: 'destination_interest', role: 'destination', title: 'Kulinarik & Lokal', content: 'food.md', layout: 'interest', journeyStage: 'bergen', destinationInterestKind: 'culinary_local' }
+    ];
+    const route = ['bergen', 'stavanger', 'geiranger'];
+    const ordered = publicationOrderedPages(mixedPages, route);
+
+    expect(ordered.map((page) => page.title)).toEqual([
+      'Cover',
+      'Willkommen',
+      'Orientierung',
+      'Reiseplanung',
+      'Bergen',
+      'Fotografie',
+      'Kultur & Geschichte',
+      'Kulinarik & Lokal',
+      'Stavanger',
+      'Geiranger',
+      'Wandern & Natur',
+      'Licht',
+      'Wetter',
+      'Fotografie-Workshop',
+      'Erinnerungen',
+      'Die Reise bleibt'
+    ]);
+    expect(ordered.map((page) => travelbookPageNumber(mixedPages, page.id, route))).toEqual(
+      ordered.map((_, index) => index + 1)
+    );
   });
 
   it('places journey planning between book and route', () => {

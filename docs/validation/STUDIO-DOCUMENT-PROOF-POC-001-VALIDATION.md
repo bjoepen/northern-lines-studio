@@ -8,7 +8,9 @@ Frontend/Vitest coverage:
 - document proof staging command boundary;
 - document proof assembly command boundary;
 - document proof cleanup command boundary;
-- actual Studio `pageManifest` order is preserved;
+- Document Proof uses canonical Studio publication order instead of raw manifest insertion;
+- Orientation and footer page numbers share that same publication sequence;
+- same page IDs with different manifest insertion order still produce publication order;
 - variable page counts are supported;
 - deterministic staged filenames are used;
 - originally active Studio page can be restored.
@@ -18,6 +20,8 @@ Frontend/Vitest coverage:
 - transitional opacity/running page animation is rejected;
 - current-page image readiness remains scoped to the identified page;
 - original page restoration is covered for readiness failure.
+- Notes writing surfaces use proof-stable explicit light gradient stops;
+- Photography Workshop proof CSS remains present and unchanged by the Notes fix.
 
 Rust coverage:
 
@@ -90,6 +94,61 @@ Each staged single-page PDF is still required to validate as exact A5 before ass
 
 `PDF_DOCUMENT_PROOF_EMPTY_CAPTURE` is raised when a staged page has valid A5 boxes but no decoded page content. This rejects accidental blank captures without requiring text, so image-dominant or vector-drawing pages remain valid.
 
+## Ordering Finding
+
+The newest real-world Travelbook proof showed that iterating raw `project.pageManifest` was wrong. The generated PDF followed manifest/insertion order for later page classes, placing destination-interest pages after memories instead of directly after their destination. Studio itself already knew the correct order: Sidebar, Orientation and footer page numbers are derived from `groupPages(project.pageManifest, routeStageIds)` through `travelbookPageNumber()`.
+
+Correction:
+
+```text
+project.pageManifest
+-> publicationOrderedPages(pageManifest, routeStageIds)
+-> Document Proof staged render order
+```
+
+`publicationOrderedPages()` is a small named wrapper around the existing `groupPages()` order. This avoids a new order table, avoids a page-type hardcoded export sort and keeps Document Proof aligned with the current Studio book semantics.
+
+Regression coverage now verifies the observed mixed 16-page style order:
+
+```text
+Cover
+Willkommen
+Orientierung
+Reiseplanung
+Bergen
+Fotografie
+Kultur & Geschichte
+Kulinarik & Lokal
+Stavanger
+Geiranger
+Wandern & Natur
+Licht
+Wetter
+Fotografie-Workshop
+Erinnerungen
+Die Reise bleibt
+```
+
+## Notes/Memory Visual Finding
+
+The Notes/Memory defect was reproduced by the user in both single-page Notes proof and the assembled Travelbook proof. Therefore it is not caused by assembly, object import, page ordering or multi-page validation.
+
+CSS root cause:
+
+- `.notes-main`, `.notes-side > section`, `.notes-lines`, `.notes-mini-lines` and `.notes-dot-grid` render the writing areas;
+- the large writing line/grid children used gradients whose color stops mixed `var(--world-accent)` with `transparent`;
+- WKWebView PDF output rendered those transparent mixed gradient surfaces as dark/black writing areas;
+- the accepted Photography Workshop proof did not exercise large transparent `color-mix` gradient writing fields.
+
+Correction:
+
+- Notes surfaces now define explicit light `--notes-surface`, `--notes-line`, `--notes-mini-line` and `--notes-dot` variables;
+- gradient gaps use `var(--notes-surface)`, not `transparent`;
+- Baltic keeps its own warm-paper/amber variables;
+- no global white-background override, opacity hack or renderer change was introduced.
+
+Browser computed-style inspection was attempted in the Codex environment, but no controllable browser was available through the Browser connector. The runtime visual proof remains user-owned.
+
 ## Scoped Consistency Gate
 
 PoC 001 adds:
@@ -101,7 +160,8 @@ node scripts/check-studio-document-proof-poc-001-consistency.mjs
 The gate checks, statically where practical:
 
 - accepted single-page renderer reuse;
-- serial pageManifest orchestration;
+- serial canonical publication-order orchestration;
+- Orientation/footer/Document Proof order source;
 - rendered page identity contract;
 - readiness waits for page identity, fonts, current-page images and visual stability;
 - no arbitrary sleep synchronization;
@@ -113,6 +173,7 @@ The gate checks, statically where practical:
 - atomic temp-output replacement;
 - no second renderer dependency;
 - no fit/scale tokens;
+- Notes proof surfaces avoid transparent color-mix gradient stops;
 - no Publisher path.
 
 It does not claim runtime visual proof.

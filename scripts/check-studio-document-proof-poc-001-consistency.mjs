@@ -8,12 +8,15 @@ const fail = (m) => { console.error(`FAIL · Studio Document Proof PoC 001 · ${
 const app = read('src/App.svelte');
 const proof = read('src/lib/pdf-proof.ts');
 const proofTest = read('src/lib/pdf-proof.test.ts');
+const workspace = read('src/lib/workspace.ts');
+const workspaceTest = read('src/lib/workspace.test.ts');
 const rust = read('src-tauri/src/lib.rs');
 const css = read('src/styles/pdf-proof.css');
+const utilityCss = read('src/styles/book-utility-pages.css');
 const pkg = JSON.parse(read('package.json'));
 
 if (!app.includes('createPdfProofForTravelbook')) fail('Travelbook proof UI action missing.');
-if (!app.includes('studioDocumentProofPages(project)')) fail('Document proof must use actual Studio pageManifest order.');
+if (!app.includes('studioDocumentProofPages(project)')) fail('Document proof must use the Studio document proof page helper.');
 if (!app.includes('for (const [position, page] of pages.entries())')) fail('Document proof must render pages serially.');
 if (!app.includes('await createStudioPdfProof')) fail('Document proof must reuse the accepted single-page renderer command.');
 if (!app.includes('await waitForResolvedStudioPage(page.id,')) fail('Document proof must wait for each active page readiness.');
@@ -34,14 +37,17 @@ for (const forbiddenSleep of ['setTimeout(', 'sleep(', 'magic 50', 'magic 100', 
 
 if (!proof.includes('StudioDocumentProofRequest')) fail('Document proof request contract missing.');
 if (!proof.includes('StudioDocumentProofPage')) fail('Document proof page contract missing.');
+if (!proof.includes('publicationOrderedPages')) fail('Document proof must use canonical Studio publication order.');
 if (!proof.includes('evaluateRenderedStudioPageReadiness')) fail('Rendered page readiness helper missing.');
 if (!proof.includes('STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE')) fail('Document proof capture sequence contract missing.');
 if (!proof.includes('prepare_studio_document_pdf_proof')) fail('Document proof staging command missing.');
 if (!proof.includes('assemble_studio_document_pdf_proof')) fail('Document proof assembly command missing.');
 if (!proof.includes('cleanup_studio_document_pdf_proof')) fail('Document proof cleanup command missing.');
-if (!proof.includes('project?.pageManifest ?? []')) fail('Page order helper must use Studio pageManifest.');
+if (!workspace.includes('publicationOrderedPages')) fail('Canonical Studio publication order helper missing.');
+if (!workspace.includes('return groupPages(pages, routeStageIds).flatMap((section) => section.pages);')) fail('Publication order must share the Orientation/sidebar grouped order source.');
 if (!proof.includes("padStart(4, '0')")) fail('Staged page filenames must be deterministic.');
-if (!proofTest.includes('uses the actual Studio page manifest order')) fail('Page order regression test missing.');
+if (!proofTest.includes('canonical Studio publication order')) fail('Document proof publication order regression test missing.');
+if (!workspaceTest.includes('uses one publication sequence for Orientation and footer page numbers')) fail('Orientation/footer publication order regression test missing.');
 if (!proofTest.includes('supports variable page counts')) fail('Variable page-count regression test missing.');
 if (!proofTest.includes('restores the originally active Studio page')) fail('State restoration regression test missing.');
 if (!proofTest.includes('rejects stale DOM identity')) fail('Stale DOM identity regression test missing.');
@@ -71,6 +77,8 @@ if (!rust.includes('document_proof_page_failure_fails_whole_document_without_fin
 if (!rust.includes('document_proof_rejects_empty_staged_capture_before_assembly')) fail('Empty staged capture regression test missing.');
 if (!rust.includes('document_proof_manifest_matches_final_document')) fail('Manifest/final validation regression test missing.');
 if (!css.includes('opacity: 1 !important;') || !css.includes('filter: none !important;')) fail('Proof capture CSS must prevent faded/filtered page-root capture.');
+if (!utilityCss.includes('--notes-surface') || !utilityCss.includes('var(--notes-surface) 0')) fail('Notes writing surfaces must use proof-stable explicit light gradient stops.');
+if (/\.notes-(?:lines|mini-lines|dot-grid)[\s\S]*?color-mix\([^;]*transparent/.test(utilityCss)) fail('Notes proof line/grid surfaces must not depend on transparent color-mix stops.');
 
 const deps = JSON.stringify({...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {})});
 for (const forbidden of ['playwright','puppeteer','pdf-lib','pdfjs-dist','jspdf','react-pdf']) {

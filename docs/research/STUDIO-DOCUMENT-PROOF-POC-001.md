@@ -18,7 +18,31 @@ Windows and Publisher are out of scope for this PoC.
 
 ## Page Order Authority
 
-Studio remains the authority for page count, order and stable page IDs. The frontend uses `project.pageManifest` exactly as it exists in the current Studio project. It does not infer order from page type, role, route structure, destination kind or any fixed Travelbook length.
+Studio remains the authority for page count, order and stable page IDs. The raw `project.pageManifest` is the project manifest, not the final publication sequence. Real-world validation proved that its insertion/storage order can differ from the visible book order.
+
+The canonical Studio publication order is now named explicitly:
+
+```text
+publicationOrderedPages(pageManifest, routeStageIds)
+```
+
+It delegates to the same `groupPages()` sequence already used by:
+
+- the visible page navigation;
+- the Orientation page;
+- footer/page-number calculation through `travelbookPageNumber()`.
+
+Document Proof consumes `studioDocumentProofPages(project)`, which now delegates to `publicationOrderedPages(project.pageManifest, project.journey.stages.map(id))`. It does not hardcode a 16-page order and does not infer a separate export order from page types.
+
+Binding invariant:
+
+```text
+Studio Orientation order
+==
+Studio footer/page-number order
+==
+Document Proof order
+```
 
 ## Serial Orchestration
 
@@ -69,6 +93,25 @@ select requested page
 ```
 
 During `pdfProofStatus === 'rendering'`, the normal page `in:fade` duration is `0`. Proof CSS also forces the `.a5-page` root to `opacity: 1` and `filter: none`. This prevents WebKit from capturing a temporary fade opacity or page-root filter state; it does not alter World child styling, layout geometry, typography, content, Companion or footer.
+
+## Notes/Memory Visual Fidelity
+
+The newest real-world proof showed the Notes/Memory page with large dark writing areas. A single-page Notes proof reproduced the same defect as the Notes page inside the assembled Travelbook proof, so the assembler and page order were ruled out.
+
+Root cause found in the Studio CSS path:
+
+- Notes writing surfaces are `.notes-main`, `.notes-side > section`, `.notes-lines`, `.notes-mini-lines` and `.notes-dot-grid`;
+- the large line/grid children used CSS gradients with `color-mix(..., transparent)` and transparent stops;
+- this technique was not exercised by the accepted Photography Workshop proof;
+- the proof CSS did not intentionally change these Notes surfaces, but the native WKWebView PDF path rendered those transparent mixed gradient surfaces incorrectly as dark/black areas.
+
+The correction keeps the same Notes geometry and semantic World styling but makes the line/grid surfaces PDF-stable:
+
+- each writing box defines `--notes-surface`;
+- line and dot colors mix against that explicit light surface, not `transparent`;
+- gradient gaps use `var(--notes-surface)`, not transparent;
+- Baltic still uses its own amber/warm-paper variables;
+- no global background override was added.
 
 ## Single-Page Renderer Reuse
 

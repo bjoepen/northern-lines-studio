@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { StudioPage, StudioProject } from './project';
+import { publicationOrderedPages } from './workspace';
 
 export type StudioPdfProofStatus = 'idle' | 'preparing' | 'rendering' | 'saved' | 'error';
 export type StudioPdfProofReadinessErrorCode =
@@ -118,7 +119,11 @@ export function cleanupStudioDocumentPdfProof(
 }
 
 export function studioDocumentProofPages(project: StudioProject | null): StudioPage[] {
-  return project?.pageManifest ?? [];
+  if (!project) return [];
+  return publicationOrderedPages(
+    project.pageManifest,
+    project.journey?.stages.map((stage) => stage.id) ?? []
+  );
 }
 
 export function stagedDocumentProofPagePath(stagingPath: string, index: number): string {

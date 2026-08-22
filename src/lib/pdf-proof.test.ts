@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import {
   assembleStudioDocumentPdfProof,
@@ -124,17 +126,25 @@ describe('Studio PDF Proof', () => {
     });
   });
 
-  it('uses the actual Studio page manifest order without deriving from page type', () => {
+  it('uses the canonical Studio publication order instead of raw manifest insertion', () => {
     const pages = [
-      page('destination-b', 20, 'destination'),
-      page('cover-late', 10, 'cover'),
-      page('notes-middle', 30, 'notes')
+      { ...page('light', 8, 'knowledge'), role: 'journey_knowledge' as const },
+      { ...page('bergen-photo', 13, 'destination_interest'), journeyStage: 'bergen', destinationInterestKind: 'photography' as const },
+      { ...page('cover', 1, 'cover'), role: 'front_matter' as const },
+      { ...page('bergen', 5, 'destination'), journeyStage: 'bergen' },
+      { ...page('notes', 11, 'notes'), role: 'notes' as const },
+      { ...page('planning', 4, 'planning'), role: 'journey_planning' as const }
     ];
+    const project = projectWithPages(pages);
+    project.journey.stages = [{ id: 'bergen', kind: 'destination', title: 'Bergen' }];
 
-    expect(studioDocumentProofPages(projectWithPages(pages)).map((entry) => entry.id)).toEqual([
-      'destination-b',
-      'cover-late',
-      'notes-middle'
+    expect(studioDocumentProofPages(project).map((entry) => entry.id)).toEqual([
+      'cover',
+      'planning',
+      'bergen',
+      'bergen-photo',
+      'light',
+      'notes'
     ]);
   });
 
@@ -249,5 +259,21 @@ describe('Studio PDF Proof', () => {
     const pages = [page('original', 1), page('failed', 2)];
 
     expect(restoredDocumentProofPage(pages, 'original')?.id).toBe('original');
+  });
+
+  it('keeps Notes proof writing surfaces light in proof-safe CSS', () => {
+    const css = fs.readFileSync(path.resolve('src/styles/book-utility-pages.css'), 'utf8');
+
+    expect(css).toContain('--notes-surface: color-mix(in srgb, var(--world-accent, #547181) 2.5%, #fff);');
+    expect(css).toContain('background-image: repeating-linear-gradient(to bottom, var(--notes-surface) 0');
+    expect(css).toContain('background-image: radial-gradient(circle, var(--notes-dot) .7px, var(--notes-surface) .8px);');
+    expect(css).not.toMatch(/\.notes-(?:lines|mini-lines|dot-grid)[\s\S]*?color-mix\([^;]*transparent/);
+  });
+
+  it('leaves the existing Photography Workshop proof styling untouched', () => {
+    const css = fs.readFileSync(path.resolve('src/styles/travel-companion-workshop.css'), 'utf8');
+
+    expect(css).toContain('.photography-workshop-preview');
+    expect(css).toContain('.photography-workshop-flow');
   });
 });
