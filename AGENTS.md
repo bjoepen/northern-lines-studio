@@ -45,9 +45,9 @@ Current status:
 ```text
 macOS application                    ACTIVE
 macOS Studio development             ACTIVE
-macOS PDF-proof implementation       ACTIVE
-macOS PDF-proof stabilization        ACTIVE
-macOS real-world validation          ACTIVE
+macOS single-page PDF proof          ACCEPTED
+macOS Document Proof                 ACCEPTED
+macOS real-world validation          PASS
 
 Windows application                  OUT OF CURRENT SCOPE
 Windows PDF-proof adapter            DEFERRED
@@ -435,6 +435,8 @@ The immediate product need is **visual PDF proof**, not production/prepress outp
 
 The active proof implementation is macOS-only for the current development phase.
 
+The accepted architecture is defined by **ADR-039** (single-page Studio PDF Proof) and **ADR-040** (Studio Document Proof). It is no longer experimental.
+
 ## 10.1 Proven evidence
 
 The following has been demonstrated in real-world testing:
@@ -442,29 +444,43 @@ The following has been demonstrated in real-world testing:
 1. The earlier `window.print()` / system-print path could transport the resolved Studio page.
 2. Exact print color adjustment improved color fidelity.
 3. The system-print path did not reliably enforce A5 and produced A4 output.
-4. That system-print path is therefore not the authoritative deterministic proof architecture.
-5. The newer native macOS WebView PDF path successfully produced a PDF from the resolved Studio page.
-6. The generated PDF used DIN A5 physical page geometry.
-7. The generated A5 proof visually preserved the known Photography Workshop composition sufficiently to continue the PoC.
-8. The current remaining observed defect is a **false failure/completion signal**: Studio may display `PDF_PROOF_RENDER_FAILED: PDF-Proof-Erzeugung hat zu lange gedauert.` even though the PDF was successfully produced.
+4. That system-print path is therefore historical evidence, not the authoritative deterministic proof architecture.
+5. The native macOS `WKWebView` PDF path successfully renders the resolved Studio page.
+6. WebKit's integer-point snapshot output is normalized through metadata-only PageBox adjustment to exact DIN A5 without scaling, translation, reflow or recomposition of page content.
+7. Top/left anchoring and decoded page-content integrity are preserved by the normalization contract.
+8. The earlier false completion timeout was root-caused and corrected; successful PDF generation is reported truthfully.
+9. Single-page real-world proofs, including Photography Workshop and Notes/Memory, pass the accepted visual-proof contract.
+10. Studio Document Proof serially reuses the accepted single-page primitive for every page.
+11. A real installed-app 16-page Travelbook passed page count, canonical publication order, exact-A5, visual fidelity, Notes/Memory fidelity, content-integrity and Studio-state-restoration validation.
+12. The accepted renderer/orchestration/assembly architecture is frozen unless a new explicit architecture decision reopens it.
 
-Do not return to blind `@page`, system-print, or CSS paper-size experimentation unless explicitly instructed.
-
-Do not replace the proven native macOS PDF architecture merely to fix completion signaling.
+Do not return to blind `@page`, system-print, CSS paper-size experimentation, a second browser runtime or a second layout engine unless explicitly instructed through a new architecture decision.
 
 ## 10.2 Current PDF-proof target
 
-Required:
+Required single-page primitive:
 
 ```text
 resolved Studio page
 → temporary proof/capture state if required
 → minimal proof request
 → Tauri/Rust boundary
-→ native macOS WebView PDF generation
-→ exact A5 PDF
+→ native macOS WKWebView PDF generation
+→ metadata-only exact-A5 PageBox normalization
 → validation
 → explicit success/failure result
+```
+
+Required whole-document primitive:
+
+```text
+canonical Studio publication order
+→ serial resolved-page readiness
+→ accepted single-page primitive for each page
+→ staged validated exact-A5 page PDFs
+→ content-preserving PDF assembly
+→ final document validation
+→ atomic output
 ```
 
 The exporter reproduces what Studio already decided.
@@ -506,6 +522,8 @@ If proof-only UI chrome is hidden, that is acceptable.
 
 The proof state must restore Studio reliably after success or failure.
 
+For Document Proof, rendered-page identity, Svelte DOM commit, current-page asset/font readiness and visual stability must be proven before each capture. Arbitrary sleeps are not an acceptable synchronization mechanism.
+
 ## 10.5 Completion and timeout semantics
 
 The native PDF lifecycle must be deterministic and truthful.
@@ -540,7 +558,7 @@ Forbidden:
 - swallowed native errors;
 - success before required validation completes.
 
-The current false timeout must be investigated at its root cause before further PDF-proof expansion.
+The earlier false-timeout race is resolved and regression-covered. Do not reintroduce blocking synchronization that can starve the native WebKit completion callback.
 
 ## 10.6 Stable errors
 
@@ -555,6 +573,11 @@ PDF_PROOF_ASSET_NOT_READY
 PDF_PROOF_RENDER_FAILED
 PDF_PROOF_WRITE_FAILED
 PDF_PROOF_PAGE_SIZE_INVALID
+PDF_DOCUMENT_PROOF_PAGE_NOT_READY
+PDF_DOCUMENT_PROOF_EMPTY_CAPTURE
+PDF_DOCUMENT_PROOF_ORDER_INVALID
+PDF_DOCUMENT_PROOF_ASSEMBLY_FAILED
+PDF_DOCUMENT_PROOF_VALIDATION_FAILED
 ```
 
 Adjustments are allowed only when the existing error model is demonstrably insufficient and the decision is documented.
@@ -579,7 +602,7 @@ macOS-specific APIs are acceptable for the active scope.
 
 Do not introduce a second browser runtime such as Playwright/Puppeteer/Chromium unless the user explicitly reopens the architecture decision.
 
-Do not add PDF post-processing merely to hide incorrect rendering.
+Do not add PDF post-processing that scales, translates, reflows or recomposes page content. The accepted metadata-only PageBox normalization is specifically allowed by ADR-039 and must remain content-preserving.
 
 ---
 
@@ -600,22 +623,25 @@ Avoid trial-and-error patch chains.
 
 A failed architectural assumption should trigger re-evaluation, not another stack of patches.
 
-For the current false timeout issue, research must trace:
+For future PDF-proof changes, trace the accepted path end-to-end before modifying it:
 
 ```text
 Studio action
-→ frontend proof state
+→ canonical page/publication state
+→ frontend proof/readiness state
 → Tauri invoke
 → Rust command
-→ native WebView PDF callback/future
-→ PDF bytes/file write
-→ MediaBox validation
+→ native WKWebView PDF callback/future
+→ PDF write
+→ PageBox normalization
+→ A5/content validation
+→ optional document assembly/final validation
 → Rust result
 → frontend result
 → proof state restoration
 ```
 
-Identify exactly where success and timeout race.
+Do not reopen solved renderer questions without new evidence and an explicit architecture decision.
 
 ---
 
@@ -638,16 +664,20 @@ Do not change these merely to make a task easier:
 
 If the task appears to require such a change, stop and explain why.
 
-## 13.2 Proven macOS PDF path is protected
+## 13.2 Accepted macOS PDF architecture is protected
 
-Until explicitly reopened, do not replace:
+Until explicitly reopened by a new architecture decision, do not replace or reinterpret:
 
 - resolved Studio page as authority;
-- existing native macOS WebView PDF approach;
-- exact A5 requirement;
+- native macOS WKWebView PDF rendering;
+- metadata-only exact-A5 PageBox normalization;
+- the canonical Studio publication-order source;
+- serial Document Proof orchestration;
+- content-preserving PDF assembly;
+- exact A5 validation;
 - current minimal proof request boundary.
 
-The current task is stabilization, not another renderer experiment.
+Future work must build on this architecture rather than restart renderer experiments.
 
 ## 13.3 Minimal diff
 
@@ -726,7 +756,12 @@ cargo test --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-If the repository contains a scoped PDF-proof consistency gate, run it before the cumulative gate.
+If the repository contains scoped PDF-proof consistency gates, run them before the cumulative gate. For the accepted proof architecture this includes, when applicable:
+
+```bash
+node scripts/check-studio-pdf-proof-poc-001-consistency.mjs
+node scripts/check-studio-document-proof-poc-001-consistency.mjs
+```
 
 macOS application build/install:
 
@@ -789,80 +824,64 @@ Do not merge a PoC to `main` until its current Definition of Done is proven.
 
 If an experiment fails, prefer deleting/abandoning the branch rather than leaving experimental ballast in the long-lived repository.
 
-Golden Build 040 remains the baseline for current PDF-proof development.
-
-The abandoned earlier Print Core experiments must not be restored.
+ADR-039 and ADR-040 are now accepted and integrated architecture, not active PoCs. The abandoned earlier Print Core experiments must not be restored.
 
 ---
 
-# 17. Current Definition of Done — macOS PDF proof
+# 17. Accepted Definition of Done — macOS PDF proof
 
-The current task is deliberately narrow:
+The accepted feature produces reliable, truthful, exact-A5 PDF proofs from resolved Studio pages and complete Travelbooks on macOS.
 
-> **Produce a reliable, truthful, exact-A5 PDF proof from the resolved Studio page on macOS.**
-
-Required:
+The following are proven and binding:
 
 - exact physical A5 PDF;
 - Studio composition remains authoritative;
 - no content scaling;
 - no fit-to-page;
 - no second layout model;
-- World font fidelity;
-- useful color fidelity for editorial proof;
+- World font and useful editorial color fidelity;
 - protected zones unchanged;
 - Companion unchanged;
 - footer unchanged;
 - safe zones unchanged;
-- PDF is actually written;
-- successful PDF generation is reported as success;
-- failed PDF generation is reported as failure;
+- PDF is actually written before success;
+- successful generation is reported as success;
+- failed generation is reported as failure;
 - no false timeout after successful generation;
 - Studio returns cleanly from proof/capture mode;
+- whole-Travelbook proof uses canonical Studio publication order;
+- variable page count is supported;
+- staged pages are exact A5 and structurally non-empty;
+- document assembly preserves decoded page content and does not transform page geometry;
+- final output is atomic and validated;
 - automated gates pass;
-- installed macOS real-world test passes.
+- installed macOS real-world single-page and 16-page Travelbook tests pass.
 
-Not required for the current Definition of Done:
+Not part of the accepted proof feature yet:
 
-- Windows implementation;
-- Windows adapter;
-- Windows runtime test;
-- whole-book batch export;
+- Windows implementation/runtime validation;
 - production/prepress PDF;
 - bleed/crop marks;
 - imposition;
-- printer profiles;
-- Publisher integration;
+- printer/output profiles;
+- Publisher production integration;
 - Affinity automation.
 
-Do not expand scope until explicitly instructed.
+Those require separate scope and contracts.
 
 ---
 
 # 18. Current immediate task priority
 
-The current known defect is:
+There is **no active PDF-proof renderer defect** in the accepted architecture.
 
-```text
-PDF_PROOF_RENDER_FAILED:
-PDF-Proof-Erzeugung hat zu lange gedauert.
-```
+The single-page and Document Proof paths are accepted and must be treated as stable infrastructure.
 
-observed even though the requested PDF was successfully generated.
+Known pre-existing Studio layout findings, plus layout findings newly revealed by the larger/physical PDF inspection surface, belong to normal Studio layout development and are not grounds to reopen the renderer architecture.
 
-The immediate engineering priority is:
+The next approved roadmap step after the accepted Document Proof is to define **Studio Proof Package v1** as a stable Studio-owned handoff contract. Publisher CLI/production integration follows later as a separate PoC and must consume Studio-resolved output rather than re-compose it.
 
-1. reproduce/trace the completion lifecycle;
-2. identify the exact source of the false timeout;
-3. determine whether the native operation completed but acknowledgement was delayed/lost;
-4. correct the lifecycle rather than masking it;
-5. add regression coverage;
-6. rerun all gates;
-7. repeat installed macOS proof generation.
-
-Do not modify the proven PDF rendering architecture unless the root-cause analysis proves that it is itself responsible.
-
-Do not implement Windows while this task is active.
+Do not implement Windows while the current macOS-first scope remains active.
 
 ---
 
@@ -901,13 +920,16 @@ Do not rewrite historical ADRs merely because a newer decision supersedes them.
 
 Where necessary, add a new ADR that explicitly supersedes the older decision.
 
-Current PDF-proof documentation should make clear that:
+Current PDF-proof documentation must make clear that:
 
 - the old system-print/A4 result is historical evidence;
-- native macOS WebView PDF is the active path;
-- exact A5 has been demonstrated;
-- false completion timeout remains the active defect until resolved;
-- Windows is deferred.
+- native macOS WKWebView PDF is the accepted render path;
+- metadata-only PageBox normalization to exact A5 is accepted;
+- the false completion timeout was resolved;
+- Studio Document Proof is accepted through ADR-040;
+- the installed-app 16-page Travelbook validation passed;
+- Windows is deferred;
+- production/prepress and Publisher production integration remain separate future work.
 
 Do not document deferred Windows behavior as implemented functionality.
 
@@ -917,14 +939,14 @@ Do not document deferred Windows behavior as implemented functionality.
 
 Stop and report instead of coding when:
 
-- current checkout is not based on the approved Golden Build / approved PoC lineage;
+- current checkout is not based on the approved Golden Build / accepted main lineage;
 - the requested change conflicts with Product DNA;
 - the solution requires changing Golden Build 040 geometry;
 - the solution moves protected zones, Companion, or footer;
 - a framework assumption cannot be verified;
 - a required World font would be substituted;
 - the proposed export would scale or reflow Studio;
-- the correction would require replacing the proven native macOS PDF architecture without explicit approval;
+- the correction would require replacing the accepted native macOS PDF architecture without explicit approval;
 - the task begins expanding into Windows without explicit instruction;
 - quality gates reveal an architectural contradiction;
 - the native success/failure lifecycle cannot be determined reliably.
@@ -944,6 +966,10 @@ For layout:
 For PDF proof:
 
 > **The exporter reproduces Studio; it does not reinterpret Studio.**
+
+For the accepted proof architecture:
+
+> **Build on the proven path. Do not reopen solved renderer questions without a new explicit architecture decision.**
 
 For the current engineering phase:
 
