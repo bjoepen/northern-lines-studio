@@ -1,0 +1,131 @@
+/* Studio layout polish after the accepted PDF/Document Proof.
+   Fjord remains the reference for shared page grammar. These rules correct
+   cross-World inconsistencies without changing Golden Build 040 geometry. */
+
+/* 0. Page surface contract
+   Every Studio page, including the cover, remains neutral white. World
+   expression belongs to typography, accents, signets and semantic content
+   surfaces — never to a page-filling tint or gradient. */
+.a5-page.cover-page {
+  background: var(--paper, #ffffff);
+}
+
+/* 1. Structured Interest Pages
+   Section labels belong above the semantic content surface in every World.
+   World expression is carried by the entry cards, never by wrapping the
+   section label inside a larger colored block. */
+.a5-page.destination-interest-page .interest-entry-section {
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+/* 2. Orientierung / Inhaltsverzeichnis
+   Reserve a real section-label column so long labels such as
+   REISEBEGLEITUNG never intrude into the row-number column. */
+.contents-list {
+  --contents-section-width: 88px;
+  --contents-section-gap: 12px;
+  --contents-row-size: 9px;
+  --contents-order-size: 7px;
+  --contents-page-size: 8px;
+  --contents-group-size: 7px;
+  --contents-group-tracking: .13em;
+  --contents-list-gap: 11px;
+  --contents-row-gap: 4px;
+}
+
+.contents-list {
+  gap: var(--contents-list-gap);
+}
+
+.contents-group {
+  grid-template-columns: var(--contents-section-width) minmax(0, 1fr);
+  gap: var(--contents-section-gap);
+}
+
+.contents-group-label {
+  min-width: 0;
+  white-space: nowrap;
+  font-size: var(--contents-group-size);
+  letter-spacing: var(--contents-group-tracking);
+}
+
+.contents-group > div {
+  gap: var(--contents-row-gap);
+}
+
+.contents-row {
+  font-size: var(--contents-row-size);
+}
+
+.contents-order {
+  font-size: var(--contents-order-size);
+}
+
+.contents-page-number {
+  font-size: var(--contents-page-size);
+}
+
+/* Bounded typography adaptation for larger Travelbooks.
+   This is capacity-driven, not arbitrary scaling: standard remains the normal
+   state, then exactly two denser states are available. The selectors react to
+   real TOC pressure while keeping a readable floor. */
+@supports selector(.contents-list:has(.contents-group > div > .contents-row:nth-child(10))) {
+  .contents-list:has(.contents-group > div > .contents-row:nth-child(10)) {
+    --contents-row-size: 8.2px;
+    --contents-order-size: 6.6px;
+    --contents-page-size: 7.4px;
+    --contents-group-size: 6.6px;
+    --contents-group-tracking: .12em;
+    --contents-list-gap: 8px;
+    --contents-row-gap: 3px;
+  }
+
+  .contents-list:has(.contents-group > div > .contents-row:nth-child(20)) {
+    --contents-row-size: 7.4px;
+    --contents-order-size: 6.1px;
+    --contents-page-size: 6.8px;
+    --contents-group-size: 6.1px;
+    --contents-group-tracking: .11em;
+    --contents-list-gap: 6px;
+    --contents-row-gap: 2px;
+  }
+}
+
+/* 3. Footer / Companion protection
+   The footer rule must never cross the Companion. Draw the rule as a separate
+   layer and start it to the right of the protected Companion zone. */
+.a5-page .editorial-footer {
+  position: relative;
+  border-top: 0;
+}
+
+.a5-page .editorial-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(84, 123, 140, .22);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.a5-page .editorial-footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Footer starts at x=52u on the established pages. 62u inside the footer puts
+   the rule roughly 6 mm to the right of the standard Companion's visual room. */
+.a5-page:has(> .companion-zone-bottom-left) .editorial-footer::before {
+  left: 62px;
+}
+
+/* Defensive stacking: even if a future footer decoration grows, the Companion
+   stays visually untouched. */
+.a5-page .companion-zone {
+  z-index: 5;
+}
