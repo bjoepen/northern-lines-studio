@@ -316,7 +316,7 @@
 
 .a5-page.destination-interest-page.hiking-nature-interest-page {
   padding-top: 40px;
-  padding-bottom: 42px;
+  padding-bottom: calc(42px + var(--studio-a5-extension));
 }
 
 /* Interest Pages may become denser, but the primary hierarchy never shrinks. */
@@ -371,11 +371,11 @@
   position: absolute;
   left: 52px;
   right: 52px;
-  bottom: 42px;
+  bottom: calc(42px + var(--studio-a5-extension));
   margin-top: 0;
 }
 .a5-page.destination-interest-page.hiking-nature-interest-page .companion-zone-bottom-left {
-  bottom: 51px;
+  bottom: calc(51px + var(--studio-a5-extension));
 }
 
 .baltic-page.destination-interest-page .hiking-routes { background: color-mix(in srgb, var(--baltic-sand) 58%, #fff); }
@@ -530,10 +530,10 @@
   position: absolute;
   left: 52px;
   right: 52px;
-  bottom: 42px;
+  bottom: calc(42px + var(--studio-a5-extension));
   margin-top: 0;
 }
-.a5-page.destination-interest-page .companion-zone-bottom-left { bottom: 51px; }
+.a5-page.destination-interest-page .companion-zone-bottom-left { bottom: calc(51px + var(--studio-a5-extension)); }
 
 /* Structured Interest authoring: object first, fields second.
    Travel Language stays present but calm: entries read like editorial content,
@@ -625,7 +625,7 @@
    Structured cultural places follow the shared Interest Entry grammar. */
 .a5-page.destination-interest-page.culture-history-interest-page {
   padding-top: 40px;
-  padding-bottom: 42px;
+  padding-bottom: calc(42px + var(--studio-a5-extension));
 }
 .culture-history-experience { max-width: 445px; min-height: 0; }
 .culture-history-experience .culture-history-page-rule { width: 38px; height: 1px; margin-bottom: 12px; }
@@ -740,7 +740,7 @@
    Studio composes; the traveller only describes the recommendation. */
 .a5-page.destination-interest-page.culinary-local-interest-page {
   padding-top: 40px;
-  padding-bottom: 42px;
+  padding-bottom: calc(42px + var(--studio-a5-extension));
 }
 .culinary-local-experience { max-width: 445px; min-height: 0; }
 .culinary-local-experience .culinary-local-page-rule { width: 38px; height: 1px; margin-bottom: 12px; }

@@ -1,132 +1,161 @@
-# APPLY DROP-IN — Northern Lines Studio Build 039a
+# APPLY — Northern Lines Studio Build 040 · Exact A5 Geometry Foundation
 
-Build 039a is a **single-issue correction** to the approved Build 039 state.
+## 0. Contract
 
-It removes only the redundant visible `ERINNERUNGEN` eyebrow while preserving the H1 **Erinnerungen**. The approved Ostsee colors, Fjord expression, Curated Accent, writing geometry, Companion, Footer and all contracts remain unchanged.
+Build 040 changes only Studio page geometry:
+
+```text
+Physical Studio Page    420 × 595.945945946 u
+Golden Composition      420 × 594 u
+A5 Extension                  1.945945946 u
+```
+
+Footer positions, Companion positions and Safe Zones remain at their Build 039 Golden Y coordinates.
+
+No print/PDF implementation is included.
 
 ## 1. Branch
 
-Git operations are intentionally not performed by this package. From the repository root:
+Create/use a fresh Build 040 branch from clean `main`:
 
 ```bash
 cd /Volumes/Kioxia/Projekte/northern-lines-studio
 git status
+git switch main
+git pull --ff-only
+git switch -c build/040-exact-a5-geometry
 ```
 
-Recommended branch name:
+If the branch already exists, switch to it instead.
+
+## 2. Unpack
 
 ```bash
-git switch -c fix/build-039a-memories-redundancy
+cd ~/Downloads
+unzip Northern-Lines-Studio-Build-040-Exact-A5-Geometry-DropIn.zip
 ```
 
-## 2. Dry Run — STOP before Apply
-
-Assuming the extracted drop-in is in `~/Downloads/Northern-Lines-Studio-Build-039a-Memories-Redundancy-Fix-DropIn`:
+## 3. Dry Run — mandatory
 
 ```bash
 rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-Build-039a-Memories-Redundancy-Fix-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-040-Exact-A5-Geometry-DropIn/ \
   /Volumes/Kioxia/Projekte/northern-lines-studio/
 ```
 
-Expected changed/added files are limited to:
+Expected project changes are limited to the files listed in `DROP-IN-MANIFEST.md` plus the drop-in documentation/checksum files.
 
-```text
-src/App.svelte
-scripts/check-build-039a-memories-redundancy-consistency.mjs
-docs/BUILD-039A-MEMORIES-REDUNDANCY-FIX.md
-APPLY-DROPIN.md
-DROP-IN-MANIFEST.md
-BUILD-039A-DROPIN-SHA256SUMS.txt
-```
+STOP if unrelated Studio files would be overwritten.
 
-**STOP** if unrelated implementation, layout, world or asset files appear.
-
-## 3. Apply
+## 4. Apply
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-Build-039a-Memories-Redundancy-Fix-DropIn/ \
+  ~/Downloads/Northern-Lines-Studio-Build-040-Exact-A5-Geometry-DropIn/ \
   /Volumes/Kioxia/Projekte/northern-lines-studio/
 ```
 
-Then:
+## 5. Build-specific Gate first
 
 ```bash
 cd /Volumes/Kioxia/Projekte/northern-lines-studio
-```
-
-## 4. Build-specific consistency gate
-
-```bash
-node scripts/check-build-039a-memories-redundancy-consistency.mjs
+node scripts/check-build-040-a5-geometry-consistency.mjs
 ```
 
 Expected:
 
 ```text
-Build 039a Memories Redundancy Gate: PASS
+PASS · Build 040 · exact DIN A5 page geometry with preserved 420×594 Golden Composition, footer/companion anchors and safe zones.
 ```
 
-This gate protects the exact correction scope: one visible Erinnerungen title, no duplicate eyebrow, unchanged Ostsee ochre expression and unchanged `notes` Curated Accent contract.
-
-## 5. Full gates
+## 6. Full local Quality Gate
 
 ```bash
-pnpm consistency
 pnpm check
 pnpm test
+pnpm consistency
 pnpm build
-cargo test --manifest-path src-tauri/Cargo.toml
-git diff --check
+
+cd src-tauri
+cargo test
+cd ..
 ```
 
-All must be green before the macOS app build.
+All commands must PASS. Do not continue on FAIL.
 
-## 6. Build & install the macOS app
+## 7. macOS App Build / Install
 
-From the repository root:
+From repo root:
 
 ```bash
 ./scripts/install-macos-app.sh
 ```
 
-This builds the Tauri-v2 application and installs:
+This builds the Tauri-v2 app and installs `Northern Lines Studio.app` to `/Applications`.
 
-```text
-/Applications/Northern Lines Studio.app
-```
+## 8. Real-world visual regression
 
-## 7. Real-World Test — STOP/GO
+Open the known Build 039 Golden travelbook and verify at minimum:
 
-### Erinnerungen — Fjord
+- Fjord and Ostsee World switching unchanged
+- Cover / planning / destination pages unchanged inside the prior composition
+- Destination hero variants unchanged
+- Companion positions unchanged
+- Footer positions unchanged
+- Binding Safe Zone unchanged
+- Interest Pages and hard footer anchors unchanged
+- Orientierung unchanged
+- Erinnerungen unchanged
 
-1. Open **Erinnerungen** in Fjord.
-2. Confirm only one visible heading remains: **Erinnerungen**.
-3. Confirm the Curated Accent, writing boxes, Companion and Footer are unchanged.
-4. Confirm Fjord colors are unchanged.
+The only intended geometric difference is the additional `1.945945946 u` physical page extension below the existing 594-unit Golden Composition.
 
-### Erinnerungen — Ostsee
-
-1. Open **Erinnerungen** in Ostsee.
-2. Confirm only one visible heading remains: **Erinnerungen**.
-3. Confirm the approved light ochre/sand box expression is unchanged.
-4. Confirm the physical A5 page remains white.
-5. Confirm Curated Accent, writing capacity, Companion and Footer are unchanged.
-
-**STOP** on any color change, geometry movement, missing Curated Accent, page-surface tint or additional visual change.
-
-**GO** only when both worlds match the approved Build 039 appearance apart from the removed redundant eyebrow.
-
-## 8. Commit & push — only after GO
-
-After successful gates and visual review:
+## 9. Git diff audit
 
 ```bash
-git status
-git add .
-git commit -m "fix: remove memories heading redundancy"
-git push -u origin HEAD
+git status --short
+git diff --stat main...HEAD
+git diff --check
 ```
 
-Do not merge until all gates and the visual review are green.
+Verify no unrelated layout, World, `.nls`, Tauri runtime or dependency change is present.
+
+## 10. Commit / Push
+
+Only after all local gates and the visual regression PASS:
+
+```bash
+git add \
+  package.json \
+  src/lib/preview.ts \
+  src/lib/preview.test.ts \
+  src/styles/base-shell.css \
+  src/styles/book-utility-pages.css \
+  src/styles/destination-foundation.css \
+  src/styles/destination-interests.css \
+  src/styles/editorial-worlds.css \
+  scripts/check-build-039-editorial-consistency.mjs \
+  scripts/check-build-040-a5-geometry-consistency.mjs \
+  src-tauri/Cargo.toml \
+  src-tauri/Cargo.lock \
+  src-tauri/tauri.conf.json \
+  docs/builds/BUILD-040.md \
+  APPLY-DROPIN.md \
+  DROP-IN-MANIFEST.md \
+  BUILD-040-DROPIN-SHA256SUMS.txt
+
+git commit -m "build: establish exact A5 studio geometry in 040"
+git push -u origin build/040-exact-a5-geometry
+```
+
+## 11. Golden Build promotion
+
+Build 040 becomes the new Golden Build only after:
+
+```text
+ChatGPT pre-delivery consistency gate PASS
++ local pnpm/cargo gates PASS
++ macOS app build PASS
++ visual Build 039 regression PASS
+```
+
+After promotion, all subsequent PDF/Publisher PoCs branch from Build 040/main.

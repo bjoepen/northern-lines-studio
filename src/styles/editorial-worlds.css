@@ -144,7 +144,7 @@
    Its visual proportions are world-specific, but it never participates in Content Fit. */
 .a5-page.baltic-page.destination-page .companion-zone-bottom-left {
   left: 34px;
-  bottom: 51px;
+  bottom: calc(51px + var(--studio-a5-extension));
   width: 78px;
   height: 62px;
 }

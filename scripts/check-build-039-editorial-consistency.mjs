@@ -40,7 +40,9 @@ if (!css.includes('var(--baltic-amber) 8%')) fail('Ostsee memories light ochre m
 if (!css.includes('var(--baltic-warm-paper)')) fail('Ostsee memories warm-paper mix missing');
 if (!css.includes('.a5-page.contents-page,\n.a5-page.notes-page {\n  background: #fff;')) fail('literal white utility page surface guard missing');
 
-if (pkg.version !== '0.39.0-alpha.1') fail('package version is not Build 039');
+// Build 039 is a historical editorial invariant gate. Later builds must keep
+// these invariants while advancing the product version, so only cross-manifest
+// version parity belongs in the cumulative consistency chain.
 if (tauri.version !== pkg.version || !cargo.includes(`version = "${pkg.version}"`)) fail('version parity missing');
 
 console.log('\x1b[32mBuild 039 Editorial Consistency Gate: PASS\x1b[0m');
