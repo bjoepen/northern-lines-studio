@@ -100,8 +100,11 @@ struct StudioDocumentProofManifestPage {
     sha256: String,
     width_pt: f64,
     height_pt: f64,
-    status: String,
-    content_stream_hashes: Vec<String>,
+    validation_status: String,
+    content_stream_count: usize,
+    decoded_content_bytes: usize,
+    decoded_content_hashes: Vec<String>,
+    resource_count: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1998,10 +2001,40 @@ fn collect_page_content_streams(
     }
 }
 
-fn page_content_stream_hashes(
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PdfPageContentEvidence {
+    stream_count: usize,
+    decoded_content_bytes: usize,
+    decoded_content_hashes: Vec<String>,
+    resource_count: usize,
+}
+
+fn page_resource_count(
     document: &lopdf::Document,
     page_id: lopdf::ObjectId,
-) -> Result<Vec<String>, String> {
+) -> Result<usize, String> {
+    let page = document
+        .get_object(page_id)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite konnte nicht gelesen werden: {error}"))?
+        .as_dict()
+        .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite ist nicht lesbar.".to_string())?;
+    match page.get(b"Resources") {
+        Ok(lopdf::Object::Dictionary(resources)) => Ok(resources.len()),
+        Ok(lopdf::Object::Reference(id)) => document
+            .get_object(*id)
+            .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seitenressourcen konnten nicht gelesen werden: {error}"))?
+            .as_dict()
+            .map(|resources| resources.len())
+            .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seitenressourcen sind nicht lesbar.".to_string()),
+        Ok(_) => Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seitenressourcen sind nicht lesbar.".into()),
+        Err(_) => Ok(0),
+    }
+}
+
+fn page_content_evidence(
+    document: &lopdf::Document,
+    page_id: lopdf::ObjectId,
+) -> Result<PdfPageContentEvidence, String> {
     let page = document
         .get_object(page_id)
         .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite konnte nicht gelesen werden: {error}"))?
@@ -2012,7 +2045,35 @@ fn page_content_stream_hashes(
         .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite enthält keinen Inhalt.".to_string())?;
     let mut streams = Vec::new();
     collect_page_content_streams(document, contents, &mut streams)?;
-    Ok(streams.iter().map(|stream| sha256_hex(stream)).collect())
+    Ok(PdfPageContentEvidence {
+        stream_count: streams.len(),
+        decoded_content_bytes: streams.iter().map(Vec::len).sum(),
+        decoded_content_hashes: streams.iter().map(|stream| sha256_hex(stream)).collect(),
+        resource_count: page_resource_count(document, page_id)?,
+    })
+}
+
+#[cfg(test)]
+fn page_content_stream_hashes(
+    document: &lopdf::Document,
+    page_id: lopdf::ObjectId,
+) -> Result<Vec<String>, String> {
+    Ok(page_content_evidence(document, page_id)?.decoded_content_hashes)
+}
+
+fn validate_page_not_empty_capture(
+    document: &lopdf::Document,
+    page_id: lopdf::ObjectId,
+    page_title: &str,
+) -> Result<PdfPageContentEvidence, String> {
+    let evidence = page_content_evidence(document, page_id)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_EMPTY_CAPTURE: {page_title} · {error}"))?;
+    if evidence.stream_count == 0 || evidence.decoded_content_bytes == 0 {
+        return Err(format!(
+            "PDF_DOCUMENT_PROOF_EMPTY_CAPTURE: {page_title} · Einzelproof enthält keine dekodierten Seiteninhalte."
+        ));
+    }
+    Ok(evidence)
 }
 
 fn first_page_dimensions(document: &lopdf::Document, page_id: lopdf::ObjectId) -> Result<(f64, f64), String> {
@@ -2051,7 +2112,7 @@ fn assemble_validated_document_pdf(
             return Err(format!("PDF_DOCUMENT_PROOF_PAGE_FAILED: {} · Einzelproof enthält {} Seiten.", page.title, source_pages.len()));
         }
         let source_page_id = *source_pages.values().next().expect("single page exists");
-        let content_hashes = page_content_stream_hashes(&source, source_page_id)?;
+        let content_evidence = validate_page_not_empty_capture(&source, source_page_id, &page.title)?;
         let (width_pt, height_pt) = first_page_dimensions(&source, source_page_id)?;
 
         source.renumber_objects_with(document.max_id + 1);
@@ -2078,8 +2139,11 @@ fn assemble_validated_document_pdf(
             sha256: source_sha256,
             width_pt,
             height_pt,
-            status: "validated".into(),
-            content_stream_hashes: content_hashes,
+            validation_status: "validated".into(),
+            content_stream_count: content_evidence.stream_count,
+            decoded_content_bytes: content_evidence.decoded_content_bytes,
+            decoded_content_hashes: content_evidence.decoded_content_hashes,
+            resource_count: content_evidence.resource_count,
         });
     }
 
@@ -2141,8 +2205,12 @@ fn validate_document_pdf_output(
         if !seen.insert(manifest_page.page_id.clone()) {
             return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seite '{}' ist doppelt im Proof.", manifest_page.page_id));
         }
-        let hashes = page_content_stream_hashes(&document, *page_id)?;
-        if hashes != manifest_page.content_stream_hashes {
+        let evidence = page_content_evidence(&document, *page_id)?;
+        if evidence.stream_count != manifest_page.content_stream_count
+            || evidence.decoded_content_bytes != manifest_page.decoded_content_bytes
+            || evidence.decoded_content_hashes != manifest_page.decoded_content_hashes
+            || evidence.resource_count != manifest_page.resource_count
+        {
             return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seiteninhalt '{}' stimmt nach Assembly nicht überein.", manifest_page.page_id));
         }
     }
@@ -3361,6 +3429,50 @@ mod tests {
     }
 
     #[test]
+    fn document_proof_rejects_empty_staged_capture_before_assembly() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-empty");
+        fs::create_dir(&staging).expect("staging");
+        write_test_pdf_with_content(
+            &staging.join("0001.pdf"),
+            pdf_box(419, 595),
+            Some(pdf_box(419, 595)),
+            None,
+            vec![Vec::new()],
+        );
+        normalize_pdf_a5_page_boxes(&staging.join("0001.pdf")).expect("normalize empty A5 page");
+        let output = temp.path().join("travelbook.pdf");
+
+        let result = assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["blank"],
+        ));
+
+        assert!(result.expect_err("empty capture fails").starts_with("PDF_DOCUMENT_PROOF_EMPTY_CAPTURE"));
+        assert!(!output.exists());
+    }
+
+    #[test]
+    fn document_proof_accepts_valid_non_text_content_page() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-non-text");
+        fs::create_dir(&staging).expect("staging");
+        write_valid_staged_pdf(&staging, 1, b"q 0 0 100 100 re f Q");
+        let output = temp.path().join("travelbook.pdf");
+
+        let result = assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["image-dominant"],
+        ))
+        .expect("non-text content is valid");
+
+        assert_eq!(result.page_count, 1);
+        assert!(output.exists());
+    }
+
+    #[test]
     fn document_proof_manifest_matches_final_document() {
         let temp = tempfile::tempdir().expect("tempdir");
         let staging = temp.path().join("document-proof-manifest");
@@ -3383,6 +3495,10 @@ mod tests {
         assert_eq!(manifest.schema, "northern-lines.studio.document-proof.v1");
         assert_eq!(manifest.page_count, 2);
         assert_eq!(manifest.pages.iter().map(|page| page.page_id.as_str()).collect::<Vec<_>>(), vec!["a", "b"]);
+        assert!(manifest.pages.iter().all(|page| page.validation_status == "validated"));
+        assert!(manifest.pages.iter().all(|page| page.content_stream_count > 0));
+        assert!(manifest.pages.iter().all(|page| page.decoded_content_bytes > 0));
+        assert!(manifest.pages.iter().all(|page| !page.decoded_content_hashes.is_empty()));
         validate_document_pdf_output(&output, &manifest).expect("manifest matches final");
     }
 

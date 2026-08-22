@@ -12,6 +12,12 @@ Frontend/Vitest coverage:
 - variable page counts are supported;
 - deterministic staged filenames are used;
 - originally active Studio page can be restored.
+- stale DOM identity is rejected before capture;
+- matching selected/rendered page identity is accepted;
+- the capture sequence requires Svelte commit and browser layout frame before capture;
+- transitional opacity/running page animation is rejected;
+- current-page image readiness remains scoped to the identified page;
+- original page restoration is covered for readiness failure.
 
 Rust coverage:
 
@@ -19,10 +25,70 @@ Rust coverage:
 - multi-page order and decoded content stream hashes are preserved;
 - variable page count is not fixed;
 - invalid staged page fails the whole document proof;
+- structurally empty staged A5 captures fail before assembly;
+- non-text drawing content remains valid;
 - no final output remains for a failed document proof;
 - final document validates exact A5 on every page;
-- manifest schema and page entries match the final document;
+- manifest schema, page entries, stream counts, decoded byte counts, content hashes and resource counts match the final document;
 - existing single-page completion, PageBox and content-stream tests remain active.
+
+## Real-World Failure Regression
+
+The first installed-app Document Proof test used a real 16-page Travelbook. The final PDF had the expected page count and the assembly produced a readable multi-page PDF, but most pages were visually blank. A small number of pages contained content and those captures appeared washed out or had the wrong color appearance.
+
+This is classified as a frontend orchestration/readiness failure, not a WKWebView rendering failure and not an assembly failure. Blank staged A5 pages could pass the previous checks because page-box validation only proved physical size. The assembler then correctly preserved those already bad staged pages.
+
+Root cause:
+
+- `.a5-page` had no stable rendered page identity;
+- `waitForResolvedStudioPage()` checked `selectedPage.id` but accepted any `.a5-page`;
+- page images were queried globally from `.a5-page img`, not from the requested page root;
+- the page root uses Svelte `in:fade={{ duration: 190 }}`, so a newly selected page can exist with opacity below `1`;
+- the document loop kept proof mode enabled while switching pages, then captured after a single `tick()`.
+
+The old sequence was:
+
+```text
+enable proof mode once
+-> select page
+-> await tick
+-> selectedPage.id matches requested page
+-> any .a5-page exists
+-> global .a5-page images complete
+-> capture
+```
+
+The corrected sequence is:
+
+```text
+select page
+-> await Svelte DOM commit
+-> await browser layout frame
+-> selectedPage.id == requested page
+-> .a5-page[data-studio-page-id] == requested page
+-> fonts ready
+-> current page images ready
+-> page visually stable
+-> enable proof mode
+-> await Svelte DOM commit
+-> await browser layout frame
+-> identity and stability still true under proof CSS
+-> capture
+-> leave proof mode before the next page switch
+```
+
+This fixes lifecycle readiness rather than masking the issue with a delay. `requestAnimationFrame` is used only as a browser layout/paint boundary after Svelte `tick()`, not as elapsed-time synchronization. While `pdfProofStatus === 'rendering'`, the Svelte page fade duration is `0`, and proof CSS forces the `.a5-page` root to `opacity: 1` and `filter: none`; this prevents washed-out transition captures without changing Studio geometry, World typography or child-level World color styling.
+
+## Empty-Capture Rejection
+
+Each staged single-page PDF is still required to validate as exact A5 before assembly. PoC 001 now additionally extracts decoded page content evidence before importing the page:
+
+- content stream count;
+- decoded content byte total;
+- decoded content hashes;
+- page resource count.
+
+`PDF_DOCUMENT_PROOF_EMPTY_CAPTURE` is raised when a staged page has valid A5 boxes but no decoded page content. This rejects accidental blank captures without requiring text, so image-dominant or vector-drawing pages remain valid.
 
 ## Scoped Consistency Gate
 
@@ -36,11 +102,14 @@ The gate checks, statically where practical:
 
 - accepted single-page renderer reuse;
 - serial pageManifest orchestration;
-- readiness waits for page, fonts and images;
+- rendered page identity contract;
+- readiness waits for page identity, fonts, current-page images and visual stability;
+- no arbitrary sleep synchronization;
 - deterministic staging filenames;
 - Manifest v1 schema;
 - final validation;
 - content-stream integrity checks;
+- empty-capture validation;
 - atomic temp-output replacement;
 - no second renderer dependency;
 - no fit/scale tokens;
@@ -82,6 +151,8 @@ Required runtime checks:
 - actual page count matches Studio;
 - page order matches Studio;
 - every page validates exact A5;
+- no blank accidental pages;
+- no washed-out transitional captures;
 - no missing or duplicated page;
 - no visual re-layout;
 - Companion and footer remain correct;

@@ -3,8 +3,11 @@ import {
   assembleStudioDocumentPdfProof,
   cleanupStudioDocumentPdfProof,
   createStudioPdfProof,
+  evaluateRenderedStudioPageReadiness,
+  incompleteStudioPageImages,
   prepareStudioDocumentPdfProof,
   restoredDocumentProofPage,
+  STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE,
   stagedDocumentProofPagePath,
   studioDocumentProofPages
 } from './pdf-proof';
@@ -148,5 +151,103 @@ describe('Studio PDF Proof', () => {
 
     expect(restoredDocumentProofPage(pages, 'b')?.id).toBe('b');
     expect(restoredDocumentProofPage(pages, 'missing')).toBeNull();
+  });
+
+  it('rejects stale DOM identity before document proof capture', () => {
+    const readiness = evaluateRenderedStudioPageReadiness({
+      requestedPageId: 'b',
+      selectedPageId: 'b',
+      renderedPageId: 'a',
+      renderedPageCount: 1,
+      display: 'flex',
+      visibility: 'visible',
+      opacity: 1,
+      filter: 'none',
+      transform: 'none',
+      runningAnimationCount: 0,
+      expectProofMode: true
+    }, 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY');
+
+    expect(readiness).toEqual({
+      ready: false,
+      code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+      reason: 'dom=a count=1 requested=b'
+    });
+  });
+
+  it('accepts matching selected page and rendered DOM identity', () => {
+    expect(evaluateRenderedStudioPageReadiness({
+      requestedPageId: 'b',
+      selectedPageId: 'b',
+      renderedPageId: 'b',
+      renderedPageCount: 1,
+      display: 'flex',
+      visibility: 'visible',
+      opacity: 1,
+      filter: 'none',
+      transform: 'none',
+      runningAnimationCount: 0,
+      expectProofMode: true
+    })).toEqual({ ready: true });
+  });
+
+  it('requires the Svelte and browser commit steps before capture', () => {
+    expect(STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE.indexOf('svelte-dom-commit')).toBeLessThan(
+      STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE.indexOf('capture')
+    );
+    expect(STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE.indexOf('browser-layout-frame')).toBeLessThan(
+      STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE.indexOf('capture')
+    );
+  });
+
+  it('rejects transitional page opacity and running animations', () => {
+    const opacity = evaluateRenderedStudioPageReadiness({
+      requestedPageId: 'b',
+      selectedPageId: 'b',
+      renderedPageId: 'b',
+      renderedPageCount: 1,
+      display: 'flex',
+      visibility: 'visible',
+      opacity: 0.42,
+      filter: 'none',
+      transform: 'none',
+      runningAnimationCount: 0,
+      expectProofMode: true
+    });
+    const animation = evaluateRenderedStudioPageReadiness({
+      requestedPageId: 'b',
+      selectedPageId: 'b',
+      renderedPageId: 'b',
+      renderedPageCount: 1,
+      display: 'flex',
+      visibility: 'visible',
+      opacity: 1,
+      filter: 'none',
+      transform: 'none',
+      runningAnimationCount: 1,
+      expectProofMode: true
+    });
+
+    expect(opacity).toMatchObject({ ready: false, reason: 'opacity=0.42' });
+    expect(animation).toMatchObject({ ready: false, reason: 'runningAnimations=1' });
+  });
+
+  it('does not let stale page images satisfy current page readiness', () => {
+    const currentPageImages = incompleteStudioPageImages([
+      { complete: true, naturalWidth: 100 },
+      { complete: false, naturalWidth: 0 }
+    ]);
+    const stalePageImages = incompleteStudioPageImages([
+      { complete: true, naturalWidth: 100 }
+    ]);
+
+    expect(currentPageImages).toHaveLength(1);
+    expect(stalePageImages).toHaveLength(0);
+  });
+
+  it('restores the originally active Studio page after readiness failure', () => {
+    const pages = [page('original', 1), page('failed', 2)];
+
+    expect(restoredDocumentProofPage(pages, 'original')?.id).toBe('original');
   });
 });

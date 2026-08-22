@@ -39,11 +39,36 @@ There is no parallel rendering, no second WebView, no hidden Studio tree and no 
 Before each page render, Studio waits for:
 
 - the requested page ID to be the active `selectedPage`;
-- the `.a5-page` resolved Studio page to exist;
+- the rendered `.a5-page` to carry the same `data-studio-page-id`;
+- the Svelte DOM update to be committed;
+- one browser layout frame after that commit;
 - `document.fonts.ready` when available;
-- all images inside the current `.a5-page` to complete or report `PDF_PROOF_ASSET_NOT_READY`.
+- all images inside the identified current `.a5-page` to complete or report `PDF_PROOF_ASSET_NOT_READY`;
+- the page root to be visually stable: visible, opacity `1`, no filter, no running page animation, and in proof mode no preview transform.
 
-No sleeps are used for synchronization.
+No sleeps are used for synchronization. The browser frame boundary is not a time delay; it gives WebKit one layout/paint boundary after Svelte has committed the selected page or proof-mode class change.
+
+The first installed-app Travelbook proof exposed the missing identity contract. The document loop selected a new `selectedPage`, crossed one `tick()`, and then accepted any `.a5-page`. Because the page root used `in:fade={{ duration: 190 }}` and had no page identity attribute, readiness could see `selectedPage.id === requestedPageId` while the rendered page was still stale, not yet fully painted, or in a fade-in opacity state. Image readiness also queried generic `.a5-page img`, so stale page images could satisfy a later page.
+
+The corrected sequence is:
+
+```text
+select requested page
+-> await Svelte DOM commit
+-> await browser layout frame
+-> require selectedPage.id == requested page ID
+-> require .a5-page[data-studio-page-id] == requested page ID
+-> wait for fonts
+-> check images only inside that identified page
+-> require visual stability
+-> enable proof mode
+-> await Svelte DOM commit
+-> await browser layout frame
+-> repeat identity and stability checks under proof CSS
+-> call existing single-page renderer
+```
+
+During `pdfProofStatus === 'rendering'`, the normal page `in:fade` duration is `0`. Proof CSS also forces the `.a5-page` root to `opacity: 1` and `filter: none`. This prevents WebKit from capturing a temporary fade opacity or page-root filter state; it does not alter World child styling, layout geometry, typography, content, Companion or footer.
 
 ## Single-Page Renderer Reuse
 
@@ -109,8 +134,11 @@ Each page entry records:
 - staged PDF `sha256`;
 - `width_pt`;
 - `height_pt`;
-- validation `status`;
-- decoded `content_stream_hashes`.
+- `validation_status`;
+- `content_stream_count`;
+- `decoded_content_bytes`;
+- decoded `decoded_content_hashes`;
+- `resource_count`.
 
 The manifest contains no x/y layout values.
 
@@ -125,6 +153,8 @@ If any page render, page validation, assembly, write or final validation fails:
 - temp output is removed;
 - an existing target PDF is left untouched until final temp-output replacement;
 - staging cleanup is attempted in the frontend `finally`.
+
+If a page is not ready, the frontend fails the document proof with `PDF_DOCUMENT_PROOF_PAGE_NOT_READY`. If a staged single-page proof is structurally empty even though it has valid A5 page boxes, Rust fails before assembly with `PDF_DOCUMENT_PROOF_EMPTY_CAPTURE`.
 
 ## Final Validation
 
