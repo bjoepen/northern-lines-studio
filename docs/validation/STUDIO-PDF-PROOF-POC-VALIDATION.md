@@ -122,16 +122,55 @@ Corrective options considered:
 - macOS native visual-proof contract: technically viable. It would intentionally accept `419 × 595 pt`, with physical deltas of about `-0.186 mm` width and `-0.097 mm` height. That is visually immaterial for editorial proof, but it is not mathematically exact DIN A5 and would contradict the current exact-A5 proof contract.
 - Metadata-only PDF box normalization: selected. WebKit remains the renderer and the rendered content is not scaled, translated, reflowed, or recomposed. After WebKit writes the PDF, Studio rewrites only page-box metadata to exact A5 using structured PDF objects, then validates `/MediaBox` and `/CropBox`. If `/TrimBox` is present, it is normalized and validated as well.
 
+The first normalization wrote boxes as `[0, 0, 419.527559055, 595.275590551]`. That produced exact A5 dimensions, but for WebKit's native `[0, 0, 419, 595]` box it moved the physical top edge from `595 pt` to `595.275590551 pt`. Because PDF coordinates are bottom-left based, the unchanged content then appeared about `0.275590551 pt` / `0.097 mm` lower relative to the new top edge.
+
+The corrected normalization preserves the existing box's left and top coordinates and adds the fractional extension only to the right and bottom. PDF page boxes are represented as `[xMin, yMin, xMax, yMax]`, not as `(x, y, width, height)`.
+
+For the observed WebKit box:
+
+```text
+before:
+[0, 0, 419, 595]
+
+after:
+[0, -0.275590551, 419.527559055, 595]
+```
+
+This keeps:
+
+```text
+left_before = left_after = 0
+top_before  = top_after  = 595
+```
+
+and still validates exact A5:
+
+```text
+width  = 419.527559055 pt
+height = 595.275590551 pt
+```
+
 Selected contract:
 
 ```text
 native WKWebView render output
 -> metadata-only page-box normalization
--> MediaBox = exact A5
--> CropBox = exact A5
--> TrimBox = exact A5 when present
+-> MediaBox = exact A5, existing top/left preserved
+-> CropBox = exact A5, existing top/left preserved
+-> TrimBox = exact A5 with existing top/left preserved when present
 -> validation
 ```
+
+Content-integrity evidence is covered at the PDF content-stream boundary rather than by whole-file hashing. The regression test records all page content streams in order before and after normalization, then compares:
+
+```text
+stream count
+stream lengths
+decoded content hashes
+decoded content bytes
+```
+
+This allows `lopdf` to reserialize the container while proving that the page content streams themselves are unchanged.
 
 Risks:
 

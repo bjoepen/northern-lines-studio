@@ -27,7 +27,7 @@ The active resolved Studio page is isolated for capture, then native webview PDF
 - macOS: `WKWebView` PDF generation through the Tauri platform webview handle.
 - Windows: deferred and not part of the current PoC validation.
 
-On macOS, WebKit's PDF snapshot path may emit integer-point page boxes even when Studio requests fractional exact A5 dimensions. The PoC may therefore perform a metadata-only page-box normalization after native rendering: the rendered content stream is not scaled, translated, reflowed, or recomposed; `/MediaBox` and `/CropBox` are set to exact A5, and `/TrimBox` is normalized if present.
+On macOS, WebKit's PDF snapshot path may emit integer-point page boxes even when Studio requests fractional exact A5 dimensions. The PoC may therefore perform a metadata-only page-box normalization after native rendering: the rendered content stream is not scaled, translated, reflowed, or recomposed; `/MediaBox` and `/CropBox` are set to exact A5 while preserving the existing top-left page anchor, and `/TrimBox` is normalized the same way if present. Fractional page-area extension is added to the right and bottom.
 
 The final PDF must validate exact A5 page boxes. Failure to produce A5 is a failure, not a fallback.
 

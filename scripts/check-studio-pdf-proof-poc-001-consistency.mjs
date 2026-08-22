@@ -39,6 +39,9 @@ if (!rust.includes('A5_WIDTH_PT')) fail('native A5 point validation missing.');
 if (!rust.includes('normalize_pdf_a5_page_boxes')) fail('exact A5 PDF page-box normalization missing.');
 if (!rust.includes('validate_pdf_a5_page_boxes')) fail('PDF page-box validation missing.');
 if (!rust.includes('CropBox')) fail('PDF CropBox validation/normalization missing.');
+if (!rust.includes('exact_a5_pdf_box_preserving_top_left')) fail('PDF page-box normalization must preserve the native top-left anchor.');
+if (!rust.includes('source.y_max - A5_HEIGHT_PT')) fail('PDF page-box height extension must be added below the native top edge.');
+if (!rust.includes('source.x_min + A5_WIDTH_PT')) fail('PDF page-box width extension must be added to the right of the native left edge.');
 if (!rust.includes('WKPDFConfiguration')) fail('macOS WebKit PDF adapter missing.');
 if (!rust.includes('WebView2')) fail('Windows WebView2 path assessment/stub missing.');
 if (!rust.includes('prepare_pdf_proof_output')) fail('proof output must not validate a stale pre-existing PDF after timeout.');
@@ -47,7 +50,11 @@ if (!rust.includes('tauri::async_runtime::spawn_blocking')) fail('watchdog wait 
 if (!rust.includes('pdf_proof_timeout_is_success_when_written_pdf_validates')) fail('false-timeout regression test missing.');
 if (!rust.includes('pdf_proof_genuine_hang_reports_timeout')) fail('genuine hang timeout regression test missing.');
 if (!rust.includes('pdf_proof_normalizes_webkit_integer_page_boxes_to_exact_a5_metadata')) fail('WebKit integer page-box normalization regression test missing.');
+if (!rust.includes('pdf_proof_normalization_preserves_top_left_anchor_and_extends_right_bottom')) fail('top-left page-box anchor regression test missing.');
+if (!rust.includes('pdf_proof_normalization_does_not_change_page_content_streams')) fail('content-stream integrity regression test missing.');
+if (!rust.includes('pdf_proof_wrong_top_left_anchor_is_detectable')) fail('wrong-anchor negative regression test missing.');
 if (!rust.includes('pdf_proof_rejects_a4_page_box')) fail('A4 page-box rejection regression test missing.');
+if (!rust.includes('content_stream_evidence')) fail('content-stream count/length/hash evidence missing.');
 for (const code of [
   'PDF_PROOF_NO_PAGE',
   'PDF_PROOF_ASSET_NOT_READY',

@@ -1635,16 +1635,34 @@ where
     }
 }
 
-fn exact_a5_pdf_box() -> lopdf::Object {
+#[derive(Clone, Copy, Debug)]
+struct PdfPageBox {
+    x_min: f64,
+    y_min: f64,
+    x_max: f64,
+    y_max: f64,
+}
+
+impl PdfPageBox {
+    fn width(self) -> f64 {
+        (self.x_max - self.x_min).abs()
+    }
+
+    fn height(self) -> f64 {
+        (self.y_max - self.y_min).abs()
+    }
+}
+
+fn exact_a5_pdf_box_preserving_top_left(source: PdfPageBox) -> lopdf::Object {
     lopdf::Object::Array(vec![
-        lopdf::Object::Integer(0),
-        lopdf::Object::Integer(0),
-        lopdf::Object::Real(A5_WIDTH_PT as f32),
-        lopdf::Object::Real(A5_HEIGHT_PT as f32),
+        lopdf::Object::Real(source.x_min as f32),
+        lopdf::Object::Real((source.y_max - A5_HEIGHT_PT) as f32),
+        lopdf::Object::Real((source.x_min + A5_WIDTH_PT) as f32),
+        lopdf::Object::Real(source.y_max as f32),
     ])
 }
 
-fn pdf_box_dimensions(object: &lopdf::Object) -> Result<(f64, f64), String> {
+fn pdf_page_box(object: &lopdf::Object) -> Result<PdfPageBox, String> {
     let values = object
         .as_array()
         .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seitenbox ist nicht lesbar.".to_string())?;
@@ -1662,17 +1680,26 @@ fn pdf_box_dimensions(object: &lopdf::Object) -> Result<(f64, f64), String> {
     let y0 = number(&values[1])?;
     let x1 = number(&values[2])?;
     let y1 = number(&values[3])?;
-    Ok(((x1 - x0).abs(), (y1 - y0).abs()))
+    Ok(PdfPageBox {
+        x_min: x0.min(x1),
+        y_min: y0.min(y1),
+        x_max: x0.max(x1),
+        y_max: y0.max(y1),
+    })
 }
 
 fn assert_a5_pdf_box(object: &lopdf::Object, box_name: &str) -> Result<(), String> {
-    let (width, height) = pdf_box_dimensions(object)?;
-    if (width - A5_WIDTH_PT).abs() > PDF_BOX_TOLERANCE_PT
-        || (height - A5_HEIGHT_PT).abs() > PDF_BOX_TOLERANCE_PT
+    let page_box = pdf_page_box(object)?;
+    if (page_box.width() - A5_WIDTH_PT).abs() > PDF_BOX_TOLERANCE_PT
+        || (page_box.height() - A5_HEIGHT_PT).abs() > PDF_BOX_TOLERANCE_PT
     {
         return Err(format!(
             "PDF_PROOF_PAGE_SIZE_INVALID: PDF-{} ist {:.3} × {:.3} pt statt A5 {:.3} × {:.3} pt.",
-            box_name, width, height, A5_WIDTH_PT, A5_HEIGHT_PT
+            box_name,
+            page_box.width(),
+            page_box.height(),
+            A5_WIDTH_PT,
+            A5_HEIGHT_PT
         ));
     }
     Ok(())
@@ -1691,10 +1718,18 @@ fn normalize_pdf_a5_page_boxes(path: &Path) -> Result<(), String> {
             .map_err(|error| format!("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite konnte nicht gelesen werden: {error}"))?
             .as_dict_mut()
             .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF-Seite ist nicht lesbar.".to_string())?;
-        page.set("MediaBox", exact_a5_pdf_box());
-        page.set("CropBox", exact_a5_pdf_box());
+        let media_box = page
+            .get(b"MediaBox")
+            .map_err(|_| "PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine MediaBox.".to_string())
+            .and_then(pdf_page_box)?;
+        let crop_box = page.get(b"CropBox").ok().map(pdf_page_box).transpose()?;
+        let trim_box = page.get(b"TrimBox").ok().map(pdf_page_box).transpose()?;
+        page.set("MediaBox", exact_a5_pdf_box_preserving_top_left(media_box));
+        page.set("CropBox", exact_a5_pdf_box_preserving_top_left(crop_box.unwrap_or(media_box)));
         if page.has(b"TrimBox") {
-            page.set("TrimBox", exact_a5_pdf_box());
+            if let Some(trim_box) = trim_box {
+                page.set("TrimBox", exact_a5_pdf_box_preserving_top_left(trim_box));
+            }
         }
     }
     document
@@ -2540,11 +2575,20 @@ mod tests {
         );
     }
 
-    fn write_test_pdf(path: &Path, media_box: lopdf::Object, crop_box: Option<lopdf::Object>) {
+    fn write_test_pdf_with_content(
+        path: &Path,
+        media_box: lopdf::Object,
+        crop_box: Option<lopdf::Object>,
+        trim_box: Option<lopdf::Object>,
+        content_streams: Vec<Vec<u8>>,
+    ) {
         let mut document = lopdf::Document::with_version("1.7");
         let pages_id = document.new_object_id();
         let page_id = document.new_object_id();
-        let content_id = document.add_object(lopdf::Stream::new(lopdf::Dictionary::new(), Vec::new()));
+        let content_ids: Vec<_> = content_streams
+            .into_iter()
+            .map(|content| document.add_object(lopdf::Stream::new(lopdf::Dictionary::new(), content)))
+            .collect();
         let resources_id = document.add_object(lopdf::Dictionary::new());
         let mut page = lopdf::Dictionary::new();
         page.set("Type", "Page");
@@ -2553,7 +2597,20 @@ mod tests {
         if let Some(crop_box) = crop_box {
             page.set("CropBox", crop_box);
         }
-        page.set("Contents", content_id);
+        if let Some(trim_box) = trim_box {
+            page.set("TrimBox", trim_box);
+        }
+        if content_ids.len() == 1 {
+            page.set("Contents", content_ids[0]);
+        } else {
+            page.set(
+                "Contents",
+                content_ids
+                    .into_iter()
+                    .map(lopdf::Object::Reference)
+                    .collect::<Vec<_>>(),
+            );
+        }
         page.set("Resources", resources_id);
         document.objects.insert(page_id, lopdf::Object::Dictionary(page));
         document.objects.insert(
@@ -2572,6 +2629,10 @@ mod tests {
         document.save(path).expect("save test pdf");
     }
 
+    fn write_test_pdf(path: &Path, media_box: lopdf::Object, crop_box: Option<lopdf::Object>) {
+        write_test_pdf_with_content(path, media_box, crop_box, None, vec![Vec::new()]);
+    }
+
     fn pdf_box(width: i64, height: i64) -> lopdf::Object {
         lopdf::Object::Array(vec![
             lopdf::Object::Integer(0),
@@ -2579,6 +2640,86 @@ mod tests {
             lopdf::Object::Integer(width),
             lopdf::Object::Integer(height),
         ])
+    }
+
+    fn pdf_box_from_coords(x_min: f64, y_min: f64, x_max: f64, y_max: f64) -> lopdf::Object {
+        lopdf::Object::Array(vec![
+            lopdf::Object::Real(x_min as f32),
+            lopdf::Object::Real(y_min as f32),
+            lopdf::Object::Real(x_max as f32),
+            lopdf::Object::Real(y_max as f32),
+        ])
+    }
+
+    fn first_page_box(path: &Path, box_name: &[u8]) -> PdfPageBox {
+        let document = lopdf::Document::load(path).expect("load pdf");
+        let page_id = *document.get_pages().values().next().expect("first page");
+        let page = document
+            .get_object(page_id)
+            .expect("page")
+            .as_dict()
+            .expect("page dict");
+        pdf_page_box(page.get(box_name).expect("page box")).expect("box coordinates")
+    }
+
+    fn assert_close(left: f64, right: f64) {
+        assert!(
+            (left - right).abs() <= PDF_BOX_TOLERANCE_PT,
+            "{left} != {right}"
+        );
+    }
+
+    fn content_stream_hash(bytes: &[u8]) -> u64 {
+        bytes
+            .iter()
+            .fold(0xcbf29ce484222325_u64, |hash, byte| {
+                (hash ^ (*byte as u64)).wrapping_mul(0x100000001b3)
+            })
+    }
+
+    fn collect_content_streams(
+        document: &lopdf::Document,
+        object: &lopdf::Object,
+        streams: &mut Vec<Vec<u8>>,
+    ) {
+        match object {
+            lopdf::Object::Reference(id) => {
+                collect_content_streams(document, document.get_object(*id).expect("content ref"), streams);
+            }
+            lopdf::Object::Array(items) => {
+                for item in items {
+                    collect_content_streams(document, item, streams);
+                }
+            }
+            lopdf::Object::Stream(stream) => {
+                streams.push(stream.decompressed_content().expect("decoded content"));
+            }
+            _ => panic!("unexpected page content object"),
+        }
+    }
+
+    fn page_content_streams(path: &Path) -> Vec<Vec<u8>> {
+        let document = lopdf::Document::load(path).expect("load pdf");
+        let page_id = *document.get_pages().values().next().expect("first page");
+        let page = document
+            .get_object(page_id)
+            .expect("page")
+            .as_dict()
+            .expect("page dict");
+        let mut streams = Vec::new();
+        collect_content_streams(
+            &document,
+            page.get(b"Contents").expect("page contents"),
+            &mut streams,
+        );
+        streams
+    }
+
+    fn content_stream_evidence(streams: &[Vec<u8>]) -> Vec<(usize, u64)> {
+        streams
+            .iter()
+            .map(|stream| (stream.len(), content_stream_hash(stream)))
+            .collect()
     }
 
     #[test]
@@ -2589,6 +2730,81 @@ mod tests {
 
         normalize_pdf_a5_page_boxes(&output).expect("normalize");
         validate_pdf_a5_page_boxes(&output).expect("exact A5 boxes");
+    }
+
+    #[test]
+    fn pdf_proof_normalization_preserves_top_left_anchor_and_extends_right_bottom() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("webkit-anchor.pdf");
+        write_test_pdf_with_content(
+            &output,
+            pdf_box(419, 595),
+            Some(pdf_box(419, 595)),
+            Some(pdf_box(419, 595)),
+            vec![b"q 1 0 0 1 10 20 cm Q".to_vec()],
+        );
+
+        let original_media_box = first_page_box(&output, b"MediaBox");
+        let original_crop_box = first_page_box(&output, b"CropBox");
+        let original_trim_box = first_page_box(&output, b"TrimBox");
+        normalize_pdf_a5_page_boxes(&output).expect("normalize");
+        let media_box = first_page_box(&output, b"MediaBox");
+        let crop_box = first_page_box(&output, b"CropBox");
+        let trim_box = first_page_box(&output, b"TrimBox");
+
+        for (before, after) in [
+            (original_media_box, media_box),
+            (original_crop_box, crop_box),
+            (original_trim_box, trim_box),
+        ] {
+            assert_close(after.x_min, before.x_min);
+            assert_close(after.y_max, before.y_max);
+            assert_close(after.width(), A5_WIDTH_PT);
+            assert_close(after.height(), A5_HEIGHT_PT);
+            assert!(after.x_max > before.x_max);
+            assert!(after.y_min < before.y_min);
+        }
+    }
+
+    #[test]
+    fn pdf_proof_normalization_does_not_change_page_content_streams() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let output = temp.path().join("webkit-content.pdf");
+        write_test_pdf_with_content(
+            &output,
+            pdf_box(419, 595),
+            Some(pdf_box(419, 595)),
+            None,
+            vec![
+                b"q 1 0 0 1 10 20 cm".to_vec(),
+                b"0 0 100 100 re f Q".to_vec(),
+            ],
+        );
+        let before = page_content_streams(&output);
+        let before_evidence = content_stream_evidence(&before);
+
+        normalize_pdf_a5_page_boxes(&output).expect("normalize");
+
+        let after = page_content_streams(&output);
+        let after_evidence = content_stream_evidence(&after);
+        assert_eq!(after.len(), 2);
+        assert_eq!(after_evidence, before_evidence);
+        assert_eq!(after, before);
+    }
+
+    #[test]
+    fn pdf_proof_wrong_top_left_anchor_is_detectable() {
+        let original = pdf_page_box(&pdf_box(419, 595)).expect("original box");
+        let wrong_anchor = pdf_page_box(&pdf_box_from_coords(0.0, 0.0, A5_WIDTH_PT, A5_HEIGHT_PT))
+            .expect("wrong anchor box");
+
+        assert_close(wrong_anchor.width(), A5_WIDTH_PT);
+        assert_close(wrong_anchor.height(), A5_HEIGHT_PT);
+        assert_close(wrong_anchor.x_min, original.x_min);
+        assert!(
+            (wrong_anchor.y_max - original.y_max).abs() > PDF_BOX_TOLERANCE_PT,
+            "top anchor should differ"
+        );
     }
 
     #[test]
