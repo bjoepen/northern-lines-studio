@@ -208,6 +208,64 @@ Costs/risks:
 - ICC selection must remain deterministic and appropriate.
 - PDF/A validation adds a new export-quality responsibility to Studio.
 
+## Integration design
+
+Studio integration uses a dedicated Rust post-processing module:
+
+```text
+src-tauri/src/pdfa.rs
+```
+
+The module is intentionally narrow. It loads an accepted Studio Document PDF, collects integrity evidence, applies only the four approved structural operations, writes a candidate PDF, reloads it, validates the required structure, and compares integrity evidence before success.
+
+The Tauri command boundary is:
+
+```text
+export_studio_pdfa2b(sourcePath, outputPath)
+```
+
+The frontend creates the PDF/A source through the already accepted Travelbook Document PDF path:
+
+```text
+canonical Studio Travelbook
+→ existing Document PDF orchestration
+→ temporary exact-A5 Standard PDF
+→ export_studio_pdfa2b
+→ final PDF/A-2b file
+```
+
+The UI labels this as a Travelbook export option and does not expose PDF object details.
+
+### Trailer ID strategy
+
+The trailer `/ID` is deterministic and auditable:
+
+```text
+SHA-256(source Standard PDF bytes)
+→ first 16 bytes
+→ both trailer ID entries as hexadecimal PDF strings
+```
+
+### ICC selection strategy
+
+The OutputIntent uses an ICC profile already embedded in the source PDF. The implementation does not assume an object ID. It selects the first structurally suitable stream with RGB channel count (`/N 3`) and RGB evidence such as `/Alternate /DeviceRGB` or explicit sRGB profile content.
+
+If no suitable embedded RGB/sRGB profile is found, export fails with:
+
+```text
+PDF_A_OUTPUT_INTENT_UNAVAILABLE
+```
+
+### Internal validation limit
+
+Studio validates the expected structure and integrity invariants, including PDF/A identification, trailer `/ID`, OutputIntent, absence of `/Interpolate true`, page count, exact-A5 boxes, decoded content streams, image stream bytes and font resources.
+
+This internal validation is not a replacement for independent ISO conformance validation. Engineering validation remains:
+
+```bash
+verapdf --format json -f 2b "<candidate.pdf>"
+```
+
 ## Merge gate for implementation
 
 The Studio integration is mergeable only when a real installed-app Travelbook export proves:

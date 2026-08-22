@@ -50,6 +50,7 @@
     cleanupStudioDocumentPdfProof,
     createStudioPdfProof,
     evaluateRenderedStudioPageReadiness,
+    exportStudioPdfA2b,
     incompleteStudioPageImages,
     prepareStudioDocumentPdfProof,
     restoredDocumentProofPage,
@@ -59,6 +60,8 @@
     type StudioPdfProofReadinessErrorCode,
     type StudioPdfProofStatus
   } from './lib/pdf-proof';
+
+  type TravelbookExportProfile = 'standard' | 'pdfa2b';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -287,7 +290,7 @@
     }
   }
 
-  async function createPdfProofForTravelbook() {
+  async function createTravelbookPdf(profile: TravelbookExportProfile = 'standard') {
     if (!project) {
       errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Es ist kein Travelbook geöffnet.';
       return;
@@ -298,21 +301,24 @@
       return;
     }
     if (hasUnsavedChanges) {
-      errorMessage = 'PDF_DOCUMENT_PROOF_PAGE_FAILED: Bitte speichere die aktuelle Bearbeitung, bevor das ganze Travelbook als Proof entsteht.';
+      errorMessage = 'PDF_DOCUMENT_PROOF_PAGE_FAILED: Bitte speichere die aktuelle Bearbeitung, bevor das ganze Travelbook exportiert wird.';
       return;
     }
 
     const originalPageId = selectedPage?.id ?? null;
     const projectTitle = project.title;
     let stagingPath = '';
+    let temporaryStandardPath = '';
     pdfProofStatus = 'preparing';
     errorMessage = '';
     await tick();
 
     try {
       const outputPath = await save({
-        title: 'Travelbook-Proof speichern',
-        defaultPath: `${proofFileTitle(projectTitle)}-Travelbook-Proof.pdf`,
+        title: profile === 'pdfa2b' ? 'Travelbook als PDF/A-2b speichern' : 'Travelbook als PDF speichern',
+        defaultPath: profile === 'pdfa2b'
+          ? `${proofFileTitle(projectTitle)}-Travelbook-PDFA-2b.pdf`
+          : `${proofFileTitle(projectTitle)}-Travelbook.pdf`,
         filters: [{ name: 'PDF', extensions: ['pdf'] }]
       });
       if (!outputPath) {
@@ -354,11 +360,20 @@
         await waitForStudioDomCommit();
       }
 
+      temporaryStandardPath = profile === 'pdfa2b'
+        ? `${stagingPath}/travelbook-standard.pdf`
+        : outputPath;
       await assembleStudioDocumentPdfProof({
-        outputPath,
+        outputPath: temporaryStandardPath,
         stagingPath,
         pages: stagedPages
       });
+      if (profile === 'pdfa2b') {
+        await exportStudioPdfA2b({
+          sourcePath: temporaryStandardPath,
+          outputPath
+        });
+      }
       pdfProofStatus = 'saved';
     } catch (error) {
       pdfProofStatus = 'error';
@@ -377,6 +392,10 @@
         }
       }
     }
+  }
+
+  async function createPdfProofForTravelbook() {
+    await createTravelbookPdf('standard');
   }
 
   function applyInspectorWidth(width: number) {
@@ -1563,9 +1582,18 @@
             type="button"
             on:click={() => void createPdfProofForTravelbook()}
             disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
-            title="Ganzes Travelbook als A5-PDF-Proof speichern"
+            title="Ganzes Travelbook als A5-PDF speichern"
           >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Travelbook-Proof …' : 'Travelbook-Proof'}
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Standard PDF …' : 'Standard PDF'}
+          </button>
+          <button
+            class="pdf-proof-action"
+            type="button"
+            on:click={() => void createTravelbookPdf('pdfa2b')}
+            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
+            title="Ganzes Travelbook als langlebige PDF/A-2b-Fassung speichern"
+          >
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF/A-2b …' : 'PDF/A-2b'}
           </button>
         </div>
       </div>

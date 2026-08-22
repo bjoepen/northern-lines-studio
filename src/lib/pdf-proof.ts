@@ -47,6 +47,17 @@ export interface StudioDocumentProofResult {
   heightPt: number;
 }
 
+export interface StudioPdfA2bExportRequest {
+  sourcePath: string;
+  outputPath: string;
+}
+
+export interface StudioPdfA2bExportResult {
+  outputPath: string;
+  pageCount: number;
+  profile: 'PDF/A-2b';
+}
+
 export interface RenderedStudioPageReadinessSnapshot {
   requestedPageId: string;
   selectedPageId: string | null;
@@ -116,6 +127,13 @@ export function cleanupStudioDocumentPdfProof(
   invokeCommand: typeof invoke = invoke
 ): Promise<void> {
   return invokeCommand<void>('cleanup_studio_document_pdf_proof', { stagingPath });
+}
+
+export function exportStudioPdfA2b(
+  request: StudioPdfA2bExportRequest,
+  invokeCommand: typeof invoke = invoke
+): Promise<StudioPdfA2bExportResult> {
+  return invokeCommand<StudioPdfA2bExportResult>('export_studio_pdfa2b', { request });
 }
 
 export function studioDocumentProofPages(project: StudioProject | null): StudioPage[] {

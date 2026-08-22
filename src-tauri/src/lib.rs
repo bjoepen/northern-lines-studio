@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{collections::{BTreeMap, HashSet}, fs, path::{Path, PathBuf}, sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
 
+mod pdfa;
+
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
 const CURRENT_FORMAT_VERSION: &str = "0.16.0";
 const BUILD_031_FORMAT_VERSION: &str = "0.15.0";
@@ -81,6 +83,21 @@ struct StudioDocumentProofResult {
     page_count: usize,
     width_pt: f64,
     height_pt: f64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioPdfA2bExportRequest {
+    source_path: String,
+    output_path: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioPdfA2bExportResult {
+    output_path: String,
+    page_count: usize,
+    profile: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1721,6 +1738,50 @@ fn assemble_studio_document_pdf_proof(
     }
 }
 
+#[tauri::command]
+fn export_studio_pdfa2b(
+    request: StudioPdfA2bExportRequest,
+) -> Result<StudioPdfA2bExportResult, String> {
+    if request.source_path.trim().is_empty() {
+        return Err("PDF_A_EXPORT_FAILED: Standard-PDF für die Archivfassung fehlt.".into());
+    }
+    if request.output_path.trim().is_empty() {
+        return Err("PDF_A_WRITE_FAILED: Es wurde kein Speicherort gewählt.".into());
+    }
+    let source_path = Path::new(&request.source_path);
+    let output_path = Path::new(&request.output_path);
+    if source_path == output_path {
+        return Err("PDF_A_WRITE_FAILED: Standard-PDF und PDF/A-Ziel müssen getrennte Dateien sein.".into());
+    }
+    if let Some(parent) = output_path.parent() {
+        if !parent.exists() {
+            return Err("PDF_A_WRITE_FAILED: Der Zielordner existiert nicht.".into());
+        }
+    }
+
+    let temp_output = pdfa_temp_output_path(output_path);
+    if temp_output.exists() {
+        fs::remove_file(&temp_output)
+            .map_err(|error| format!("PDF_A_WRITE_FAILED: Vorherige PDF/A-Zwischendatei konnte nicht ersetzt werden: {error}"))?;
+    }
+
+    match pdfa::convert_to_pdfa2b(source_path, &temp_output) {
+        Ok(result) => {
+            fs::rename(&temp_output, output_path)
+                .map_err(|error| format!("PDF_A_WRITE_FAILED: PDF/A-Travelbook konnte nicht gespeichert werden: {error}"))?;
+            Ok(StudioPdfA2bExportResult {
+                output_path: request.output_path,
+                page_count: result.page_count,
+                profile: result.profile.into(),
+            })
+        }
+        Err(error) => {
+            let _ = fs::remove_file(&temp_output);
+            Err(error)
+        }
+    }
+}
+
 async fn render_active_webview_a5_pdf(
     window: &tauri::WebviewWindow,
     output_path: &Path,
@@ -1932,6 +1993,12 @@ fn studio_document_proof_cache_dir() -> Result<PathBuf, String> {
 fn document_proof_temp_output_path(output_path: &Path) -> PathBuf {
     let mut temp = output_path.as_os_str().to_os_string();
     temp.push(".tmp");
+    PathBuf::from(temp)
+}
+
+fn pdfa_temp_output_path(output_path: &Path) -> PathBuf {
+    let mut temp = output_path.as_os_str().to_os_string();
+    temp.push(".pdfa2b.tmp");
     PathBuf::from(temp)
 }
 
@@ -2322,6 +2389,7 @@ pub fn run() {
             create_studio_pdf_proof,
             prepare_studio_document_pdf_proof,
             assemble_studio_document_pdf_proof,
+            export_studio_pdfa2b,
             cleanup_studio_document_pdf_proof,
             take_pending_open_path
         ])
@@ -3511,5 +3579,29 @@ mod tests {
         prepare_pdf_proof_output(&output).expect("remove stale proof");
 
         assert!(!output.exists());
+    }
+
+    #[test]
+    fn pdfa_export_failure_does_not_leave_final_or_candidate_output() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let source = temp.path().join("standard.pdf");
+        write_test_pdf_with_content(
+            &source,
+            pdf_box(419, 595),
+            Some(pdf_box(419, 595)),
+            None,
+            vec![b"content without rgb profile".to_vec()],
+        );
+        normalize_pdf_a5_page_boxes(&source).expect("normalize source");
+        let output = temp.path().join("travelbook-pdfa.pdf");
+
+        let result = export_studio_pdfa2b(StudioPdfA2bExportRequest {
+            source_path: source.to_string_lossy().into_owned(),
+            output_path: output.to_string_lossy().into_owned(),
+        });
+
+        assert!(result.expect_err("pdfa conversion fails").starts_with("PDF_A_"));
+        assert!(!output.exists());
+        assert!(!pdfa_temp_output_path(&output).exists());
     }
 }

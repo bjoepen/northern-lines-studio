@@ -191,3 +191,14 @@ The isolated PoC removes the earlier feasibility uncertainty.
 PDF/A-2b can be produced from the accepted Studio-generated Travelbook through bounded structural post-processing while preserving page geometry, decoded page-content streams, image-stream bytes, fonts, page order and accepted visual fidelity.
 
 This evidence authorizes the bounded Studio integration described by ADR-041. It does not itself prove the installed-app integration; that remains the implementation branch's real-world merge gate.
+
+## Studio integration follow-up
+
+Branch integration evidence is recorded separately in:
+
+```text
+docs/research/STUDIO-PDFA-2B-INTEGRATION.md
+docs/validation/STUDIO-PDFA-2B-INTEGRATION-VALIDATION.md
+```
+
+The local PoC remains the feasibility baseline. The Studio integration must still pass installed-app Standard PDF/PDF-A generation, external veraPDF validation and 300-dpi visual comparison before merge.
