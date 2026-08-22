@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::Mutex};
+use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::{mpsc, Mutex}, time::Duration};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
 const CURRENT_FORMAT_VERSION: &str = "0.16.0";
@@ -20,9 +20,28 @@ const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
 const REFERENCE_WORLD_ID: &str = "fjord";
 const BALTIC_WORLD_ID: &str = "baltic";
+const A5_WIDTH_PT: f64 = 148.0 / 25.4 * 72.0;
+const A5_HEIGHT_PT: f64 = 210.0 / 25.4 * 72.0;
+const A5_SIZE_TOLERANCE_PT: f64 = 0.2;
 
 fn is_supported_editorial_world(id: &str) -> bool {
     id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioPdfProofRequest {
+    page_id: String,
+    physical_medium: String,
+    output_path: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioPdfProofResult {
+    output_path: String,
+    width_pt: f64,
+    height_pt: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1506,6 +1525,166 @@ fn read_image_preview(path: String) -> Result<Vec<u8>, String> {
     fs::read(image_path).map_err(|error| format!("Das Bild konnte für die Vorschau nicht gelesen werden: {error}"))
 }
 
+#[tauri::command]
+fn create_studio_pdf_proof(
+    window: tauri::WebviewWindow,
+    request: StudioPdfProofRequest,
+) -> Result<StudioPdfProofResult, String> {
+    if request.page_id.trim().is_empty() {
+        return Err("PDF_PROOF_NO_PAGE: Es ist keine Studio-Seite ausgewählt.".into());
+    }
+    if request.physical_medium != "A5" {
+        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF-Proof unterstützt aktuell nur A5.".into());
+    }
+    if request.output_path.trim().is_empty() {
+        return Err("PDF_PROOF_WRITE_FAILED: Es wurde kein Speicherort gewählt.".into());
+    }
+
+    let output_path = Path::new(&request.output_path);
+    if output_path.extension().and_then(|extension| extension.to_str()) != Some("pdf") {
+        return Err("PDF_PROOF_WRITE_FAILED: Der PDF-Proof muss als .pdf gespeichert werden.".into());
+    }
+    if let Some(parent) = output_path.parent() {
+        if !parent.exists() {
+            return Err("PDF_PROOF_WRITE_FAILED: Der Zielordner existiert nicht.".into());
+        }
+    }
+
+    render_active_webview_a5_pdf(&window, output_path)?;
+    validate_pdf_a5_media_box(output_path)?;
+
+    Ok(StudioPdfProofResult {
+        output_path: request.output_path,
+        width_pt: A5_WIDTH_PT,
+        height_pt: A5_HEIGHT_PT,
+    })
+}
+
+fn render_active_webview_a5_pdf(
+    window: &tauri::WebviewWindow,
+    output_path: &Path,
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        return platform_pdf::render_active_webview_a5_pdf(window, output_path);
+    }
+
+    #[cfg(windows)]
+    {
+        return platform_pdf::render_active_webview_a5_pdf(window, output_path);
+    }
+
+    #[allow(unreachable_code)]
+    Err("PDF_PROOF_RENDER_FAILED: Diese Plattform hat noch keinen PDF-Proof-Adapter.".into())
+}
+
+fn validate_pdf_a5_media_box(path: &Path) -> Result<(), String> {
+    let bytes = fs::read(path).map_err(|error| format!("PDF_PROOF_WRITE_FAILED: PDF konnte nicht gelesen werden: {error}"))?;
+    let content = String::from_utf8_lossy(&bytes);
+    let media_box_index = content.find("/MediaBox").ok_or_else(|| {
+        "PDF_PROOF_PAGE_SIZE_INVALID: PDF enthält keine MediaBox.".to_string()
+    })?;
+    let remainder = &content[media_box_index..];
+    let open = remainder.find('[').ok_or_else(|| {
+        "PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist nicht lesbar.".to_string()
+    })?;
+    let close = remainder[open..].find(']').ok_or_else(|| {
+        "PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist nicht lesbar.".to_string()
+    })?;
+    let values: Vec<f64> = remainder[open + 1..open + close]
+        .split_whitespace()
+        .filter_map(|value| value.parse::<f64>().ok())
+        .collect();
+    if values.len() < 4 {
+        return Err("PDF_PROOF_PAGE_SIZE_INVALID: PDF-MediaBox ist unvollständig.".into());
+    }
+    let width = (values[2] - values[0]).abs();
+    let height = (values[3] - values[1]).abs();
+    if (width - A5_WIDTH_PT).abs() > A5_SIZE_TOLERANCE_PT
+        || (height - A5_HEIGHT_PT).abs() > A5_SIZE_TOLERANCE_PT
+    {
+        return Err(format!(
+            "PDF_PROOF_PAGE_SIZE_INVALID: PDF ist {:.3} × {:.3} pt statt A5 {:.3} × {:.3} pt.",
+            width, height, A5_WIDTH_PT, A5_HEIGHT_PT
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+mod platform_pdf {
+    use super::*;
+    use block2::RcBlock;
+    use objc2::MainThreadMarker;
+    use objc2_core_foundation::{CGRect, CGPoint, CGSize};
+    use objc2_foundation::{NSData, NSError, NSString};
+    use objc2_web_kit::{WKPDFConfiguration, WKWebView};
+
+    pub fn render_active_webview_a5_pdf(
+        window: &tauri::WebviewWindow,
+        output_path: &Path,
+    ) -> Result<(), String> {
+        let (sender, receiver) = mpsc::channel::<Result<(), String>>();
+        let path = output_path.to_string_lossy().into_owned();
+
+        window
+            .with_webview(move |webview| {
+                let result = unsafe {
+                    let Some(mtm) = MainThreadMarker::new() else {
+                        let _ = sender.send(Err("PDF_PROOF_RENDER_FAILED: WebKit-PDF muss auf dem Main Thread laufen.".to_string()));
+                        return;
+                    };
+                    let wk_webview = &*(webview.inner() as *mut WKWebView);
+                    let configuration = WKPDFConfiguration::new(mtm);
+                    configuration.setRect(CGRect::new(
+                        CGPoint::ZERO,
+                        CGSize::new(A5_WIDTH_PT, A5_HEIGHT_PT),
+                    ));
+                    configuration.setAllowTransparentBackground(false);
+                    let ns_path = NSString::from_str(&path);
+                    let sender = sender.clone();
+                    let completion = RcBlock::new(move |data: *mut NSData, error: *mut NSError| {
+                        let result = if !error.is_null() {
+                            Err("PDF_PROOF_RENDER_FAILED: WebKit konnte den PDF-Proof nicht erzeugen.".to_string())
+                        } else if data.is_null() {
+                            Err("PDF_PROOF_RENDER_FAILED: WebKit lieferte keine PDF-Daten.".to_string())
+                        } else if (&*data).writeToFile_atomically(&ns_path, true) {
+                            Ok(())
+                        } else {
+                            Err("PDF_PROOF_WRITE_FAILED: PDF-Proof konnte nicht geschrieben werden.".to_string())
+                        };
+                        let _ = sender.send(result);
+                    });
+                    wk_webview.createPDFWithConfiguration_completionHandler(
+                        Some(&configuration),
+                        &completion,
+                    );
+                    Ok::<(), String>(())
+                };
+                if let Err(error) = result {
+                    let _ = sender.send(Err(error));
+                }
+            })
+            .map_err(|error| format!("PDF_PROOF_RENDER_FAILED: WebView-Zugriff fehlgeschlagen: {error}"))?;
+
+        receiver
+            .recv_timeout(Duration::from_secs(20))
+            .map_err(|_| "PDF_PROOF_RENDER_FAILED: PDF-Proof-Erzeugung hat zu lange gedauert.".to_string())?
+    }
+}
+
+#[cfg(windows)]
+mod platform_pdf {
+    use super::*;
+
+    pub fn render_active_webview_a5_pdf(
+        _window: &tauri::WebviewWindow,
+        _output_path: &Path,
+    ) -> Result<(), String> {
+        Err("PDF_PROOF_RENDER_FAILED: Windows-WebView2-Adapter ist im PoC vertraglich vorgesehen, aber auf diesem macOS-Build nicht ausführbar.".into())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
@@ -1527,6 +1706,7 @@ pub fn run() {
             set_destination_image,
             remove_destination_image,
             read_image_preview,
+            create_studio_pdf_proof,
             take_pending_open_path
         ])
         .build(tauri::generate_context!())

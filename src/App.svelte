@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
-  import { open } from '@tauri-apps/plugin-dialog';
+  import { open, save } from '@tauri-apps/plugin-dialog';
   import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestEntry, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
   import { computePreviewScale, PREVIEW_BASE_HEIGHT, PREVIEW_BASE_WIDTH } from './lib/preview';
@@ -45,6 +45,7 @@
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
+  import { createStudioPdfProof, type StudioPdfProofStatus } from './lib/pdf-proof';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -60,6 +61,7 @@
   let selectedPage: StudioPage | null = null;
   let errorMessage = '';
   let isLoading = false;
+  let pdfProofStatus: StudioPdfProofStatus = 'idle';
   let worldChangeState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let previewStage: HTMLDivElement | null = null;
   let previewScale = 1;
@@ -123,6 +125,59 @@
   function displayPageTitle(page: StudioPage | null | undefined): string {
     if (!page) return 'Keine Seite ausgewählt';
     return page.type === 'workflow' ? 'Fotografie-Workshop' : page.title;
+  }
+
+  async function createPdfProofForCurrentPage() {
+    if (!selectedPage) {
+      errorMessage = 'PDF_PROOF_NO_PAGE: Es ist keine Studio-Seite ausgewählt.';
+      return;
+    }
+    if (!document.querySelector('.a5-page')) {
+      errorMessage = 'PDF_PROOF_NO_PAGE: Die Studio-Seite ist noch nicht bereit.';
+      return;
+    }
+
+    pdfProofStatus = 'preparing';
+    errorMessage = '';
+    await tick();
+
+    try {
+      const fontsReady = document.fonts?.ready;
+      if (fontsReady) await fontsReady;
+      const pendingImages = Array.from(document.querySelectorAll<HTMLImageElement>('.a5-page img'))
+        .filter((image) => !image.complete);
+      if (pendingImages.length > 0) {
+        await Promise.all(pendingImages.map((image) => new Promise<void>((resolve, reject) => {
+          image.addEventListener('load', () => resolve(), { once: true });
+          image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
+        })));
+      }
+
+      const outputPath = await save({
+        title: 'PDF-Proof speichern',
+        defaultPath: `${displayPageTitle(selectedPage).replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio'}-Proof.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      });
+      if (!outputPath) {
+        pdfProofStatus = 'idle';
+        return;
+      }
+
+      pdfProofStatus = 'rendering';
+      document.body.classList.add('pdf-proof-rendering');
+      await tick();
+      await createStudioPdfProof({
+        pageId: selectedPage.id,
+        physicalMedium: 'A5',
+        outputPath
+      });
+      pdfProofStatus = 'saved';
+    } catch (error) {
+      pdfProofStatus = 'error';
+      errorMessage = String(error);
+    } finally {
+      document.body.classList.remove('pdf-proof-rendering');
+    }
   }
 
   function applyInspectorWidth(width: number) {
@@ -1287,13 +1342,24 @@
           <span>Editorial Workspace</span>
           <strong>{displayPageTitle(selectedPage)}</strong>
         </div>
-        <small>{editorialWorld
-          ? `${editorialWorld.name} · ${selectedPage?.type === 'destination'
-              ? (editorialLayout?.destinationLayouts.find((layout) => layout.id === destinationLayoutVariant)?.label ?? 'Ortsseite')
-              : selectedPage?.type === 'destination_interest'
-                ? (destinationInterest?.label ?? 'Vertiefung')
-                : pageRoleLabel(selectedPage?.role)}`
-          : pageRoleLabel(selectedPage?.role)}</small>
+        <div class="canvas-header-actions">
+          <small>{editorialWorld
+            ? `${editorialWorld.name} · ${selectedPage?.type === 'destination'
+                ? (editorialLayout?.destinationLayouts.find((layout) => layout.id === destinationLayoutVariant)?.label ?? 'Ortsseite')
+                : selectedPage?.type === 'destination_interest'
+                  ? (destinationInterest?.label ?? 'Vertiefung')
+                  : pageRoleLabel(selectedPage?.role)}`
+            : pageRoleLabel(selectedPage?.role)}</small>
+          <button
+            class="pdf-proof-action"
+            type="button"
+            on:click={() => void createPdfProofForCurrentPage()}
+            disabled={!selectedPage || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
+            title="Aktuelle Studio-Seite als A5-PDF-Proof speichern"
+          >
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF-Proof …' : 'PDF-Proof'}
+          </button>
+        </div>
       </div>
 
       <div class="preview-stage" bind:this={previewStage}>

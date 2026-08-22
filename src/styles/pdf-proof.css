@@ -1,0 +1,67 @@
+/* Northern Lines Studio · deterministic A5 PDF proof action. */
+
+.canvas-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pdf-proof-action {
+  border: 1px solid rgba(23, 42, 52, 0.18);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #172a34;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pdf-proof-action:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+body.pdf-proof-rendering {
+  width: 420px !important;
+  height: 595.9459459459px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+
+body.pdf-proof-rendering .toolbar,
+body.pdf-proof-rendering .error-banner,
+body.pdf-proof-rendering .sidebar,
+body.pdf-proof-rendering .inspector,
+body.pdf-proof-rendering .canvas-header,
+body.pdf-proof-rendering .resize-handle {
+  display: none !important;
+}
+
+body.pdf-proof-rendering #app,
+body.pdf-proof-rendering .app-shell,
+body.pdf-proof-rendering .workspace,
+body.pdf-proof-rendering .editorial-desk,
+body.pdf-proof-rendering .preview-stage,
+body.pdf-proof-rendering .page-scale-frame {
+  display: block !important;
+  position: static !important;
+  width: 420px !important;
+  height: 595.9459459459px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+
+body.pdf-proof-rendering .a5-page {
+  transform: none !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
