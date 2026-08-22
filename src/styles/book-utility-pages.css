@@ -148,8 +148,12 @@
 
 .notes-main,
 .notes-side > section {
+  --notes-surface: color-mix(in srgb, var(--world-accent, #547181) 2.5%, #fff);
+  --notes-line: color-mix(in srgb, var(--world-accent, #547181) 18%, var(--notes-surface));
+  --notes-mini-line: color-mix(in srgb, var(--world-accent, #547181) 17%, var(--notes-surface));
+  --notes-dot: color-mix(in srgb, var(--world-accent, #547181) 22%, var(--notes-surface));
   border: 1px solid color-mix(in srgb, var(--world-accent, #547181) 25%, #fff);
-  background: color-mix(in srgb, var(--world-accent, #547181) 2.5%, #fff);
+  background: var(--notes-surface);
 }
 
 .notes-main {
@@ -162,6 +166,10 @@
    ochre warmth from the established Baltic Amber/Warm Paper palette. */
 .a5-page.baltic-page.notes-page .notes-main,
 .a5-page.baltic-page.notes-page .notes-side > section {
+  --notes-surface: color-mix(in srgb, var(--baltic-amber) 8%, var(--baltic-warm-paper));
+  --notes-line: color-mix(in srgb, var(--baltic-amber) 18%, var(--notes-surface));
+  --notes-mini-line: color-mix(in srgb, var(--baltic-amber) 17%, var(--notes-surface));
+  --notes-dot: color-mix(in srgb, var(--baltic-amber) 22%, var(--notes-surface));
   border-color: color-mix(in srgb, var(--baltic-amber) 18%, #ffffff);
   background: color-mix(in srgb, var(--baltic-amber) 8%, var(--baltic-warm-paper));
 }
@@ -180,7 +188,8 @@
 .notes-lines {
   height: calc(100% - 17px);
   margin-top: 8px;
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 17px, color-mix(in srgb, var(--world-accent, #547181) 18%, transparent) 17.5px, transparent 18px);
+  background-color: var(--notes-surface);
+  background-image: repeating-linear-gradient(to bottom, var(--notes-surface) 0, var(--notes-surface) 17px, var(--notes-line) 17.5px, var(--notes-surface) 18px);
 }
 
 .notes-side {
@@ -194,13 +203,15 @@
 .notes-mini-lines {
   height: calc(100% - 16px);
   margin-top: 8px;
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 15px, color-mix(in srgb, var(--world-accent, #547181) 17%, transparent) 15.5px, transparent 16px);
+  background-color: var(--notes-surface);
+  background-image: repeating-linear-gradient(to bottom, var(--notes-surface) 0, var(--notes-surface) 15px, var(--notes-mini-line) 15.5px, var(--notes-surface) 16px);
 }
 
 .notes-dot-grid {
   height: calc(100% - 18px);
   margin-top: 8px;
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--world-accent, #547181) 22%, transparent) .7px, transparent .8px);
+  background-color: var(--notes-surface);
+  background-image: radial-gradient(circle, var(--notes-dot) .7px, var(--notes-surface) .8px);
   background-size: 10px 10px;
 }
 

@@ -104,13 +104,19 @@ export function groupPages(pages: StudioPage[], routeStageIds: readonly string[]
     .filter((section) => section.pages.length > 0);
 }
 
+export function publicationOrderedPages(
+  pages: StudioPage[],
+  routeStageIds: readonly string[] = []
+): StudioPage[] {
+  return groupPages(pages, routeStageIds).flatMap((section) => section.pages);
+}
 
 export function travelbookPageNumber(
   pages: StudioPage[],
   pageId: string,
   routeStageIds: readonly string[] = []
 ): number | null {
-  const orderedPages = groupPages(pages, routeStageIds).flatMap((section) => section.pages);
+  const orderedPages = publicationOrderedPages(pages, routeStageIds);
   const index = orderedPages.findIndex((page) => page.id === pageId);
   return index >= 0 ? index + 1 : null;
 }

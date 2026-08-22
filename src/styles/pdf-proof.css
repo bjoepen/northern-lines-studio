@@ -62,6 +62,8 @@ body.pdf-proof-rendering .page-scale-frame {
 
 body.pdf-proof-rendering .a5-page {
   transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
   margin: 0 !important;
   box-shadow: none !important;
 }

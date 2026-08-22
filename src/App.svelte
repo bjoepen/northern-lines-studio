@@ -45,7 +45,20 @@
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
-  import { createStudioPdfProof, type StudioPdfProofStatus } from './lib/pdf-proof';
+  import {
+    assembleStudioDocumentPdfProof,
+    cleanupStudioDocumentPdfProof,
+    createStudioPdfProof,
+    evaluateRenderedStudioPageReadiness,
+    incompleteStudioPageImages,
+    prepareStudioDocumentPdfProof,
+    restoredDocumentProofPage,
+    stagedDocumentProofPagePath,
+    studioDocumentProofPages,
+    type StudioDocumentProofPage,
+    type StudioPdfProofReadinessErrorCode,
+    type StudioPdfProofStatus
+  } from './lib/pdf-proof';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -127,6 +140,109 @@
     return page.type === 'workflow' ? 'Fotografie-Workshop' : page.title;
   }
 
+  function proofFileTitle(value: string): string {
+    return value.replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio';
+  }
+
+  function proofReadinessMessage(code: StudioPdfProofReadinessErrorCode, pageTitle: string | undefined, reason: string): string {
+    const label = pageTitle ? `${pageTitle}: ` : '';
+    return `${code}: ${label}Die Studio-Seite ist noch nicht vollständig bereit (${reason}).`;
+  }
+
+  function renderedStudioPages(): HTMLElement[] {
+    return Array.from(document.querySelectorAll<HTMLElement>('.a5-page'));
+  }
+
+  function currentRenderedStudioPage(pageId: string): HTMLElement | null {
+    return renderedStudioPages().find((page) => page.dataset.studioPageId === pageId) ?? null;
+  }
+
+  async function waitForBrowserLayoutFrame() {
+    if (typeof requestAnimationFrame !== 'function') return;
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
+  async function waitForStudioDomCommit() {
+    await tick();
+    await waitForBrowserLayoutFrame();
+  }
+
+  function runningPageAnimationCount(page: HTMLElement): number {
+    const animations = typeof page.getAnimations === 'function'
+      ? page.getAnimations({ subtree: true })
+      : [];
+    return animations.filter((animation) => animation.playState === 'running').length;
+  }
+
+  function assertResolvedStudioPage(
+    pageId: string,
+    options: {
+      code?: StudioPdfProofReadinessErrorCode;
+      pageTitle?: string;
+      expectProofMode?: boolean;
+    } = {}
+  ): HTMLElement {
+    const code = options.code ?? 'PDF_PROOF_NO_PAGE';
+    const pages = renderedStudioPages();
+    const page = currentRenderedStudioPage(pageId);
+    const computed = page ? getComputedStyle(page) : null;
+    const readiness = evaluateRenderedStudioPageReadiness({
+      requestedPageId: pageId,
+      selectedPageId: selectedPage?.id ?? null,
+      renderedPageId: page?.dataset.studioPageId ?? pages[0]?.dataset.studioPageId ?? null,
+      renderedPageCount: pages.length,
+      display: computed?.display ?? 'none',
+      visibility: computed?.visibility ?? 'hidden',
+      opacity: computed ? Number.parseFloat(computed.opacity || '0') : 0,
+      filter: computed?.filter ?? 'none',
+      transform: computed?.transform ?? 'none',
+      runningAnimationCount: page ? runningPageAnimationCount(page) : 0,
+      expectProofMode: options.expectProofMode ?? false
+    }, code);
+    if (!readiness.ready) {
+      throw new Error(proofReadinessMessage(readiness.code, options.pageTitle, readiness.reason));
+    }
+    if (!page) {
+      throw new Error(proofReadinessMessage(code, options.pageTitle, 'dom=none'));
+    }
+    return page;
+  }
+
+  async function waitForResolvedStudioPage(
+    pageId: string,
+    options: {
+      code?: StudioPdfProofReadinessErrorCode;
+      pageTitle?: string;
+      expectProofMode?: boolean;
+    } = {}
+  ) {
+    await waitForStudioDomCommit();
+    let page = assertResolvedStudioPage(pageId, options);
+    const fontsReady = document.fonts?.ready;
+    if (fontsReady) {
+      await fontsReady;
+      await waitForStudioDomCommit();
+      page = assertResolvedStudioPage(pageId, options);
+    }
+    const images = Array.from(page.querySelectorAll<HTMLImageElement>('img'));
+    const failedImages = images.filter((image) => image.complete && image.naturalWidth <= 0);
+    if (failedImages.length > 0) {
+      throw new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.');
+    }
+    const pendingImages = images.filter((image) => !image.complete);
+    if (pendingImages.length > 0) {
+      await Promise.all(pendingImages.map((image) => new Promise<void>((resolve, reject) => {
+        image.addEventListener('load', () => resolve(), { once: true });
+        image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
+      })));
+      await waitForStudioDomCommit();
+      page = assertResolvedStudioPage(pageId, options);
+      if (incompleteStudioPageImages(Array.from(page.querySelectorAll<HTMLImageElement>('img'))).length > 0) {
+        throw new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.');
+      }
+    }
+  }
+
   async function createPdfProofForCurrentPage() {
     if (!selectedPage) {
       errorMessage = 'PDF_PROOF_NO_PAGE: Es ist keine Studio-Seite ausgewählt.';
@@ -142,20 +258,11 @@
     await tick();
 
     try {
-      const fontsReady = document.fonts?.ready;
-      if (fontsReady) await fontsReady;
-      const pendingImages = Array.from(document.querySelectorAll<HTMLImageElement>('.a5-page img'))
-        .filter((image) => !image.complete);
-      if (pendingImages.length > 0) {
-        await Promise.all(pendingImages.map((image) => new Promise<void>((resolve, reject) => {
-          image.addEventListener('load', () => resolve(), { once: true });
-          image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
-        })));
-      }
+      await waitForResolvedStudioPage(selectedPage.id);
 
       const outputPath = await save({
         title: 'PDF-Proof speichern',
-        defaultPath: `${displayPageTitle(selectedPage).replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio'}-Proof.pdf`,
+        defaultPath: `${proofFileTitle(displayPageTitle(selectedPage))}-Proof.pdf`,
         filters: [{ name: 'PDF', extensions: ['pdf'] }]
       });
       if (!outputPath) {
@@ -165,7 +272,7 @@
 
       pdfProofStatus = 'rendering';
       document.body.classList.add('pdf-proof-rendering');
-      await tick();
+      await waitForResolvedStudioPage(selectedPage.id, { expectProofMode: true });
       await createStudioPdfProof({
         pageId: selectedPage.id,
         physicalMedium: 'A5',
@@ -177,6 +284,98 @@
       errorMessage = String(error);
     } finally {
       document.body.classList.remove('pdf-proof-rendering');
+    }
+  }
+
+  async function createPdfProofForTravelbook() {
+    if (!project) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Es ist kein Travelbook geöffnet.';
+      return;
+    }
+    const pages = studioDocumentProofPages(project);
+    if (pages.length === 0) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.';
+      return;
+    }
+    if (hasUnsavedChanges) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_PAGE_FAILED: Bitte speichere die aktuelle Bearbeitung, bevor das ganze Travelbook als Proof entsteht.';
+      return;
+    }
+
+    const originalPageId = selectedPage?.id ?? null;
+    const projectTitle = project.title;
+    let stagingPath = '';
+    pdfProofStatus = 'preparing';
+    errorMessage = '';
+    await tick();
+
+    try {
+      const outputPath = await save({
+        title: 'Travelbook-Proof speichern',
+        defaultPath: `${proofFileTitle(projectTitle)}-Travelbook-Proof.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      });
+      if (!outputPath) {
+        pdfProofStatus = 'idle';
+        return;
+      }
+
+      const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
+      stagingPath = staging.stagingPath;
+      const stagedPages: StudioDocumentProofPage[] = [];
+
+      pdfProofStatus = 'rendering';
+      for (const [position, page] of pages.entries()) {
+        selectPageNow(page);
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: displayPageTitle(page)
+        });
+        document.body.classList.add('pdf-proof-rendering');
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: displayPageTitle(page),
+          expectProofMode: true
+        });
+        const index = position + 1;
+        const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
+        await createStudioPdfProof({
+          pageId: page.id,
+          physicalMedium: 'A5',
+          outputPath: stagedPath
+        });
+        stagedPages.push({
+          index,
+          pageId: page.id,
+          title: displayPageTitle(page),
+          stagedPath
+        });
+        document.body.classList.remove('pdf-proof-rendering');
+        await waitForStudioDomCommit();
+      }
+
+      await assembleStudioDocumentPdfProof({
+        outputPath,
+        stagingPath,
+        pages: stagedPages
+      });
+      pdfProofStatus = 'saved';
+    } catch (error) {
+      pdfProofStatus = 'error';
+      errorMessage = String(error);
+    } finally {
+      document.body.classList.remove('pdf-proof-rendering');
+      if (originalPageId && project) {
+        const originalPage = restoredDocumentProofPage(studioDocumentProofPages(project), originalPageId);
+        if (originalPage) selectPageNow(originalPage);
+      }
+      if (stagingPath) {
+        try {
+          await cleanupStudioDocumentPdfProof(stagingPath);
+        } catch {
+          // Staging cleanup is best-effort after the proof result has been reported.
+        }
+      }
     }
   }
 
@@ -1357,7 +1556,16 @@
             disabled={!selectedPage || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
             title="Aktuelle Studio-Seite als A5-PDF-Proof speichern"
           >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF-Proof …' : 'PDF-Proof'}
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Seiten-Proof …' : 'Seiten-Proof'}
+          </button>
+          <button
+            class="pdf-proof-action"
+            type="button"
+            on:click={() => void createPdfProofForTravelbook()}
+            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
+            title="Ganzes Travelbook als A5-PDF-Proof speichern"
+          >
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Travelbook-Proof …' : 'Travelbook-Proof'}
           </button>
         </div>
       </div>
@@ -1367,6 +1575,7 @@
           {#key selectedPage?.id ?? 'empty-editorial-desk'}
             <article
               class="a5-page"
+              data-studio-page-id={selectedPage?.id ?? ''}
               class:cover-page={selectedPage?.type === 'cover'}
               class:fjord-page={editorialWorld?.id === 'fjord'}
               class:baltic-page={editorialWorld?.id === 'baltic'}
@@ -1382,7 +1591,7 @@
               class:contents-page={selectedPage?.type === 'contents'}
               class:notes-page={selectedPage?.type === 'notes'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
-              in:fade={{ duration: 190 }}
+              in:fade={{ duration: pdfProofStatus === 'rendering' ? 0 : 190 }}
             >
               {#if selectedPage?.type === 'destination'}
                 <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity} title-${destinationTitleLayout}`}>
