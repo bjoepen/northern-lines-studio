@@ -45,7 +45,17 @@
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
-  import { createStudioPdfProof, type StudioPdfProofStatus } from './lib/pdf-proof';
+  import {
+    assembleStudioDocumentPdfProof,
+    cleanupStudioDocumentPdfProof,
+    createStudioPdfProof,
+    prepareStudioDocumentPdfProof,
+    restoredDocumentProofPage,
+    stagedDocumentProofPagePath,
+    studioDocumentProofPages,
+    type StudioDocumentProofPage,
+    type StudioPdfProofStatus
+  } from './lib/pdf-proof';
 
   type PendingAction =
     | { kind: 'select-page'; pageId: string }
@@ -127,6 +137,30 @@
     return page.type === 'workflow' ? 'Fotografie-Workshop' : page.title;
   }
 
+  function proofFileTitle(value: string): string {
+    return value.replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio';
+  }
+
+  async function waitForResolvedStudioPage(pageId: string) {
+    await tick();
+    if (selectedPage?.id !== pageId) {
+      throw new Error('PDF_PROOF_NO_PAGE: Die gewünschte Studio-Seite ist noch nicht aktiv.');
+    }
+    if (!document.querySelector('.a5-page')) {
+      throw new Error('PDF_PROOF_NO_PAGE: Die Studio-Seite ist noch nicht bereit.');
+    }
+    const fontsReady = document.fonts?.ready;
+    if (fontsReady) await fontsReady;
+    const pendingImages = Array.from(document.querySelectorAll<HTMLImageElement>('.a5-page img'))
+      .filter((image) => !image.complete);
+    if (pendingImages.length > 0) {
+      await Promise.all(pendingImages.map((image) => new Promise<void>((resolve, reject) => {
+        image.addEventListener('load', () => resolve(), { once: true });
+        image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
+      })));
+    }
+  }
+
   async function createPdfProofForCurrentPage() {
     if (!selectedPage) {
       errorMessage = 'PDF_PROOF_NO_PAGE: Es ist keine Studio-Seite ausgewählt.';
@@ -142,20 +176,11 @@
     await tick();
 
     try {
-      const fontsReady = document.fonts?.ready;
-      if (fontsReady) await fontsReady;
-      const pendingImages = Array.from(document.querySelectorAll<HTMLImageElement>('.a5-page img'))
-        .filter((image) => !image.complete);
-      if (pendingImages.length > 0) {
-        await Promise.all(pendingImages.map((image) => new Promise<void>((resolve, reject) => {
-          image.addEventListener('load', () => resolve(), { once: true });
-          image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
-        })));
-      }
+      await waitForResolvedStudioPage(selectedPage.id);
 
       const outputPath = await save({
         title: 'PDF-Proof speichern',
-        defaultPath: `${displayPageTitle(selectedPage).replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio'}-Proof.pdf`,
+        defaultPath: `${proofFileTitle(displayPageTitle(selectedPage))}-Proof.pdf`,
         filters: [{ name: 'PDF', extensions: ['pdf'] }]
       });
       if (!outputPath) {
@@ -177,6 +202,88 @@
       errorMessage = String(error);
     } finally {
       document.body.classList.remove('pdf-proof-rendering');
+    }
+  }
+
+  async function createPdfProofForTravelbook() {
+    if (!project) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Es ist kein Travelbook geöffnet.';
+      return;
+    }
+    const pages = studioDocumentProofPages(project);
+    if (pages.length === 0) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.';
+      return;
+    }
+    if (hasUnsavedChanges) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_PAGE_FAILED: Bitte speichere die aktuelle Bearbeitung, bevor das ganze Travelbook als Proof entsteht.';
+      return;
+    }
+
+    const originalPageId = selectedPage?.id ?? null;
+    const projectTitle = project.title;
+    let stagingPath = '';
+    pdfProofStatus = 'preparing';
+    errorMessage = '';
+    await tick();
+
+    try {
+      const outputPath = await save({
+        title: 'Travelbook-Proof speichern',
+        defaultPath: `${proofFileTitle(projectTitle)}-Travelbook-Proof.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      });
+      if (!outputPath) {
+        pdfProofStatus = 'idle';
+        return;
+      }
+
+      const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
+      stagingPath = staging.stagingPath;
+      const stagedPages: StudioDocumentProofPage[] = [];
+
+      pdfProofStatus = 'rendering';
+      document.body.classList.add('pdf-proof-rendering');
+      for (const [position, page] of pages.entries()) {
+        selectPageNow(page);
+        await waitForResolvedStudioPage(page.id);
+        const index = position + 1;
+        const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
+        await createStudioPdfProof({
+          pageId: page.id,
+          physicalMedium: 'A5',
+          outputPath: stagedPath
+        });
+        stagedPages.push({
+          index,
+          pageId: page.id,
+          title: displayPageTitle(page),
+          stagedPath
+        });
+      }
+
+      await assembleStudioDocumentPdfProof({
+        outputPath,
+        stagingPath,
+        pages: stagedPages
+      });
+      pdfProofStatus = 'saved';
+    } catch (error) {
+      pdfProofStatus = 'error';
+      errorMessage = String(error);
+    } finally {
+      document.body.classList.remove('pdf-proof-rendering');
+      if (originalPageId && project) {
+        const originalPage = restoredDocumentProofPage(studioDocumentProofPages(project), originalPageId);
+        if (originalPage) selectPageNow(originalPage);
+      }
+      if (stagingPath) {
+        try {
+          await cleanupStudioDocumentPdfProof(stagingPath);
+        } catch {
+          // Staging cleanup is best-effort after the proof result has been reported.
+        }
+      }
     }
   }
 
@@ -1357,7 +1464,16 @@
             disabled={!selectedPage || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
             title="Aktuelle Studio-Seite als A5-PDF-Proof speichern"
           >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF-Proof …' : 'PDF-Proof'}
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Seiten-Proof …' : 'Seiten-Proof'}
+          </button>
+          <button
+            class="pdf-proof-action"
+            type="button"
+            on:click={() => void createPdfProofForTravelbook()}
+            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
+            title="Ganzes Travelbook als A5-PDF-Proof speichern"
+          >
+            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Travelbook-Proof …' : 'Travelbook-Proof'}
           </button>
         </div>
       </div>

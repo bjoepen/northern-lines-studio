@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::{BTreeMap, HashSet}, fs, path::Path, sync::{mpsc, Mutex}, time::Duration};
+use sha2::{Digest, Sha256};
+use std::{collections::{BTreeMap, HashSet}, fs, path::{Path, PathBuf}, sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 const EXPECTED_FORMAT: &str = "northern-lines-studio-project";
 const CURRENT_FORMAT_VERSION: &str = "0.16.0";
@@ -42,6 +43,65 @@ struct StudioPdfProofResult {
     output_path: String,
     width_pt: f64,
     height_pt: f64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioDocumentProofStagingRequest {
+    page_count: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioDocumentProofStagingResult {
+    staging_path: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioDocumentProofPageRequest {
+    index: usize,
+    page_id: String,
+    title: String,
+    staged_path: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioDocumentProofRequest {
+    output_path: String,
+    staging_path: String,
+    pages: Vec<StudioDocumentProofPageRequest>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StudioDocumentProofResult {
+    output_path: String,
+    page_count: usize,
+    width_pt: f64,
+    height_pt: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+struct StudioDocumentProofManifest {
+    schema: String,
+    page_count: usize,
+    pages: Vec<StudioDocumentProofManifestPage>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+struct StudioDocumentProofManifestPage {
+    index: usize,
+    page_id: String,
+    title: String,
+    sha256: String,
+    width_pt: f64,
+    height_pt: f64,
+    status: String,
+    content_stream_hashes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1567,6 +1627,97 @@ async fn create_studio_pdf_proof(
     })
 }
 
+#[tauri::command]
+fn prepare_studio_document_pdf_proof(
+    request: StudioDocumentProofStagingRequest,
+) -> Result<StudioDocumentProofStagingResult, String> {
+    if request.page_count == 0 {
+        return Err("PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.".into());
+    }
+    let base = studio_document_proof_cache_dir()?;
+    fs::create_dir_all(&base)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher konnte nicht angelegt werden: {error}"))?;
+    let stamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher konnte nicht benannt werden: {error}"))?
+        .as_nanos();
+    let staging = base.join(format!("document-proof-{}-{}", std::process::id(), stamp));
+    fs::create_dir(&staging)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher konnte nicht angelegt werden: {error}"))?;
+    Ok(StudioDocumentProofStagingResult {
+        staging_path: staging.to_string_lossy().into_owned(),
+    })
+}
+
+#[tauri::command]
+fn cleanup_studio_document_pdf_proof(staging_path: String) -> Result<(), String> {
+    let staging = Path::new(&staging_path);
+    let base = studio_document_proof_cache_dir()?;
+    if !staging.starts_with(&base)
+        || !staging
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("document-proof-"))
+    {
+        return Err("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher wird nicht entfernt.".into());
+    }
+    if staging.exists() {
+        fs::remove_dir_all(staging)
+            .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher konnte nicht entfernt werden: {error}"))?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn assemble_studio_document_pdf_proof(
+    request: StudioDocumentProofRequest,
+) -> Result<StudioDocumentProofResult, String> {
+    if request.pages.is_empty() {
+        return Err("PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.".into());
+    }
+    if request.output_path.trim().is_empty() {
+        return Err("PDF_DOCUMENT_PROOF_WRITE_FAILED: Es wurde kein Speicherort gewählt.".into());
+    }
+    let output_path = Path::new(&request.output_path);
+    if output_path.extension().and_then(|extension| extension.to_str()) != Some("pdf") {
+        return Err("PDF_DOCUMENT_PROOF_WRITE_FAILED: Der Travelbook-Proof muss als .pdf gespeichert werden.".into());
+    }
+    if let Some(parent) = output_path.parent() {
+        if !parent.exists() {
+            return Err("PDF_DOCUMENT_PROOF_WRITE_FAILED: Der Zielordner existiert nicht.".into());
+        }
+    }
+    let staging = Path::new(&request.staging_path);
+    if !staging.exists() {
+        return Err("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Zwischenspeicher fehlt.".into());
+    }
+    validate_document_proof_page_requests(staging, &request.pages)?;
+
+    let temp_output = document_proof_temp_output_path(output_path);
+    prepare_pdf_proof_output(&temp_output).map_err(|error| {
+        error.replace("PDF_PROOF_WRITE_FAILED", "PDF_DOCUMENT_PROOF_WRITE_FAILED")
+    })?;
+
+    let manifest_path = staging.join("manifest.json");
+    match assemble_validated_document_pdf(&request.pages, &temp_output, &manifest_path) {
+        Ok(manifest) => {
+            validate_document_pdf_output(&temp_output, &manifest)?;
+            fs::rename(&temp_output, output_path)
+                .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Travelbook-Proof konnte nicht gespeichert werden: {error}"))?;
+            Ok(StudioDocumentProofResult {
+                output_path: request.output_path,
+                page_count: manifest.page_count,
+                width_pt: A5_WIDTH_PT,
+                height_pt: A5_HEIGHT_PT,
+            })
+        }
+        Err(error) => {
+            let _ = fs::remove_file(&temp_output);
+            Err(error)
+        }
+    }
+}
+
 async fn render_active_webview_a5_pdf(
     window: &tauri::WebviewWindow,
     output_path: &Path,
@@ -1766,6 +1917,238 @@ fn validate_pdf_a5_page_boxes(path: &Path) -> Result<(), String> {
     Ok(())
 }
 
+fn studio_document_proof_cache_dir() -> Result<PathBuf, String> {
+    let home = std::env::var_os("HOME")
+        .ok_or_else(|| "PDF_DOCUMENT_PROOF_WRITE_FAILED: Benutzer-Cache konnte nicht bestimmt werden.".to_string())?;
+    Ok(PathBuf::from(home)
+        .join("Library")
+        .join("Caches")
+        .join("Northern Lines Studio"))
+}
+
+fn document_proof_temp_output_path(output_path: &Path) -> PathBuf {
+    let mut temp = output_path.as_os_str().to_os_string();
+    temp.push(".tmp");
+    PathBuf::from(temp)
+}
+
+fn validate_document_proof_page_requests(
+    staging: &Path,
+    pages: &[StudioDocumentProofPageRequest],
+) -> Result<(), String> {
+    let mut seen = HashSet::new();
+    for (position, page) in pages.iter().enumerate() {
+        if page.index != position + 1 {
+            return Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Travelbook-Seitenfolge ist nicht fortlaufend.".into());
+        }
+        if page.page_id.trim().is_empty() {
+            return Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Eine Travelbook-Seite hat keine stabile ID.".into());
+        }
+        if !seen.insert(page.page_id.clone()) {
+            return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Travelbook-Seite '{}' ist doppelt enthalten.", page.page_id));
+        }
+        let staged_path = Path::new(&page.staged_path);
+        if !staged_path.starts_with(staging) {
+            return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seite '{}' liegt nicht im Proof-Zwischenspeicher.", page.page_id));
+        }
+        if staged_path.file_name().and_then(|name| name.to_str()) != Some(&format!("{:04}.pdf", page.index)) {
+            return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seite '{}' hat keinen deterministischen Proof-Dateinamen.", page.page_id));
+        }
+    }
+    Ok(())
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn file_sha256_hex(path: &Path) -> Result<String, String> {
+    let bytes = fs::read(path)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Seite konnte nicht gelesen werden: {error}"))?;
+    Ok(sha256_hex(&bytes))
+}
+
+fn collect_page_content_streams(
+    document: &lopdf::Document,
+    object: &lopdf::Object,
+    streams: &mut Vec<Vec<u8>>,
+) -> Result<(), String> {
+    match object {
+        lopdf::Object::Reference(id) => {
+            let object = document
+                .get_object(*id)
+                .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seiteninhalt konnte nicht gelesen werden: {error}"))?;
+            collect_page_content_streams(document, object, streams)
+        }
+        lopdf::Object::Array(items) => {
+            for item in items {
+                collect_page_content_streams(document, item, streams)?;
+            }
+            Ok(())
+        }
+        lopdf::Object::Stream(stream) => {
+            let content = stream
+                .decompressed_content()
+                .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seiteninhalt konnte nicht dekodiert werden: {error}"))?;
+            streams.push(content);
+            Ok(())
+        }
+        _ => Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seiteninhalt ist nicht lesbar.".into()),
+    }
+}
+
+fn page_content_stream_hashes(
+    document: &lopdf::Document,
+    page_id: lopdf::ObjectId,
+) -> Result<Vec<String>, String> {
+    let page = document
+        .get_object(page_id)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite konnte nicht gelesen werden: {error}"))?
+        .as_dict()
+        .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite ist nicht lesbar.".to_string())?;
+    let contents = page
+        .get(b"Contents")
+        .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite enthält keinen Inhalt.".to_string())?;
+    let mut streams = Vec::new();
+    collect_page_content_streams(document, contents, &mut streams)?;
+    Ok(streams.iter().map(|stream| sha256_hex(stream)).collect())
+}
+
+fn first_page_dimensions(document: &lopdf::Document, page_id: lopdf::ObjectId) -> Result<(f64, f64), String> {
+    let page = document
+        .get_object(page_id)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite konnte nicht gelesen werden: {error}"))?
+        .as_dict()
+        .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite ist nicht lesbar.".to_string())?;
+    let media_box = page
+        .get(b"MediaBox")
+        .map_err(|_| "PDF_DOCUMENT_PROOF_VALIDATION_FAILED: PDF-Seite enthält keine MediaBox.".to_string())
+        .and_then(pdf_page_box)?;
+    Ok((media_box.width(), media_box.height()))
+}
+
+fn assemble_validated_document_pdf(
+    pages: &[StudioDocumentProofPageRequest],
+    output_path: &Path,
+    manifest_path: &Path,
+) -> Result<StudioDocumentProofManifest, String> {
+    let mut document = lopdf::Document::with_version("1.7");
+    let pages_root_id = document.new_object_id();
+    let catalog_id = document.new_object_id();
+    let mut kids = Vec::new();
+    let mut manifest_pages = Vec::new();
+
+    for page in pages {
+        let staged_path = Path::new(&page.staged_path);
+        validate_pdf_a5_page_boxes(staged_path)
+            .map_err(|error| format!("PDF_DOCUMENT_PROOF_PAGE_FAILED: {} · {error}", page.title))?;
+        let source_sha256 = file_sha256_hex(staged_path)?;
+        let mut source = lopdf::Document::load(staged_path)
+            .map_err(|error| format!("PDF_DOCUMENT_PROOF_PAGE_FAILED: {} · PDF konnte nicht gelesen werden: {error}", page.title))?;
+        let source_pages = source.get_pages();
+        if source_pages.len() != 1 {
+            return Err(format!("PDF_DOCUMENT_PROOF_PAGE_FAILED: {} · Einzelproof enthält {} Seiten.", page.title, source_pages.len()));
+        }
+        let source_page_id = *source_pages.values().next().expect("single page exists");
+        let content_hashes = page_content_stream_hashes(&source, source_page_id)?;
+        let (width_pt, height_pt) = first_page_dimensions(&source, source_page_id)?;
+
+        source.renumber_objects_with(document.max_id + 1);
+        let page_id = *source
+            .get_pages()
+            .values()
+            .next()
+            .ok_or_else(|| format!("PDF_DOCUMENT_PROOF_PAGE_FAILED: {} · Einzelproof enthält keine Seite.", page.title))?;
+        for (object_id, object) in source.objects {
+            document.max_id = document.max_id.max(object_id.0);
+            document.objects.insert(object_id, object);
+        }
+        let page_object = document
+            .get_object_mut(page_id)
+            .map_err(|error| format!("PDF_DOCUMENT_PROOF_ASSEMBLY_FAILED: Seite '{}' konnte nicht übernommen werden: {error}", page.page_id))?
+            .as_dict_mut()
+            .map_err(|_| format!("PDF_DOCUMENT_PROOF_ASSEMBLY_FAILED: Seite '{}' ist kein PDF-Page-Object.", page.page_id))?;
+        page_object.set("Parent", pages_root_id);
+        kids.push(lopdf::Object::Reference(page_id));
+        manifest_pages.push(StudioDocumentProofManifestPage {
+            index: page.index,
+            page_id: page.page_id.clone(),
+            title: page.title.clone(),
+            sha256: source_sha256,
+            width_pt,
+            height_pt,
+            status: "validated".into(),
+            content_stream_hashes: content_hashes,
+        });
+    }
+
+    document.objects.insert(
+        pages_root_id,
+        lopdf::Object::Dictionary(lopdf::dictionary! {
+            "Type" => "Pages",
+            "Kids" => kids,
+            "Count" => pages.len() as i64
+        }),
+    );
+    document.objects.insert(
+        catalog_id,
+        lopdf::Object::Dictionary(lopdf::dictionary! {
+            "Type" => "Catalog",
+            "Pages" => pages_root_id
+        }),
+    );
+    document.trailer.set("Root", catalog_id);
+
+    let manifest = StudioDocumentProofManifest {
+        schema: "northern-lines.studio.document-proof.v1".into(),
+        page_count: pages.len(),
+        pages: manifest_pages,
+    };
+    let manifest_json = serde_json::to_string_pretty(&manifest)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_ASSEMBLY_FAILED: Proof-Manifest konnte nicht erzeugt werden: {error}"))?;
+    fs::write(manifest_path, manifest_json)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Proof-Manifest konnte nicht geschrieben werden: {error}"))?;
+    document
+        .save(output_path)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_WRITE_FAILED: Travelbook-Proof konnte nicht geschrieben werden: {error}"))?;
+    Ok(manifest)
+}
+
+fn validate_document_pdf_output(
+    output_path: &Path,
+    manifest: &StudioDocumentProofManifest,
+) -> Result<(), String> {
+    if !output_path.exists() {
+        return Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Travelbook-Proof wurde nicht geschrieben.".into());
+    }
+    validate_pdf_a5_page_boxes(output_path)
+        .map_err(|error| error.replace("PDF_PROOF_PAGE_SIZE_INVALID", "PDF_DOCUMENT_PROOF_VALIDATION_FAILED"))?;
+    let document = lopdf::Document::load(output_path)
+        .map_err(|error| format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Travelbook-Proof konnte nicht gelesen werden: {error}"))?;
+    let pages = document.get_pages();
+    if pages.len() != manifest.page_count {
+        return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Travelbook-Proof enthält {} statt {} Seiten.", pages.len(), manifest.page_count));
+    }
+    if manifest.pages.len() != manifest.page_count {
+        return Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Proof-Manifest passt nicht zur Seitenzahl.".into());
+    }
+    let mut seen = HashSet::new();
+    for (position, (page_id, manifest_page)) in pages.values().zip(manifest.pages.iter()).enumerate() {
+        if manifest_page.index != position + 1 {
+            return Err("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Proof-Manifest ist nicht fortlaufend.".into());
+        }
+        if !seen.insert(manifest_page.page_id.clone()) {
+            return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seite '{}' ist doppelt im Proof.", manifest_page.page_id));
+        }
+        let hashes = page_content_stream_hashes(&document, *page_id)?;
+        if hashes != manifest_page.content_stream_hashes {
+            return Err(format!("PDF_DOCUMENT_PROOF_VALIDATION_FAILED: Seiteninhalt '{}' stimmt nach Assembly nicht überein.", manifest_page.page_id));
+        }
+    }
+    Ok(())
+}
+
 #[cfg(target_os = "macos")]
 mod platform_pdf {
     use super::*;
@@ -1869,6 +2252,9 @@ pub fn run() {
             remove_destination_image,
             read_image_preview,
             create_studio_pdf_proof,
+            prepare_studio_document_pdf_proof,
+            assemble_studio_document_pdf_proof,
+            cleanup_studio_document_pdf_proof,
             take_pending_open_path
         ])
         .build(tauri::generate_context!())
@@ -2722,6 +3108,49 @@ mod tests {
             .collect()
     }
 
+    fn write_valid_staged_pdf(staging: &Path, index: usize, content: &[u8]) -> PathBuf {
+        let path = staging.join(format!("{index:04}.pdf"));
+        write_test_pdf_with_content(
+            &path,
+            pdf_box(419, 595),
+            Some(pdf_box(419, 595)),
+            None,
+            vec![content.to_vec()],
+        );
+        normalize_pdf_a5_page_boxes(&path).expect("normalize staged proof");
+        validate_pdf_a5_page_boxes(&path).expect("valid staged proof");
+        path
+    }
+
+    fn document_page_request(
+        staging: &Path,
+        index: usize,
+        page_id: &str,
+    ) -> StudioDocumentProofPageRequest {
+        StudioDocumentProofPageRequest {
+            index,
+            page_id: page_id.into(),
+            title: page_id.into(),
+            staged_path: staging.join(format!("{index:04}.pdf")).to_string_lossy().into_owned(),
+        }
+    }
+
+    fn document_proof_request(
+        output_path: &Path,
+        staging: &Path,
+        page_ids: &[&str],
+    ) -> StudioDocumentProofRequest {
+        StudioDocumentProofRequest {
+            output_path: output_path.to_string_lossy().into_owned(),
+            staging_path: staging.to_string_lossy().into_owned(),
+            pages: page_ids
+                .iter()
+                .enumerate()
+                .map(|(position, page_id)| document_page_request(staging, position + 1, page_id))
+                .collect(),
+        }
+    }
+
     #[test]
     fn pdf_proof_normalizes_webkit_integer_page_boxes_to_exact_a5_metadata() {
         let temp = tempfile::tempdir().expect("tempdir");
@@ -2828,6 +3257,133 @@ mod tests {
         fs::write(&output, b"not a pdf").expect("invalid pdf");
 
         assert!(validate_pdf_a5_page_boxes(&output).is_err());
+    }
+
+    #[test]
+    fn document_proof_assembles_one_page_document() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-one");
+        fs::create_dir(&staging).expect("staging");
+        write_valid_staged_pdf(&staging, 1, b"page one");
+        let output = temp.path().join("travelbook.pdf");
+
+        let result = assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["page-a"],
+        ))
+        .expect("assemble");
+
+        assert_eq!(result.page_count, 1);
+        validate_pdf_a5_page_boxes(&output).expect("final exact A5");
+        let document = lopdf::Document::load(&output).expect("final pdf");
+        assert_eq!(document.get_pages().len(), 1);
+    }
+
+    #[test]
+    fn document_proof_preserves_multi_page_order_and_content_streams() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-order");
+        fs::create_dir(&staging).expect("staging");
+        let first = write_valid_staged_pdf(&staging, 1, b"content A");
+        let second = write_valid_staged_pdf(&staging, 2, b"content B");
+        let third = write_valid_staged_pdf(&staging, 3, b"content C");
+        let expected_hashes = [first, second, third]
+            .iter()
+            .map(|path| {
+                let document = lopdf::Document::load(path).expect("source pdf");
+                let page_id = *document.get_pages().values().next().expect("source page");
+                page_content_stream_hashes(&document, page_id).expect("source hashes")
+            })
+            .collect::<Vec<_>>();
+        let output = temp.path().join("travelbook.pdf");
+
+        assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["a", "b", "c"],
+        ))
+        .expect("assemble");
+
+        let document = lopdf::Document::load(&output).expect("final pdf");
+        let actual_hashes = document
+            .get_pages()
+            .values()
+            .map(|page_id| page_content_stream_hashes(&document, *page_id).expect("final hashes"))
+            .collect::<Vec<_>>();
+        assert_eq!(actual_hashes, expected_hashes);
+    }
+
+    #[test]
+    fn document_proof_supports_variable_page_count_without_fixed_assumption() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-variable");
+        fs::create_dir(&staging).expect("staging");
+        for index in 1..=5 {
+            write_valid_staged_pdf(&staging, index, format!("content {index}").as_bytes());
+        }
+        let output = temp.path().join("travelbook.pdf");
+
+        let result = assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["a", "b", "c", "d", "e"],
+        ))
+        .expect("assemble");
+
+        assert_eq!(result.page_count, 5);
+        let document = lopdf::Document::load(&output).expect("final pdf");
+        assert_eq!(document.get_pages().len(), 5);
+    }
+
+    #[test]
+    fn document_proof_page_failure_fails_whole_document_without_final_output() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-fail");
+        fs::create_dir(&staging).expect("staging");
+        write_valid_staged_pdf(&staging, 1, b"content A");
+        write_valid_staged_pdf(&staging, 2, b"content B");
+        write_test_pdf(
+            &staging.join("0003.pdf"),
+            pdf_box(595, 842),
+            Some(pdf_box(595, 842)),
+        );
+        let output = temp.path().join("travelbook.pdf");
+
+        let result = assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["a", "b", "c"],
+        ));
+
+        assert!(result.expect_err("invalid page fails").starts_with("PDF_DOCUMENT_PROOF_PAGE_FAILED"));
+        assert!(!output.exists());
+    }
+
+    #[test]
+    fn document_proof_manifest_matches_final_document() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let staging = temp.path().join("document-proof-manifest");
+        fs::create_dir(&staging).expect("staging");
+        write_valid_staged_pdf(&staging, 1, b"content A");
+        write_valid_staged_pdf(&staging, 2, b"content B");
+        let output = temp.path().join("travelbook.pdf");
+
+        assemble_studio_document_pdf_proof(document_proof_request(
+            &output,
+            &staging,
+            &["a", "b"],
+        ))
+        .expect("assemble");
+
+        let manifest: StudioDocumentProofManifest = serde_json::from_slice(
+            &fs::read(staging.join("manifest.json")).expect("manifest"),
+        )
+        .expect("manifest json");
+        assert_eq!(manifest.schema, "northern-lines.studio.document-proof.v1");
+        assert_eq!(manifest.page_count, 2);
+        assert_eq!(manifest.pages.iter().map(|page| page.page_id.as_str()).collect::<Vec<_>>(), vec!["a", "b"]);
+        validate_document_pdf_output(&output, &manifest).expect("manifest matches final");
     }
 
     #[test]
