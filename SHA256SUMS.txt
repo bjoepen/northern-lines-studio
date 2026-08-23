@@ -1,6 +1,0 @@
-71af178da978a3aa78afe4de5d7936d17a210f29ae45754044ffc4504df019c1  ./APPLY-DROPIN.md
-ca703d14e2d3ad150459bf24dbdf8b05f5390745a8bbe1b913976beffc8db1db  ./docs/STUDIO-PDF-PROOF-POC-001.md
-1796458a1e4ad7140ef2c41c65aee065bf1f08e1548e5e190302c201fa2de4ba  ./docs/STUDIO-PDF-PROOF-POC-001A-EVIDENCE.md
-d2a26ab67ba17d7899c801cb1da97f52d891d40f0f3ff0a53455b6ac6512cc67  ./scripts/check-studio-pdf-proof-poc-001-consistency.mjs
-2689fb12b95f30583a379176c76eb77c322ecc046e2e6e58cdf742f885cbe816  ./src-tauri/capabilities/default.json
-ebc43d085f8ad99373d51e144f27b8450b94c15865158af62c1e9f7018baf394  ./src/styles/pdf-proof.css
