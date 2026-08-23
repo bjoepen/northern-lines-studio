@@ -3,6 +3,8 @@
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
+  import type { BackgroundThrottlingPolicy } from '@tauri-apps/api/window';
+  import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
   import { open, save } from '@tauri-apps/plugin-dialog';
   import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestEntry, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
@@ -46,16 +48,37 @@
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
   import {
+    backgroundProofPoc001BuildHostUrl,
+    backgroundProofPoc001EventNames,
+    backgroundProofPoc001BackgroundStandardOutputPath,
+    backgroundProofPoc001HiddenHostViewportForMain,
+    backgroundProofPoc001HostRequestIsComplete,
+    backgroundProofPoc001LifecycleTimeoutError,
+    backgroundProofPoc001MainWindowInvariant,
+    backgroundProofPoc001OutputDirForFinalOutputPath,
+    backgroundProofPoc001OutputPath,
+    backgroundProofPoc001ParseHostParams,
+    backgroundProofPoc001SafeTraceValue,
     assembleStudioDocumentPdfProof,
+    backgroundProofPoc001ReferencePages,
     cleanupStudioDocumentPdfProof,
     createStudioPdfProof,
     evaluateRenderedStudioPageReadiness,
     exportStudioPdfA2b,
     incompleteStudioPageImages,
+    mainRendererExportCoverBuildUrl,
+    mainRendererExportCoverEventName,
+    mainRendererExportCoverParseParams,
     prepareStudioDocumentPdfProof,
     restoredDocumentProofPage,
     stagedDocumentProofPagePath,
+    studioPageFadeDurationMs,
     studioDocumentProofPages,
+    type BackgroundProofPoc001LifecycleEvent,
+    type BackgroundProofPoc001LifecycleStep,
+    type MainRendererExportCoverProgress,
+    type BackgroundProofPoc001OutputEvidence,
+    type BackgroundProofPoc001Result,
     type StudioDocumentProofPage,
     type StudioPdfProofReadinessErrorCode,
     type StudioPdfProofStatus
@@ -78,6 +101,8 @@
   let errorMessage = '';
   let isLoading = false;
   let pdfProofStatus: StudioPdfProofStatus = 'idle';
+  let backgroundProofPocStatus: 'idle' | 'running' | 'saved' | 'error' = 'idle';
+  let backgroundProofPocMessage = '';
   let worldChangeState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let previewStage: HTMLDivElement | null = null;
   let previewScale = 1;
@@ -86,6 +111,7 @@
   let authoringStatus: AuthoringStatus = 'empty';
   let authoringSaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let projectMenuOpen = false;
+  let outputMenuOpen = false;
   let pendingAction: PendingAction | null = null;
   let journeyBeginningOpen = false;
   let newJourneyTitle = '';
@@ -137,6 +163,23 @@
   let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorResizing = false;
   const journeyWorlds = availableEditorialWorlds();
+  const backgroundProofPocHostParams = backgroundProofPoc001ParseHostParams(window.location.search);
+  const isBackgroundProofPocHost = backgroundProofPocHostParams.isHost;
+  const backgroundProofPocProjectPath = backgroundProofPocHostParams.projectPath;
+  const backgroundProofPocOutputDir = backgroundProofPocHostParams.outputDir;
+  const backgroundProofPocFinalOutputPath = backgroundProofPocHostParams.finalOutputPath;
+  const backgroundProofPocJobId = backgroundProofPocHostParams.jobId;
+  const backgroundProofPocReturnTo = backgroundProofPocHostParams.returnTo;
+  const backgroundProofPocMode = backgroundProofPocHostParams.mode;
+  const backgroundProofPocNoThrottling = 'disabled' as BackgroundThrottlingPolicy;
+  const mainRendererExportCoverParams = mainRendererExportCoverParseParams(window.location.search);
+  const isMainRendererExportCoverHost = mainRendererExportCoverParams.isCover;
+  const mainRendererExportCoverJobId = mainRendererExportCoverParams.jobId;
+  let mainRendererExportCoverProgress: MainRendererExportCoverProgress = {
+    currentPage: 0,
+    pageCount: mainRendererExportCoverParams.pageCount
+  };
+  const BACKGROUND_PROOF_POC_001_WATCHDOG_MS = 45_000;
 
   function displayPageTitle(page: StudioPage | null | undefined): string {
     if (!page) return 'Keine Seite ausgewählt';
@@ -160,14 +203,107 @@
     return renderedStudioPages().find((page) => page.dataset.studioPageId === pageId) ?? null;
   }
 
-  async function waitForBrowserLayoutFrame() {
-    if (typeof requestAnimationFrame !== 'function') return;
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  function backgroundProofPoc001Number(value: number | undefined): string {
+    const raw = value ?? Number.NaN;
+    return Number.isFinite(raw) ? String(Math.round(raw * 1000) / 1000) : 'unavailable';
   }
 
-  async function waitForStudioDomCommit() {
+  function backgroundProofPoc001ViewportTraceDetail(label: string, requested?: { width: number; height: number }): string {
+    const visualViewport = window.visualViewport;
+    const documentElement = document.documentElement;
+    return [
+      `label=${backgroundProofPoc001SafeTraceValue(label)}`,
+      `inner=${window.innerWidth}x${window.innerHeight}`,
+      `client=${documentElement.clientWidth}x${documentElement.clientHeight}`,
+      `dpr=${backgroundProofPoc001Number(window.devicePixelRatio)}`,
+      `screen=${window.screen.width}x${window.screen.height}`,
+      `avail=${window.screen.availWidth}x${window.screen.availHeight}`,
+      `visual=${visualViewport ? `${backgroundProofPoc001Number(visualViewport.width)}x${backgroundProofPoc001Number(visualViewport.height)}@${backgroundProofPoc001Number(visualViewport.scale)}` : 'unavailable'}`,
+      `visibility=${document.visibilityState}`,
+      requested ? `requested=${requested.width}x${requested.height}` : ''
+    ].filter(Boolean).join(' ');
+  }
+
+  function backgroundProofPoc001ImageTraceDetail(label: string, selector: string): string | null {
+    const image = document.querySelector<HTMLImageElement>(selector);
+    if (!image) return null;
+    const rect = image.getBoundingClientRect();
+    const style = window.getComputedStyle(image);
+    return [
+      label,
+      `selector=${selector}`,
+      `src=${backgroundProofPoc001SafeTraceValue(image.getAttribute('src') ?? image.src, 72)}`,
+      `currentSrc=${backgroundProofPoc001SafeTraceValue(image.currentSrc || 'none', 72)}`,
+      `natural=${image.naturalWidth}x${image.naturalHeight}`,
+      `client=${image.clientWidth}x${image.clientHeight}`,
+      `rect=${backgroundProofPoc001Number(rect.width)}x${backgroundProofPoc001Number(rect.height)}`,
+      `css=${style.width}x${style.height}`,
+      `objectFit=${style.objectFit}`,
+      `imageRendering=${style.imageRendering}`,
+      `complete=${image.complete}`,
+      `srcset=${image.getAttribute('srcset') ? 'present' : 'none'}`,
+      `sizes=${image.getAttribute('sizes') ? 'present' : 'none'}`
+    ].join(' ');
+  }
+
+  function backgroundProofPoc001AssetTraceDetail(): string {
+    const entries = [
+      backgroundProofPoc001ImageTraceDetail('companion', '.page-companion'),
+      backgroundProofPoc001ImageTraceDetail('destinationHero', '.destination-hero-image'),
+      backgroundProofPoc001ImageTraceDetail('curatedHero', '.curated-world-hero'),
+      backgroundProofPoc001ImageTraceDetail('notesAccent', '.curated-world-accent')
+    ].filter((entry): entry is string => Boolean(entry));
+    return entries.length > 0 ? entries.join(' | ') : 'images=none';
+  }
+
+  async function waitForBrowserLayoutFrame(options: {
+    allowHiddenHostFallback?: boolean;
+    onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
+    layoutFrameStartStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameFallbackStep?: BackgroundProofPoc001LifecycleStep;
+  } = {}) {
+    if (typeof requestAnimationFrame !== 'function') return;
+    const startStep = options.layoutFrameStartStep ?? 'HOST_LAYOUT_FRAME_START';
+    const completeStep = options.layoutFrameCompleteStep ?? 'HOST_LAYOUT_FRAME_COMPLETE';
+    const fallbackStep = options.layoutFrameFallbackStep ?? 'HOST_LAYOUT_FRAME_FALLBACK';
+    await options.onTrace?.(startStep, `visibility=${document.visibilityState}`);
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        void options.onTrace?.(completeStep);
+        resolve();
+      };
+      requestAnimationFrame(() => finish());
+      if (options.allowHiddenHostFallback && document.visibilityState === 'hidden') {
+        const startWatchdog = window.setTimeout.bind(window);
+        startWatchdog(() => {
+          if (settled) return;
+          settled = true;
+          void options.onTrace?.(fallbackStep, 'requestAnimationFrame did not fire while Hidden Host was hidden');
+          resolve();
+        }, 250);
+      }
+    });
+  }
+
+  async function waitForStudioDomCommit(options: {
+    allowHiddenHostFallback?: boolean;
+    onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
+    domCommitStartStep?: BackgroundProofPoc001LifecycleStep;
+    domCommitCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameStartStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameFallbackStep?: BackgroundProofPoc001LifecycleStep;
+  } = {}) {
+    await options.onTrace?.(options.domCommitStartStep ?? 'HOST_DOM_COMMIT_START');
     await tick();
-    await waitForBrowserLayoutFrame();
+    if (options.domCommitCompleteStep) {
+      await options.onTrace?.(options.domCommitCompleteStep);
+    }
+    await waitForBrowserLayoutFrame(options);
   }
 
   function runningPageAnimationCount(page: HTMLElement): number {
@@ -217,14 +353,22 @@
       code?: StudioPdfProofReadinessErrorCode;
       pageTitle?: string;
       expectProofMode?: boolean;
+      allowHiddenHostFallback?: boolean;
+      onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
     } = {}
   ) {
-    await waitForStudioDomCommit();
+    await waitForStudioDomCommit({
+      allowHiddenHostFallback: options.allowHiddenHostFallback,
+      onTrace: options.onTrace
+    });
     let page = assertResolvedStudioPage(pageId, options);
     const fontsReady = document.fonts?.ready;
     if (fontsReady) {
       await fontsReady;
-      await waitForStudioDomCommit();
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: options.allowHiddenHostFallback,
+        onTrace: options.onTrace
+      });
       page = assertResolvedStudioPage(pageId, options);
     }
     const images = Array.from(page.querySelectorAll<HTMLImageElement>('img'));
@@ -238,7 +382,10 @@
         image.addEventListener('load', () => resolve(), { once: true });
         image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
       })));
-      await waitForStudioDomCommit();
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: options.allowHiddenHostFallback,
+        onTrace: options.onTrace
+      });
       page = assertResolvedStudioPage(pageId, options);
       if (incompleteStudioPageImages(Array.from(page.querySelectorAll<HTMLImageElement>('img'))).length > 0) {
         throw new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.');
@@ -309,6 +456,9 @@
     const projectTitle = project.title;
     let stagingPath = '';
     let temporaryStandardPath = '';
+    let exportCover: WebviewWindow | null = null;
+    const exportCoverJobId = `plan-b-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
+    const exportCoverProgressEvent = mainRendererExportCoverEventName(exportCoverJobId);
     pdfProofStatus = 'preparing';
     errorMessage = '';
     await tick();
@@ -326,12 +476,48 @@
         return;
       }
 
+      if (profile === 'pdfa2b') {
+        const coverUrl = mainRendererExportCoverBuildUrl(window.location.href, {
+          jobId: exportCoverJobId,
+          pageCount: pages.length
+        });
+        const coverWidth = Math.max(Math.ceil(window.outerWidth || window.innerWidth), 980);
+        const coverHeight = Math.max(Math.ceil(window.outerHeight || window.innerHeight), 700);
+        exportCover = new WebviewWindow(`main-renderer-export-cover-${exportCoverJobId}`, {
+          url: coverUrl,
+          title: 'Northern Lines Studio · Travelbook Export',
+          width: coverWidth,
+          height: coverHeight,
+          x: Number.isFinite(window.screenX) ? Math.round(window.screenX) : undefined,
+          y: Number.isFinite(window.screenY) ? Math.round(window.screenY) : undefined,
+          resizable: false,
+          decorations: false,
+          visible: true,
+          focus: true,
+          skipTaskbar: true,
+          alwaysOnTop: true,
+          parent: getCurrentWebviewWindow().label,
+          backgroundThrottling: backgroundProofPocNoThrottling
+        });
+        await new Promise<void>((resolve, reject) => {
+          void exportCover?.once('tauri://created', () => resolve());
+          void exportCover?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+        });
+      }
+
       const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
       stagingPath = staging.stagingPath;
       const stagedPages: StudioDocumentProofPage[] = [];
 
       pdfProofStatus = 'rendering';
       for (const [position, page] of pages.entries()) {
+        const index = position + 1;
+        if (exportCover) {
+          await getCurrentWebviewWindow().emitTo(exportCover.label, exportCoverProgressEvent, {
+            currentPage: index,
+            pageCount: pages.length
+          } satisfies MainRendererExportCoverProgress);
+        }
         selectPageNow(page);
         await waitForResolvedStudioPage(page.id, {
           code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
@@ -343,7 +529,6 @@
           pageTitle: displayPageTitle(page),
           expectProofMode: true
         });
-        const index = position + 1;
         const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
         await createStudioPdfProof({
           pageId: page.id,
@@ -384,6 +569,13 @@
         const originalPage = restoredDocumentProofPage(studioDocumentProofPages(project), originalPageId);
         if (originalPage) selectPageNow(originalPage);
       }
+      if (exportCover) {
+        try {
+          await exportCover.close();
+        } catch {
+          // The export cover may already be gone after a window lifecycle failure.
+        }
+      }
       if (stagingPath) {
         try {
           await cleanupStudioDocumentPdfProof(stagingPath);
@@ -396,6 +588,724 @@
 
   async function createPdfProofForTravelbook() {
     await createTravelbookPdf('standard');
+  }
+
+  async function createFinalTravelbookPdf() {
+    outputMenuOpen = false;
+    await createTravelbookPdf('pdfa2b');
+  }
+
+  async function createDevelopmentPdf() {
+    outputMenuOpen = false;
+    await createPdfProofForTravelbook();
+  }
+
+  async function createBackgroundProofPoc001(mode: 'reference-pages' | 'document-pdfa2b' = 'reference-pages') {
+    if (!project?.projectPath) {
+      errorMessage = 'BACKGROUND_PROOF_POC_001_NO_PROJECT: Es ist kein gespeichertes Travelbook geöffnet.';
+      return;
+    }
+    if (hasUnsavedChanges) {
+      errorMessage = 'BACKGROUND_PROOF_POC_001_UNSAVED_CHANGES: Bitte sichere die aktuelle Bearbeitung, bevor der Background Proof PoC läuft.';
+      return;
+    }
+
+    let outputDir = '';
+    let finalOutputPath = '';
+    if (mode === 'document-pdfa2b') {
+      const selectedOutputPath = await save({
+        title: 'Travelbook als PDF exportieren',
+        defaultPath: `${proofFileTitle(project.title)}.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      });
+      if (!selectedOutputPath) return;
+      finalOutputPath = selectedOutputPath;
+      outputDir = backgroundProofPoc001OutputDirForFinalOutputPath(finalOutputPath);
+      if (!outputDir) {
+        errorMessage = 'BACKGROUND_PROOF_POC_001_INVALID_OUTPUT: Der Zielpfad muss in einem Ordner liegen.';
+        return;
+      }
+    } else {
+      const selectedOutputDir = await open({
+        directory: true,
+        multiple: false,
+        title: 'Zielordner für Background Proof PoC 001'
+      });
+      if (!selectedOutputDir || Array.isArray(selectedOutputDir)) return;
+      outputDir = selectedOutputDir;
+    }
+
+    const currentWebview = getCurrentWebviewWindow();
+    const mainLabel = currentWebview.label;
+    const jobId = `${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
+    const events = backgroundProofPoc001EventNames(jobId);
+    const beforePageId = selectedPage?.id ?? null;
+    let duringPageId: string | null = null;
+    let lastLifecycleStep: BackgroundProofPoc001LifecycleStep | null = null;
+    let lastLifecycleComponent = 'main';
+    let lastLifecycleOperation = 'start';
+    let hiddenHost: WebviewWindow | null = null;
+    let watchdogTimer: number | null = null;
+    const unlisteners: Array<() => void> = [];
+    let resolveResult: (result: BackgroundProofPoc001Result) => void = () => {};
+    const resultPromise = new Promise<BackgroundProofPoc001Result>((resolve) => {
+      resolveResult = resolve;
+    });
+
+    const recordLifecycle = (
+      step: BackgroundProofPoc001LifecycleStep,
+      source: 'main' | 'hidden-host' = 'main',
+      detail = '',
+      updateStatusMessage = true
+    ) => {
+      lastLifecycleStep = step;
+      lastLifecycleComponent = source;
+      lastLifecycleOperation = detail;
+      console.info('[Background Proof PoC 001]', { jobId, step, source, detail });
+      if (!updateStatusMessage) return;
+      backgroundProofPocMessage = [
+        `Main selectedPage before: ${beforePageId ?? 'none'}`,
+        `Lifecycle: ${step}`,
+        detail
+      ].filter(Boolean).join(' · ');
+    };
+
+    backgroundProofPocStatus = 'running';
+    backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'}`;
+    errorMessage = '';
+
+    try {
+      recordLifecycle('MAIN_POC_START', 'main', `main=${mainLabel}`);
+      const hostUrl = backgroundProofPoc001BuildHostUrl(window.location.href, {
+        projectPath: project.projectPath,
+        outputDir,
+        finalOutputPath,
+        jobId,
+        returnTo: mainLabel,
+        mode
+      });
+      const hiddenHostViewport = backgroundProofPoc001HiddenHostViewportForMain({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      recordLifecycle('MAIN_RENDER_ENVIRONMENT', 'main', backgroundProofPoc001ViewportTraceDetail(mainLabel, hiddenHostViewport));
+      recordLifecycle('MAIN_ASSET_EVIDENCE', 'main', backgroundProofPoc001AssetTraceDetail());
+      if (mode === 'document-pdfa2b') {
+        const backgroundStandardPath = backgroundProofPoc001BackgroundStandardOutputPath(finalOutputPath);
+        recordLifecycle('FULL_DOCUMENT_HOST_REQUEST', 'main', [
+          `mode=${mode}`,
+          `projectPath=${project.projectPath ? 'present' : 'missing'}`,
+          `outputDir=${outputDir ? 'present' : 'missing'}`,
+          `jobId=${jobId ? 'present' : 'missing'}`,
+          `returnTo=${mainLabel}`,
+          `finalOutputPath=${finalOutputPath ? 'present' : 'missing'}`,
+          `backgroundStandardPath=${backgroundStandardPath ? 'present' : 'missing'}`
+        ].join(' '));
+        recordLifecycle('FULL_DOCUMENT_HOST_REQUEST_VALID', 'main', `mode=${mode} outputDir=derived`);
+      }
+
+      const unlistenResult = await listen<BackgroundProofPoc001Result>(events.result, (event) => {
+        recordLifecycle('MAIN_RESULT_RECEIVED');
+        resolveResult(event.payload);
+      });
+      unlisteners.push(unlistenResult);
+
+      const unlistenLifecycle = await listen<BackgroundProofPoc001LifecycleEvent>(events.lifecycle, (event) => {
+        lastLifecycleStep = event.payload.step;
+        lastLifecycleComponent = event.payload.component ?? event.payload.source;
+        lastLifecycleOperation = event.payload.operation ?? event.payload.detail ?? '';
+        console.info('[Background Proof PoC 001]', event.payload);
+        backgroundProofPocMessage = [
+          `Main selectedPage before: ${beforePageId ?? 'none'}`,
+          `Lifecycle: ${event.payload.step}`,
+          event.payload.referenceTitle ? `Hidden: ${event.payload.referenceTitle}` : '',
+          event.payload.detail ?? ''
+        ].filter(Boolean).join(' · ');
+      });
+      unlisteners.push(unlistenLifecycle);
+
+      const unlistenProgress = await listen<{ referenceTitle: string }>(events.progress, (event) => {
+        duringPageId = selectedPage?.id ?? null;
+        backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'} · during: ${duringPageId ?? 'none'} · Hidden: ${event.payload.referenceTitle}`;
+      });
+      unlisteners.push(unlistenProgress);
+
+      recordLifecycle('MAIN_LISTENERS_READY', 'main', `result=${events.result}`);
+      recordLifecycle('HOST_CREATE_REQUEST', 'main', `url=${backgroundProofPoc001SafeTraceValue(hostUrl)} target=${mainLabel}`);
+      hiddenHost = new WebviewWindow(`background-proof-poc-001-${jobId}`, {
+        url: hostUrl,
+        title: 'Northern Lines Studio Background Proof PoC 001',
+        width: hiddenHostViewport.width,
+        height: hiddenHostViewport.height,
+        resizable: false,
+        decorations: false,
+        visible: false,
+        focus: false,
+        skipTaskbar: true,
+        backgroundThrottling: backgroundProofPocNoThrottling
+      });
+      await new Promise<void>((resolve, reject) => {
+        void hiddenHost?.once('tauri://created', () => resolve());
+        void hiddenHost?.once<string>('tauri://error', (event) => {
+          recordLifecycle('HOST_LOAD_FAILED', 'main', String(event.payload));
+          reject(new Error(String(event.payload)));
+        });
+      });
+      recordLifecycle('HOST_CREATED', 'main', hiddenHost.label);
+
+      const watchdogPromise = new Promise<never>((_, reject) => {
+        const startWatchdog = window.setTimeout.bind(window);
+        watchdogTimer = startWatchdog(() => {
+          reject(new Error(backgroundProofPoc001LifecycleTimeoutError(
+            lastLifecycleStep,
+            BACKGROUND_PROOF_POC_001_WATCHDOG_MS,
+            lastLifecycleComponent,
+            lastLifecycleOperation
+          )));
+        }, BACKGROUND_PROOF_POC_001_WATCHDOG_MS);
+      });
+      const result = await Promise.race([resultPromise, watchdogPromise]);
+      const afterPageId = selectedPage?.id ?? null;
+      const invariant = backgroundProofPoc001MainWindowInvariant(beforePageId, duringPageId, afterPageId);
+      if (!result.ok) {
+        throw new Error(result.error ?? 'BACKGROUND_PROOF_POC_001_FAILED: Hidden Host meldete keinen Erfolg.');
+      }
+      if (!invariant) {
+        throw new Error(`BACKGROUND_PROOF_POC_001_MAIN_INVARIANT_FAILED: before=${beforePageId ?? 'none'} during=${duringPageId ?? 'none'} after=${afterPageId ?? 'none'}`);
+      }
+      backgroundProofPocStatus = 'saved';
+      backgroundProofPocMessage = [
+        `Main selectedPage before/during/after: ${beforePageId ?? 'none'}`,
+        result.pageCount ? `pages=${result.pageCount}` : '',
+        result.standardOutputPath ? `standard=${result.standardOutputPath}` : '',
+        result.finalOutputPath ? `final=${result.finalOutputPath}` : '',
+        ...(result.outputs ?? [])
+      ].filter(Boolean).join(' · ');
+    } catch (error) {
+      backgroundProofPocStatus = 'error';
+      errorMessage = String(error);
+    } finally {
+      if (watchdogTimer !== null) window.clearTimeout(watchdogTimer);
+      for (const unlisten of unlisteners) unlisten();
+      if (hiddenHost) {
+        try {
+          recordLifecycle('HOST_CLOSE_REQUEST', 'main', hiddenHost.label, backgroundProofPocStatus === 'running');
+          await hiddenHost.close();
+          recordLifecycle('HOST_CLOSED', 'main', hiddenHost.label, false);
+          recordLifecycle('COMPLETE', 'main', hiddenHost.label, false);
+        } catch {
+          // The Hidden Host may already be gone after a failed PoC run.
+        }
+      }
+    }
+  }
+
+  async function runBackgroundProofPoc001Host() {
+    const currentWebview = getCurrentWebviewWindow();
+    const events = backgroundProofPoc001EventNames(backgroundProofPocJobId);
+    const outputs: string[] = [];
+    let lastStep: BackgroundProofPoc001LifecycleStep | null = null;
+
+    const emitLifecycle = async (
+      step: BackgroundProofPoc001LifecycleStep,
+      payload: Partial<BackgroundProofPoc001LifecycleEvent> = {}
+    ) => {
+      lastStep = step;
+      const event: BackgroundProofPoc001LifecycleEvent = {
+        jobId: backgroundProofPocJobId,
+        step,
+        source: 'hidden-host',
+        component: 'hidden-host',
+        timestampMs: Date.now(),
+        ...payload
+      };
+      console.info('[Background Proof PoC 001]', event);
+      await currentWebview.emitTo(backgroundProofPocReturnTo, events.lifecycle, event);
+    };
+
+    try {
+      await emitLifecycle('HOST_JS_BOOTSTRAP_START', {
+        operation: 'module-loaded',
+        detail: `label=${currentWebview.label}`
+      });
+      await emitLifecycle('HOST_LOCATION_CAPTURED', {
+        operation: 'window.location',
+        detail: [
+          `href=${backgroundProofPoc001SafeTraceValue(window.location.href)}`,
+          `pathname=${backgroundProofPoc001SafeTraceValue(window.location.pathname)}`,
+          `search=${backgroundProofPoc001SafeTraceValue(window.location.search)}`
+        ].join(' ')
+      });
+      await emitLifecycle('HOST_MODE_PARSED', {
+        operation: 'url-params',
+        detail: [
+          `nlsBackgroundProofPoc=001`,
+          `mode=${backgroundProofPocMode}`,
+          `projectPath=${backgroundProofPoc001SafeTraceValue(backgroundProofPocProjectPath)}`,
+          `outputDir=${backgroundProofPoc001SafeTraceValue(backgroundProofPocOutputDir)}`,
+          `finalOutputPath=${backgroundProofPocFinalOutputPath ? 'present' : 'missing'}`,
+          `backgroundStandardPath=${backgroundProofPocMode === 'document-pdfa2b' && backgroundProofPocFinalOutputPath ? 'derived' : 'missing'}`,
+          `jobId=${backgroundProofPoc001SafeTraceValue(backgroundProofPocJobId)}`,
+          `returnTo=${backgroundProofPoc001SafeTraceValue(backgroundProofPocReturnTo)}`
+        ].join(' ')
+      });
+      await emitLifecycle('HOST_RENDER_ENVIRONMENT', {
+        operation: 'hidden-host-viewport',
+        detail: backgroundProofPoc001ViewportTraceDetail(currentWebview.label)
+      });
+      if (!backgroundProofPoc001HostRequestIsComplete(backgroundProofPocHostParams)) {
+        throw new Error('BACKGROUND_PROOF_POC_001_INVALID_HOST_REQUEST: Hidden Host wurde ohne vollständige PoC-Parameter gestartet.');
+      }
+      await emitLifecycle('HOST_SVELTE_MOUNT_START', {
+        operation: 'onMount'
+      });
+      await emitLifecycle('HOST_SVELTE_MOUNTED', {
+        operation: 'onMount',
+        detail: `app=${document.getElementById('app') ? 'present' : 'missing'}`
+      });
+      await emitLifecycle('HOST_LOAD_STARTED', {
+        operation: 'bootstrap',
+        detail: `returnTo=${backgroundProofPocReturnTo}`
+      });
+      await emitLifecycle('HOST_LOAD_FINISHED', {
+        operation: 'bootstrap-handshake'
+      });
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: true,
+        onTrace: (step, detail) => emitLifecycle(step, {
+          operation: 'hidden-host-dom-commit',
+          detail
+        })
+      });
+      await emitLifecycle('HOST_DOM_READY');
+      await emitLifecycle('PROJECT_LOAD_START', {
+        operation: 'load_nls_project',
+        detail: backgroundProofPoc001SafeTraceValue(backgroundProofPocProjectPath)
+      });
+      await openTravelPath(backgroundProofPocProjectPath);
+      if (!project) {
+        throw new Error('BACKGROUND_PROOF_POC_001_LOAD_FAILED: Hidden Host konnte das gespeicherte Travelbook nicht laden.');
+      }
+      await emitLifecycle('PROJECT_LOADED', {
+        operation: 'load_nls_project',
+        detail: `pages=${project.pageManifest.length} world=${project.editorialWorldId ?? 'none'} path=${backgroundProofPoc001SafeTraceValue(project.projectPath ?? backgroundProofPocProjectPath)}`
+      });
+
+      if (backgroundProofPocMode === 'document-pdfa2b') {
+        if (!backgroundProofPocFinalOutputPath) {
+          throw new Error('BACKGROUND_PROOF_POC_001_INVALID_OUTPUT: Hidden Host wurde ohne finalen PDF-Zielpfad gestartet.');
+        }
+
+        let stagingPath = '';
+        try {
+          await emitLifecycle('DOCUMENT_BACKGROUND_START', {
+            operation: 'background-document',
+            detail: `final=${backgroundProofPoc001SafeTraceValue(backgroundProofPocFinalOutputPath)}`
+          });
+          const pages = studioDocumentProofPages(project);
+          if (pages.length === 0) {
+            throw new Error('PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.');
+          }
+          await emitLifecycle('PAGE_COUNT_RESOLVED', {
+            operation: 'canonical-publication-order',
+            detail: `pages=${pages.length} order=${pages.map((page) => page.id).join(',')}`
+          });
+
+          const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
+          stagingPath = staging.stagingPath;
+          const stagedPages: StudioDocumentProofPage[] = [];
+
+          for (const [position, page] of pages.entries()) {
+            const index = position + 1;
+            const title = displayPageTitle(page);
+            const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
+
+            await emitLifecycle('PAGE_ITERATION_START', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'background-document-loop',
+              detail: `index=${index}/${pages.length} type=${page.type} role=${page.role ?? 'none'} title=${title}`
+            });
+            selectPageNow(page);
+            await emitLifecycle('PAGE_SELECTED', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'background-document-loop',
+              detail: `index=${index}/${pages.length}`
+            });
+            await waitForResolvedStudioPage(page.id, {
+              code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+              pageTitle: title,
+              allowHiddenHostFallback: true,
+              onTrace: (step, detail) => emitLifecycle(step, {
+                pageId: page.id,
+                referenceTitle: title,
+                operation: 'background-document-readiness',
+                detail: [`index=${index}/${pages.length}`, detail].filter(Boolean).join(' ')
+              })
+            });
+            await emitLifecycle('PAGE_READY', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'background-document-readiness',
+              detail: `index=${index}/${pages.length}`
+            });
+            await emitLifecycle('PAGE_ASSET_EVIDENCE', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'background-document-assets',
+              detail: [`index=${index}/${pages.length}`, backgroundProofPoc001AssetTraceDetail()].join(' ')
+            });
+            await currentWebview.emitTo(backgroundProofPocReturnTo, events.progress, {
+              referenceTitle: title,
+              pageId: page.id
+            });
+
+            document.body.classList.add('pdf-proof-rendering');
+            await waitForResolvedStudioPage(page.id, {
+              code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+              pageTitle: title,
+              expectProofMode: true,
+              allowHiddenHostFallback: true,
+              onTrace: (step, detail) => emitLifecycle(step, {
+                pageId: page.id,
+                referenceTitle: title,
+                operation: 'background-document-proof-readiness',
+                detail: [`index=${index}/${pages.length}`, detail].filter(Boolean).join(' ')
+              })
+            });
+            await emitLifecycle('PAGE_PROOF_START', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'createStudioPdfProof',
+              detail: `index=${index}/${pages.length} staged=${backgroundProofPoc001SafeTraceValue(stagedPath)}`
+            });
+            await createStudioPdfProof({
+              pageId: page.id,
+              physicalMedium: 'A5',
+              outputPath: stagedPath
+            });
+            await emitLifecycle('PAGE_PROOF_COMPLETE', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'createStudioPdfProof',
+              detail: `index=${index}/${pages.length}`
+            });
+            const evidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
+              path: stagedPath
+            });
+            if (!evidence.exists || evidence.byteLength <= 0) {
+              throw new Error(`BACKGROUND_PROOF_POC_001_OUTPUT_FILE_MISSING: ${title}`);
+            }
+            stagedPages.push({
+              index,
+              pageId: page.id,
+              title,
+              stagedPath
+            });
+            await emitLifecycle('PAGE_STAGED', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'staged-page',
+              detail: `index=${index}/${pages.length} bytes=${evidence.byteLength}`
+            });
+            document.body.classList.remove('pdf-proof-rendering');
+            await waitForStudioDomCommit({
+              allowHiddenHostFallback: true,
+              domCommitStartStep: 'POST_PROOF_TICK_START',
+              domCommitCompleteStep: 'POST_PROOF_TICK_COMPLETE',
+              layoutFrameStartStep: 'POST_PROOF_LAYOUT_FRAME_START',
+              layoutFrameCompleteStep: 'POST_PROOF_LAYOUT_FRAME_COMPLETE',
+              layoutFrameFallbackStep: 'POST_PROOF_LAYOUT_FRAME_FALLBACK',
+              onTrace: (step, detail) => emitLifecycle(step, {
+                pageId: page.id,
+                referenceTitle: title,
+                operation: 'background-document-post-proof',
+                detail: [`index=${index}/${pages.length}`, detail].filter(Boolean).join(' ')
+              })
+            });
+            await emitLifecycle('PAGE_ITERATION_COMPLETE', {
+              pageId: page.id,
+              referenceTitle: title,
+              operation: 'background-document-loop',
+              detail: `index=${index}/${pages.length}`
+            });
+          }
+
+          const standardOutputPath = backgroundProofPoc001BackgroundStandardOutputPath(backgroundProofPocFinalOutputPath);
+          await emitLifecycle('DOCUMENT_ASSEMBLY_START', {
+            operation: 'assembleStudioDocumentPdfProof',
+            detail: `pages=${stagedPages.length} output=${backgroundProofPoc001SafeTraceValue(standardOutputPath)}`
+          });
+          await assembleStudioDocumentPdfProof({
+            outputPath: standardOutputPath,
+            stagingPath,
+            pages: stagedPages
+          });
+          await emitLifecycle('DOCUMENT_ASSEMBLY_COMPLETE', {
+            operation: 'assembleStudioDocumentPdfProof',
+            detail: `pages=${stagedPages.length}`
+          });
+          const standardEvidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
+            path: standardOutputPath
+          });
+          if (!standardEvidence.exists || standardEvidence.byteLength <= 0) {
+            throw new Error('BACKGROUND_PROOF_POC_001_STANDARD_DOCUMENT_MISSING: Background Standard PDF wurde nicht erzeugt.');
+          }
+          await emitLifecycle('STANDARD_DOCUMENT_READY', {
+            operation: 'output-file-evidence',
+            detail: `bytes=${standardEvidence.byteLength} path=${backgroundProofPoc001SafeTraceValue(standardOutputPath)}`
+          });
+
+          await emitLifecycle('PDFA_POSTPROCESS_START', {
+            operation: 'exportStudioPdfA2b',
+            detail: `source=${backgroundProofPoc001SafeTraceValue(standardOutputPath)} final=${backgroundProofPoc001SafeTraceValue(backgroundProofPocFinalOutputPath)}`
+          });
+          await exportStudioPdfA2b({
+            sourcePath: standardOutputPath,
+            outputPath: backgroundProofPocFinalOutputPath
+          });
+          await emitLifecycle('PDFA_POSTPROCESS_COMPLETE', {
+            operation: 'exportStudioPdfA2b',
+            detail: `profile=PDF/A-2b`
+          });
+          const finalEvidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
+            path: backgroundProofPocFinalOutputPath
+          });
+          if (!finalEvidence.exists || finalEvidence.byteLength <= 0) {
+            throw new Error('BACKGROUND_PROOF_POC_001_FINAL_OUTPUT_MISSING: Finale PDF-Datei wurde nicht erzeugt.');
+          }
+          await emitLifecycle('FINAL_OUTPUT_READY', {
+            operation: 'output-file-evidence',
+            detail: `pages=${stagedPages.length} bytes=${finalEvidence.byteLength} path=${backgroundProofPoc001SafeTraceValue(backgroundProofPocFinalOutputPath)}`
+          });
+          await emitLifecycle('HOST_RESULT_EMIT', {
+            detail: 'success'
+          });
+          await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, {
+            ok: true,
+            outputs: [backgroundProofPocFinalOutputPath],
+            standardOutputPath,
+            finalOutputPath: backgroundProofPocFinalOutputPath,
+            pageCount: stagedPages.length,
+            lastStep
+          });
+          return;
+        } finally {
+          document.body.classList.remove('pdf-proof-rendering');
+          if (stagingPath) {
+            try {
+              await cleanupStudioDocumentPdfProof(stagingPath);
+            } catch {
+              // Staging cleanup is best-effort after the background result has been reported.
+            }
+          }
+        }
+      }
+
+      await emitLifecycle('REFERENCE_DISCOVERY_START', {
+        operation: 'reference-pages'
+      });
+      const references = backgroundProofPoc001ReferencePages(project);
+      if (references.length !== 3) {
+        throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGES_MISSING: Erwartet wurden Destination, Photography Workshop und Notes / Memory; gefunden wurden ${references.length}.`);
+      }
+      await emitLifecycle('REFERENCE_DISCOVERY_COMPLETE', {
+        operation: 'reference-pages',
+        detail: references.map((reference) => [
+          reference.title,
+          reference.page.id,
+          reference.page.type,
+          reference.page.role ?? 'none'
+        ].join(':')).join(' | ')
+      });
+      await emitLifecycle('HOST_READY', {
+        detail: references.map((reference) => reference.title).join(', ')
+      });
+
+      for (const [referenceIndex, reference] of references.entries()) {
+        const iteration = referenceIndex + 1;
+        const nextIteration = iteration + 1;
+        const page = project.pageManifest.find((entry) => entry.id === reference.page.id);
+        if (!page) {
+          throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGE_MISSING: ${reference.title}`);
+        }
+
+        await emitLifecycle('REFERENCE_PAGE_SELECT_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'reference-loop',
+          detail: `index=${iteration}/3 role=${reference.referenceId} type=${page.type} role=${page.role ?? 'none'} title=${reference.title}`
+        });
+        selectPageNow(page);
+        await emitLifecycle('REFERENCE_PAGE_SELECTED', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+        await emitLifecycle('REFERENCE_PAGE_READINESS_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'resolved-page-readiness'
+        });
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: reference.title,
+          allowHiddenHostFallback: true,
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'resolved-page-readiness',
+            detail
+          })
+        });
+        await emitLifecycle('REFERENCE_PAGE_READY', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+        await emitLifecycle('PAGE_ASSET_EVIDENCE', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'reference-page-assets',
+          detail: backgroundProofPoc001AssetTraceDetail()
+        });
+        await currentWebview.emitTo(backgroundProofPocReturnTo, events.progress, {
+          referenceTitle: reference.title,
+          pageId: page.id
+        });
+
+        await emitLifecycle('PROOF_MODE_ENTER', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+        document.body.classList.add('pdf-proof-rendering');
+        await emitLifecycle('REFERENCE_PAGE_READINESS_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'proof-mode-readiness'
+        });
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: reference.title,
+          expectProofMode: true,
+          allowHiddenHostFallback: true,
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'proof-mode-readiness',
+            detail
+          })
+        });
+        await emitLifecycle('PROOF_MODE_READY', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+
+        const outputPath = backgroundProofPoc001OutputPath(backgroundProofPocOutputDir, reference.title);
+        await emitLifecycle('PDF_INVOKE_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'createStudioPdfProof',
+          detail: backgroundProofPoc001SafeTraceValue(outputPath)
+        });
+        await createStudioPdfProof({
+          pageId: page.id,
+          physicalMedium: 'A5',
+          outputPath
+        });
+        await emitLifecycle('PDF_INVOKE_SUCCESS', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'createStudioPdfProof',
+          detail: backgroundProofPoc001SafeTraceValue(outputPath)
+        });
+        const evidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
+          path: outputPath
+        });
+        if (!evidence.exists || evidence.byteLength <= 0) {
+          throw new Error(`BACKGROUND_PROOF_POC_001_OUTPUT_FILE_MISSING: ${reference.title}`);
+        }
+        await emitLifecycle('OUTPUT_FILE_CONFIRMED', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'output-file-evidence',
+          detail: `index=${iteration}/3 bytes=${evidence.byteLength} path=${backgroundProofPoc001SafeTraceValue(outputPath)}`
+        });
+        outputs.push(outputPath);
+        await emitLifecycle('PROOF_MODE_EXIT_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
+        document.body.classList.remove('pdf-proof-rendering');
+        await emitLifecycle('PROOF_MODE_CLASS_REMOVED', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
+        await emitLifecycle('PROOF_MODE_EXIT', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
+        await waitForStudioDomCommit({
+          allowHiddenHostFallback: true,
+          domCommitStartStep: 'POST_PROOF_TICK_START',
+          domCommitCompleteStep: 'POST_PROOF_TICK_COMPLETE',
+          layoutFrameStartStep: 'POST_PROOF_LAYOUT_FRAME_START',
+          layoutFrameCompleteStep: 'POST_PROOF_LAYOUT_FRAME_COMPLETE',
+          layoutFrameFallbackStep: 'POST_PROOF_LAYOUT_FRAME_FALLBACK',
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'post-proof-dom-commit',
+            detail: [`index=${iteration}/3`, detail].filter(Boolean).join(' ')
+          })
+        });
+        await emitLifecycle('POST_PROOF_STATE_STABLE', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof-dom-commit',
+          detail: `index=${iteration}/3`
+        });
+        await emitLifecycle('REFERENCE_ITERATION_COMPLETE', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'reference-loop',
+          detail: `index=${iteration}/3 output=${backgroundProofPoc001SafeTraceValue(outputPath)}`
+        });
+        if (reference !== references[references.length - 1]) {
+          await emitLifecycle('NEXT_REFERENCE_PAGE', {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'reference-loop',
+            detail: `completed=${iteration}/3 next=${nextIteration}/3`
+          });
+        }
+      }
+
+      await emitLifecycle('HOST_RESULT_EMIT', {
+        detail: 'success'
+      });
+      await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, { ok: true, outputs, lastStep });
+    } catch (error) {
+      try {
+        await emitLifecycle('HOST_RESULT_EMIT', {
+          detail: String(error)
+        });
+        await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, {
+          ok: false,
+          error: String(error),
+          lastStep
+        });
+      } catch (emitError) {
+        console.error('[Background Proof PoC 001] result emit failed', emitError);
+      }
+    } finally {
+      document.body.classList.remove('pdf-proof-rendering');
+    }
   }
 
   function applyInspectorWidth(width: number) {
@@ -1292,6 +2202,8 @@
   }
 
   onMount(() => {
+    if (isBackgroundProofPocHost || isMainRendererExportCoverHost) return;
+
     inspectorPreferredWidth = parseStoredInspectorWidth(window.localStorage.getItem(INSPECTOR_WIDTH_STORAGE_KEY), window.innerWidth);
     inspectorWidth = inspectorPreferredWidth;
     const resize = () => {
@@ -1302,6 +2214,8 @@
   });
 
   onMount(() => {
+    if (isBackgroundProofPocHost || isMainRendererExportCoverHost) return;
+
     if (!previewStage) return;
     const observer = new ResizeObserver(updatePreviewScale);
     observer.observe(previewStage);
@@ -1310,6 +2224,28 @@
   });
 
   onMount(() => {
+    if (isMainRendererExportCoverHost) {
+      let unlistenProgress: (() => void) | undefined;
+      let disposed = false;
+      void (async () => {
+        unlistenProgress = await listen<MainRendererExportCoverProgress>(
+          mainRendererExportCoverEventName(mainRendererExportCoverJobId),
+          (event) => {
+            if (!disposed) mainRendererExportCoverProgress = event.payload;
+          }
+        );
+      })();
+      return () => {
+        disposed = true;
+        unlistenProgress?.();
+      };
+    }
+
+    if (isBackgroundProofPocHost) {
+      void runBackgroundProofPoc001Host();
+      return;
+    }
+
     let unlistenOpen: (() => void) | undefined;
     let disposed = false;
 
@@ -1432,6 +2368,20 @@
   <title>{project ? `${project.title} – Northern Lines Studio` : 'Northern Lines Studio'}</title>
 </svelte:head>
 
+{#if isMainRendererExportCoverHost}
+  <main class="export-cover-shell" aria-label="Travelbook Export">
+    <section class="export-cover-panel" aria-live="polite">
+      <span class="export-cover-mark">NL</span>
+      <div>
+        <p>Travelbook wird exportiert …</p>
+        <strong>
+          Seite {Math.min(mainRendererExportCoverProgress.currentPage || 1, mainRendererExportCoverProgress.pageCount || 1)}
+          von {mainRendererExportCoverProgress.pageCount || 1}
+        </strong>
+      </div>
+    </section>
+  </main>
+{:else}
 <div class="app-shell">
   <header class="toolbar">
     <div class="brand toolbar-zone toolbar-zone-start">
@@ -1452,22 +2402,55 @@
       </div>
     {/if}
 
-    <div class="toolbar-zone toolbar-zone-end travel-menu-wrap">
+    <div class="toolbar-zone toolbar-zone-end toolbar-actions">
       {#if project}
-        <button class="primary-action" on:click={() => projectMenuOpen = !projectMenuOpen} disabled={isLoading} aria-expanded={projectMenuOpen}>
-          <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
-          </svg>
-          <span>Reise</span>
-          <span class="menu-chevron" aria-hidden="true">⌄</span>
-        </button>
-        {#if projectMenuOpen}
-          <div class="travel-menu" aria-label="Reiseaktionen">
-            <button on:click={requestBeginTravel}>Neue Reise beginnen …</button>
-            <button on:click={requestOpenTravel}>Reise öffnen …</button>
-            <button on:click={requestCloseTravel}>Reise schließen</button>
-          </div>
-        {/if}
+        <div class="travel-menu-wrap">
+          <button
+            class="primary-action"
+            on:click={() => {
+              outputMenuOpen = !outputMenuOpen;
+              projectMenuOpen = false;
+            }}
+            disabled={isLoading || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' || backgroundProofPocStatus === 'running'}
+            aria-expanded={outputMenuOpen}
+          >
+            <span>Ausgabe</span>
+            <span class="menu-chevron" aria-hidden="true">⌄</span>
+          </button>
+          {#if outputMenuOpen}
+            <div class="travel-menu" aria-label="Ausgabeaktionen">
+              <button on:click={() => void createFinalTravelbookPdf()}>PDF exportieren</button>
+              <button on:click={() => void createDevelopmentPdf()}>Entwicklungs-PDF</button>
+            </div>
+          {/if}
+        </div>
+      {/if}
+
+      {#if project}
+        <div class="travel-menu-wrap">
+          <button
+            class="primary-action"
+            on:click={() => {
+              projectMenuOpen = !projectMenuOpen;
+              outputMenuOpen = false;
+            }}
+            disabled={isLoading}
+            aria-expanded={projectMenuOpen}
+          >
+            <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M2.75 5.5h5l1.5 1.75h8v7.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+            </svg>
+            <span>Reise</span>
+            <span class="menu-chevron" aria-hidden="true">⌄</span>
+          </button>
+          {#if projectMenuOpen}
+            <div class="travel-menu" aria-label="Reiseaktionen">
+              <button on:click={requestBeginTravel}>Neue Reise beginnen …</button>
+              <button on:click={requestOpenTravel}>Reise öffnen …</button>
+              <button on:click={requestCloseTravel}>Reise schließen</button>
+            </div>
+          {/if}
+        </div>
       {:else}
         <button class="primary-action" on:click={requestOpenTravel} disabled={isLoading}>
           <svg class="project-icon" viewBox="0 0 20 20" aria-hidden="true">
@@ -1568,33 +2551,6 @@
                   ? (destinationInterest?.label ?? 'Vertiefung')
                   : pageRoleLabel(selectedPage?.role)}`
             : pageRoleLabel(selectedPage?.role)}</small>
-          <button
-            class="pdf-proof-action"
-            type="button"
-            on:click={() => void createPdfProofForCurrentPage()}
-            disabled={!selectedPage || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
-            title="Aktuelle Studio-Seite als A5-PDF-Proof speichern"
-          >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Seiten-Proof …' : 'Seiten-Proof'}
-          </button>
-          <button
-            class="pdf-proof-action"
-            type="button"
-            on:click={() => void createPdfProofForTravelbook()}
-            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
-            title="Ganzes Travelbook als A5-PDF speichern"
-          >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'Standard PDF …' : 'Standard PDF'}
-          </button>
-          <button
-            class="pdf-proof-action"
-            type="button"
-            on:click={() => void createTravelbookPdf('pdfa2b')}
-            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering'}
-            title="Ganzes Travelbook als langlebige PDF/A-2b-Fassung speichern"
-          >
-            {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF/A-2b …' : 'PDF/A-2b'}
-          </button>
         </div>
       </div>
 
@@ -1619,7 +2575,7 @@
               class:contents-page={selectedPage?.type === 'contents'}
               class:notes-page={selectedPage?.type === 'notes'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
-              in:fade={{ duration: pdfProofStatus === 'rendering' ? 0 : 190 }}
+              in:fade={{ duration: studioPageFadeDurationMs(pdfProofStatus, isBackgroundProofPocHost) }}
             >
               {#if selectedPage?.type === 'destination'}
                 <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity} title-${destinationTitleLayout}`}>
@@ -2847,3 +3803,4 @@
     </div>
   {/if}
 </div>
+{/if}

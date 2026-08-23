@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-renderer-export-cover",
+  "description": "Plan B PDF export cover window permissions",
+  "windows": [
+    "main-renderer-export-cover-*"
+  ],
+  "permissions": [
+    "core:event:allow-listen"
+  ]
+}

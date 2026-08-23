@@ -7,6 +7,10 @@
   ],
   "permissions": [
     "core:default",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-close",
+    "core:event:allow-emit-to",
+    "core:event:allow-listen",
     "dialog:allow-open",
     "dialog:allow-save"
   ]

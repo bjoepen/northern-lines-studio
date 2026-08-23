@@ -22,6 +22,17 @@
   opacity: 0.45;
 }
 
+.background-proof-poc-status {
+  color: #6c7c83;
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  max-width: 620px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 body.pdf-proof-rendering {
   width: 420px !important;
   height: 595.9459459459px !important;

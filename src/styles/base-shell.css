@@ -22,6 +22,51 @@ button { font: inherit; }
 /* Build 006: the shell is deliberately flex-based so the workspace owns all
    remaining height whether or not the optional error banner is present. */
 .app-shell { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+.export-cover-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #f7f4ed;
+  color: #172a34;
+}
+
+.export-cover-panel {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 32px;
+  border: 1px solid rgba(23, 42, 52, .12);
+  background: rgba(255, 255, 255, .76);
+  box-shadow: 0 18px 50px rgba(23, 42, 52, .12);
+}
+
+.export-cover-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #173946;
+  color: #f8f2e8;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  letter-spacing: .08em;
+}
+
+.export-cover-panel p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #63737a;
+}
+
+.export-cover-panel strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.15;
+}
 /* Build 007: the header is a balanced editorial frame. Every zone owns the
    full header height so content stays optically centered instead of drifting
    toward the macOS title-bar edge. */
@@ -40,6 +85,7 @@ button { font: inherit; }
 .toolbar-zone-start { justify-self: start; justify-content: flex-start; }
 .toolbar-zone-center { justify-self: center; justify-content: center; }
 .toolbar-zone-end { justify-self: end; justify-content: flex-end; }
+.toolbar-actions { gap: 10px; }
 .brand { gap: 12px; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #aac4d2; border-radius: 50%; font-size: 11px; letter-spacing: .08em; flex: 0 0 auto; }
 .brand strong, .brand small { display: block; }
