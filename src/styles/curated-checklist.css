@@ -2,6 +2,18 @@
   background: #fff;
 }
 
+.curated-checklist-page > .page-rule,
+.curated-checklist-page > .eyebrow,
+.curated-checklist-page > h1,
+.curated-checklist-page > .preview-body {
+  display: none;
+}
+
+.curated-checklist-runtime-host {
+  position: relative;
+  z-index: 2;
+}
+
 .curated-checklist-preview {
   position: relative;
   z-index: 2;
