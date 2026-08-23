@@ -1,5 +1,0 @@
-9fa2e8944a56a6974cac7f78c607fde8f9d69564d29b16af795101e23a12b892  src/App.svelte
-8f4ffab1757b6a01ef50816ea2bfe0b0e84efca860e38d7a2df3f2c7fc25249d  scripts/check-photography-place-experience-consistency.mjs
-bff5a29f26b550fd904b123aaaec8d19f0fcccff564e29293b7a0b331382ea83  docs/validation/BUILD-027-VALIDATION.md
-3e7ebe04afdb61d728d6c3043eacb3aa013541cb9c923715832b409ee12f068a  docs/builds/BUILD-027-RELEASE-NOTES.md
-ca7b6fde09bfba46354bb81ae81de043d95ab0da3b9dec93543a81e06b74d5ad  APPLY-DROPIN.md
