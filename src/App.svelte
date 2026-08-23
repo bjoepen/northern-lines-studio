@@ -48,6 +48,13 @@
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
   import {
+    backgroundProofPoc001BuildHostUrl,
+    backgroundProofPoc001EventNames,
+    backgroundProofPoc001LifecycleTimeoutError,
+    backgroundProofPoc001MainWindowInvariant,
+    backgroundProofPoc001OutputPath,
+    backgroundProofPoc001ParseHostParams,
+    backgroundProofPoc001SafeTraceValue,
     assembleStudioDocumentPdfProof,
     backgroundProofPoc001ReferencePages,
     cleanupStudioDocumentPdfProof,
@@ -58,7 +65,12 @@
     prepareStudioDocumentPdfProof,
     restoredDocumentProofPage,
     stagedDocumentProofPagePath,
+    studioPageFadeDurationMs,
     studioDocumentProofPages,
+    type BackgroundProofPoc001LifecycleEvent,
+    type BackgroundProofPoc001LifecycleStep,
+    type BackgroundProofPoc001OutputEvidence,
+    type BackgroundProofPoc001Result,
     type StudioDocumentProofPage,
     type StudioPdfProofReadinessErrorCode,
     type StudioPdfProofStatus
@@ -142,13 +154,14 @@
   let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorResizing = false;
   const journeyWorlds = availableEditorialWorlds();
-  const backgroundProofPocParams = new URLSearchParams(window.location.search);
-  const isBackgroundProofPocHost = backgroundProofPocParams.get('nlsBackgroundProofPoc') === '001';
-  const backgroundProofPocProjectPath = backgroundProofPocParams.get('projectPath') ?? '';
-  const backgroundProofPocOutputDir = backgroundProofPocParams.get('outputDir') ?? '';
-  const backgroundProofPocJobId = backgroundProofPocParams.get('jobId') ?? '';
-  const backgroundProofPocReturnTo = backgroundProofPocParams.get('returnTo') ?? 'main';
-  const backgroundProofPocNoThrottling = 'disabled' as unknown as BackgroundThrottlingPolicy;
+  const backgroundProofPocHostParams = backgroundProofPoc001ParseHostParams(window.location.search);
+  const isBackgroundProofPocHost = backgroundProofPocHostParams.isHost;
+  const backgroundProofPocProjectPath = backgroundProofPocHostParams.projectPath;
+  const backgroundProofPocOutputDir = backgroundProofPocHostParams.outputDir;
+  const backgroundProofPocJobId = backgroundProofPocHostParams.jobId;
+  const backgroundProofPocReturnTo = backgroundProofPocHostParams.returnTo;
+  const backgroundProofPocNoThrottling = 'disabled' as BackgroundThrottlingPolicy;
+  const BACKGROUND_PROOF_POC_001_WATCHDOG_MS = 45_000;
 
   function displayPageTitle(page: StudioPage | null | undefined): string {
     if (!page) return 'Keine Seite ausgewählt';
@@ -157,10 +170,6 @@
 
   function proofFileTitle(value: string): string {
     return value.replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio';
-  }
-
-  function backgroundProofPocOutputPath(outputDir: string, title: string): string {
-    return `${outputDir.replace(/\/$/, '')}/${proofFileTitle(title)}-Background-Proof-PoC-001.pdf`;
   }
 
   function proofReadinessMessage(code: StudioPdfProofReadinessErrorCode, pageTitle: string | undefined, reason: string): string {
@@ -176,14 +185,54 @@
     return renderedStudioPages().find((page) => page.dataset.studioPageId === pageId) ?? null;
   }
 
-  async function waitForBrowserLayoutFrame() {
+  async function waitForBrowserLayoutFrame(options: {
+    allowHiddenHostFallback?: boolean;
+    onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
+    layoutFrameStartStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameFallbackStep?: BackgroundProofPoc001LifecycleStep;
+  } = {}) {
     if (typeof requestAnimationFrame !== 'function') return;
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const startStep = options.layoutFrameStartStep ?? 'HOST_LAYOUT_FRAME_START';
+    const completeStep = options.layoutFrameCompleteStep ?? 'HOST_LAYOUT_FRAME_COMPLETE';
+    const fallbackStep = options.layoutFrameFallbackStep ?? 'HOST_LAYOUT_FRAME_FALLBACK';
+    await options.onTrace?.(startStep, `visibility=${document.visibilityState}`);
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        void options.onTrace?.(completeStep);
+        resolve();
+      };
+      requestAnimationFrame(() => finish());
+      if (options.allowHiddenHostFallback && document.visibilityState === 'hidden') {
+        const startWatchdog = window.setTimeout.bind(window);
+        startWatchdog(() => {
+          if (settled) return;
+          settled = true;
+          void options.onTrace?.(fallbackStep, 'requestAnimationFrame did not fire while Hidden Host was hidden');
+          resolve();
+        }, 250);
+      }
+    });
   }
 
-  async function waitForStudioDomCommit() {
+  async function waitForStudioDomCommit(options: {
+    allowHiddenHostFallback?: boolean;
+    onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
+    domCommitStartStep?: BackgroundProofPoc001LifecycleStep;
+    domCommitCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameStartStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameCompleteStep?: BackgroundProofPoc001LifecycleStep;
+    layoutFrameFallbackStep?: BackgroundProofPoc001LifecycleStep;
+  } = {}) {
+    await options.onTrace?.(options.domCommitStartStep ?? 'HOST_DOM_COMMIT_START');
     await tick();
-    await waitForBrowserLayoutFrame();
+    if (options.domCommitCompleteStep) {
+      await options.onTrace?.(options.domCommitCompleteStep);
+    }
+    await waitForBrowserLayoutFrame(options);
   }
 
   function runningPageAnimationCount(page: HTMLElement): number {
@@ -233,14 +282,22 @@
       code?: StudioPdfProofReadinessErrorCode;
       pageTitle?: string;
       expectProofMode?: boolean;
+      allowHiddenHostFallback?: boolean;
+      onTrace?: (step: BackgroundProofPoc001LifecycleStep, detail?: string) => Promise<void>;
     } = {}
   ) {
-    await waitForStudioDomCommit();
+    await waitForStudioDomCommit({
+      allowHiddenHostFallback: options.allowHiddenHostFallback,
+      onTrace: options.onTrace
+    });
     let page = assertResolvedStudioPage(pageId, options);
     const fontsReady = document.fonts?.ready;
     if (fontsReady) {
       await fontsReady;
-      await waitForStudioDomCommit();
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: options.allowHiddenHostFallback,
+        onTrace: options.onTrace
+      });
       page = assertResolvedStudioPage(pageId, options);
     }
     const images = Array.from(page.querySelectorAll<HTMLImageElement>('img'));
@@ -254,7 +311,10 @@
         image.addEventListener('load', () => resolve(), { once: true });
         image.addEventListener('error', () => reject(new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.')), { once: true });
       })));
-      await waitForStudioDomCommit();
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: options.allowHiddenHostFallback,
+        onTrace: options.onTrace
+      });
       page = assertResolvedStudioPage(pageId, options);
       if (incompleteStudioPageImages(Array.from(page.querySelectorAll<HTMLImageElement>('img'))).length > 0) {
         throw new Error('PDF_PROOF_ASSET_NOT_READY: Ein Bild ist noch nicht verfügbar.');
@@ -434,39 +494,81 @@
     const currentWebview = getCurrentWebviewWindow();
     const mainLabel = currentWebview.label;
     const jobId = `${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
-    const resultEvent = `background-proof-poc-001-result-${jobId}`;
-    const progressEvent = `background-proof-poc-001-progress-${jobId}`;
+    const events = backgroundProofPoc001EventNames(jobId);
     const beforePageId = selectedPage?.id ?? null;
     let duringPageId: string | null = null;
+    let lastLifecycleStep: BackgroundProofPoc001LifecycleStep | null = null;
+    let lastLifecycleComponent = 'main';
+    let lastLifecycleOperation = 'start';
     let hiddenHost: WebviewWindow | null = null;
+    let watchdogTimer: number | null = null;
     const unlisteners: Array<() => void> = [];
+    let resolveResult: (result: BackgroundProofPoc001Result) => void = () => {};
+    const resultPromise = new Promise<BackgroundProofPoc001Result>((resolve) => {
+      resolveResult = resolve;
+    });
+
+    const recordLifecycle = (
+      step: BackgroundProofPoc001LifecycleStep,
+      source: 'main' | 'hidden-host' = 'main',
+      detail = '',
+      updateStatusMessage = true
+    ) => {
+      lastLifecycleStep = step;
+      lastLifecycleComponent = source;
+      lastLifecycleOperation = detail;
+      console.info('[Background Proof PoC 001]', { jobId, step, source, detail });
+      if (!updateStatusMessage) return;
+      backgroundProofPocMessage = [
+        `Main selectedPage before: ${beforePageId ?? 'none'}`,
+        `Lifecycle: ${step}`,
+        detail
+      ].filter(Boolean).join(' · ');
+    };
 
     backgroundProofPocStatus = 'running';
     backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'}`;
     errorMessage = '';
 
     try {
-      const hostUrl = new URL(window.location.href);
-      hostUrl.searchParams.set('nlsBackgroundProofPoc', '001');
-      hostUrl.searchParams.set('projectPath', project.projectPath);
-      hostUrl.searchParams.set('outputDir', outputDir);
-      hostUrl.searchParams.set('jobId', jobId);
-      hostUrl.searchParams.set('returnTo', mainLabel);
-
-      const resultPromise = new Promise<{ ok: boolean; outputs?: string[]; error?: string }>(async (resolve) => {
-        const unlistenResult = await currentWebview.listen<{ ok: boolean; outputs?: string[]; error?: string }>(resultEvent, (event) => {
-          resolve(event.payload);
-        });
-        unlisteners.push(unlistenResult);
+      recordLifecycle('MAIN_POC_START', 'main', `main=${mainLabel}`);
+      const hostUrl = backgroundProofPoc001BuildHostUrl(window.location.href, {
+        projectPath: project.projectPath,
+        outputDir,
+        jobId,
+        returnTo: mainLabel
       });
-      const unlistenProgress = await currentWebview.listen<{ referenceTitle: string }>(progressEvent, (event) => {
+
+      const unlistenResult = await listen<BackgroundProofPoc001Result>(events.result, (event) => {
+        recordLifecycle('MAIN_RESULT_RECEIVED');
+        resolveResult(event.payload);
+      });
+      unlisteners.push(unlistenResult);
+
+      const unlistenLifecycle = await listen<BackgroundProofPoc001LifecycleEvent>(events.lifecycle, (event) => {
+        lastLifecycleStep = event.payload.step;
+        lastLifecycleComponent = event.payload.component ?? event.payload.source;
+        lastLifecycleOperation = event.payload.operation ?? event.payload.detail ?? '';
+        console.info('[Background Proof PoC 001]', event.payload);
+        backgroundProofPocMessage = [
+          `Main selectedPage before: ${beforePageId ?? 'none'}`,
+          `Lifecycle: ${event.payload.step}`,
+          event.payload.referenceTitle ? `Hidden: ${event.payload.referenceTitle}` : '',
+          event.payload.detail ?? ''
+        ].filter(Boolean).join(' · ');
+      });
+      unlisteners.push(unlistenLifecycle);
+
+      const unlistenProgress = await listen<{ referenceTitle: string }>(events.progress, (event) => {
         duringPageId = selectedPage?.id ?? null;
         backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'} · during: ${duringPageId ?? 'none'} · Hidden: ${event.payload.referenceTitle}`;
       });
       unlisteners.push(unlistenProgress);
 
+      recordLifecycle('MAIN_LISTENERS_READY', 'main', `result=${events.result}`);
+      recordLifecycle('HOST_CREATE_REQUEST', 'main', `url=${backgroundProofPoc001SafeTraceValue(hostUrl)} target=${mainLabel}`);
       hiddenHost = new WebviewWindow(`background-proof-poc-001-${jobId}`, {
-        url: hostUrl.href,
+        url: hostUrl,
         title: 'Northern Lines Studio Background Proof PoC 001',
         width: 420,
         height: 596,
@@ -479,12 +581,27 @@
       });
       await new Promise<void>((resolve, reject) => {
         void hiddenHost?.once('tauri://created', () => resolve());
-        void hiddenHost?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+        void hiddenHost?.once<string>('tauri://error', (event) => {
+          recordLifecycle('HOST_LOAD_FAILED', 'main', String(event.payload));
+          reject(new Error(String(event.payload)));
+        });
       });
+      recordLifecycle('HOST_CREATED', 'main', hiddenHost.label);
 
-      const result = await resultPromise;
+      const watchdogPromise = new Promise<never>((_, reject) => {
+        const startWatchdog = window.setTimeout.bind(window);
+        watchdogTimer = startWatchdog(() => {
+          reject(new Error(backgroundProofPoc001LifecycleTimeoutError(
+            lastLifecycleStep,
+            BACKGROUND_PROOF_POC_001_WATCHDOG_MS,
+            lastLifecycleComponent,
+            lastLifecycleOperation
+          )));
+        }, BACKGROUND_PROOF_POC_001_WATCHDOG_MS);
+      });
+      const result = await Promise.race([resultPromise, watchdogPromise]);
       const afterPageId = selectedPage?.id ?? null;
-      const invariant = beforePageId === afterPageId && (duringPageId === null || duringPageId === beforePageId);
+      const invariant = backgroundProofPoc001MainWindowInvariant(beforePageId, duringPageId, afterPageId);
       if (!result.ok) {
         throw new Error(result.error ?? 'BACKGROUND_PROOF_POC_001_FAILED: Hidden Host meldete keinen Erfolg.');
       }
@@ -500,10 +617,14 @@
       backgroundProofPocStatus = 'error';
       errorMessage = String(error);
     } finally {
+      if (watchdogTimer !== null) window.clearTimeout(watchdogTimer);
       for (const unlisten of unlisteners) unlisten();
       if (hiddenHost) {
         try {
+          recordLifecycle('HOST_CLOSE_REQUEST', 'main', hiddenHost.label, backgroundProofPocStatus === 'running');
           await hiddenHost.close();
+          recordLifecycle('HOST_CLOSED', 'main', hiddenHost.label, false);
+          recordLifecycle('COMPLETE', 'main', hiddenHost.label, false);
         } catch {
           // The Hidden Host may already be gone after a failed PoC run.
         }
@@ -513,65 +634,283 @@
 
   async function runBackgroundProofPoc001Host() {
     const currentWebview = getCurrentWebviewWindow();
-    const resultEvent = `background-proof-poc-001-result-${backgroundProofPocJobId}`;
-    const progressEvent = `background-proof-poc-001-progress-${backgroundProofPocJobId}`;
+    const events = backgroundProofPoc001EventNames(backgroundProofPocJobId);
     const outputs: string[] = [];
+    let lastStep: BackgroundProofPoc001LifecycleStep | null = null;
+
+    const emitLifecycle = async (
+      step: BackgroundProofPoc001LifecycleStep,
+      payload: Partial<BackgroundProofPoc001LifecycleEvent> = {}
+    ) => {
+      lastStep = step;
+      const event: BackgroundProofPoc001LifecycleEvent = {
+        jobId: backgroundProofPocJobId,
+        step,
+        source: 'hidden-host',
+        component: 'hidden-host',
+        timestampMs: Date.now(),
+        ...payload
+      };
+      console.info('[Background Proof PoC 001]', event);
+      await currentWebview.emitTo(backgroundProofPocReturnTo, events.lifecycle, event);
+    };
 
     try {
       if (!backgroundProofPocProjectPath || !backgroundProofPocOutputDir || !backgroundProofPocJobId) {
         throw new Error('BACKGROUND_PROOF_POC_001_INVALID_HOST_REQUEST: Hidden Host wurde ohne vollständige PoC-Parameter gestartet.');
       }
 
+      await emitLifecycle('HOST_JS_BOOTSTRAP_START', {
+        operation: 'module-loaded',
+        detail: `label=${currentWebview.label}`
+      });
+      await emitLifecycle('HOST_LOCATION_CAPTURED', {
+        operation: 'window.location',
+        detail: [
+          `href=${backgroundProofPoc001SafeTraceValue(window.location.href)}`,
+          `pathname=${backgroundProofPoc001SafeTraceValue(window.location.pathname)}`,
+          `search=${backgroundProofPoc001SafeTraceValue(window.location.search)}`
+        ].join(' ')
+      });
+      await emitLifecycle('HOST_MODE_PARSED', {
+        operation: 'url-params',
+        detail: [
+          `nlsBackgroundProofPoc=001`,
+          `projectPath=${backgroundProofPoc001SafeTraceValue(backgroundProofPocProjectPath)}`,
+          `outputDir=${backgroundProofPoc001SafeTraceValue(backgroundProofPocOutputDir)}`,
+          `jobId=${backgroundProofPoc001SafeTraceValue(backgroundProofPocJobId)}`,
+          `returnTo=${backgroundProofPoc001SafeTraceValue(backgroundProofPocReturnTo)}`
+        ].join(' ')
+      });
+      await emitLifecycle('HOST_SVELTE_MOUNT_START', {
+        operation: 'onMount'
+      });
+      await emitLifecycle('HOST_SVELTE_MOUNTED', {
+        operation: 'onMount',
+        detail: `app=${document.getElementById('app') ? 'present' : 'missing'}`
+      });
+      await emitLifecycle('HOST_LOAD_STARTED', {
+        operation: 'bootstrap',
+        detail: `returnTo=${backgroundProofPocReturnTo}`
+      });
+      await emitLifecycle('HOST_LOAD_FINISHED', {
+        operation: 'bootstrap-handshake'
+      });
+      await waitForStudioDomCommit({
+        allowHiddenHostFallback: true,
+        onTrace: (step, detail) => emitLifecycle(step, {
+          operation: 'hidden-host-dom-commit',
+          detail
+        })
+      });
+      await emitLifecycle('HOST_DOM_READY');
+      await emitLifecycle('PROJECT_LOAD_START', {
+        operation: 'load_nls_project',
+        detail: backgroundProofPoc001SafeTraceValue(backgroundProofPocProjectPath)
+      });
       await openTravelPath(backgroundProofPocProjectPath);
       if (!project) {
         throw new Error('BACKGROUND_PROOF_POC_001_LOAD_FAILED: Hidden Host konnte das gespeicherte Travelbook nicht laden.');
       }
+      await emitLifecycle('PROJECT_LOADED', {
+        operation: 'load_nls_project',
+        detail: `pages=${project.pageManifest.length} world=${project.editorialWorldId ?? 'none'} path=${backgroundProofPoc001SafeTraceValue(project.projectPath ?? backgroundProofPocProjectPath)}`
+      });
 
+      await emitLifecycle('REFERENCE_DISCOVERY_START', {
+        operation: 'reference-pages'
+      });
       const references = backgroundProofPoc001ReferencePages(project);
       if (references.length !== 3) {
         throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGES_MISSING: Erwartet wurden Destination, Photography Workshop und Notes / Memory; gefunden wurden ${references.length}.`);
       }
+      await emitLifecycle('REFERENCE_DISCOVERY_COMPLETE', {
+        operation: 'reference-pages',
+        detail: references.map((reference) => [
+          reference.title,
+          reference.page.id,
+          reference.page.type,
+          reference.page.role ?? 'none'
+        ].join(':')).join(' | ')
+      });
+      await emitLifecycle('HOST_READY', {
+        detail: references.map((reference) => reference.title).join(', ')
+      });
 
-      for (const reference of references) {
+      for (const [referenceIndex, reference] of references.entries()) {
+        const iteration = referenceIndex + 1;
+        const nextIteration = iteration + 1;
         const page = project.pageManifest.find((entry) => entry.id === reference.page.id);
         if (!page) {
           throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGE_MISSING: ${reference.title}`);
         }
 
+        await emitLifecycle('REFERENCE_PAGE_SELECT_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'reference-loop',
+          detail: `index=${iteration}/3 role=${reference.referenceId} type=${page.type} role=${page.role ?? 'none'} title=${reference.title}`
+        });
         selectPageNow(page);
+        await emitLifecycle('REFERENCE_PAGE_SELECTED', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+        await emitLifecycle('REFERENCE_PAGE_READINESS_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'resolved-page-readiness'
+        });
         await waitForResolvedStudioPage(page.id, {
           code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
-          pageTitle: reference.title
+          pageTitle: reference.title,
+          allowHiddenHostFallback: true,
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'resolved-page-readiness',
+            detail
+          })
         });
-        await currentWebview.emitTo(backgroundProofPocReturnTo, progressEvent, {
+        await emitLifecycle('REFERENCE_PAGE_READY', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
+        await currentWebview.emitTo(backgroundProofPocReturnTo, events.progress, {
           referenceTitle: reference.title,
           pageId: page.id
         });
 
+        await emitLifecycle('PROOF_MODE_ENTER', {
+          pageId: page.id,
+          referenceTitle: reference.title
+        });
         document.body.classList.add('pdf-proof-rendering');
+        await emitLifecycle('REFERENCE_PAGE_READINESS_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'proof-mode-readiness'
+        });
         await waitForResolvedStudioPage(page.id, {
           code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
           pageTitle: reference.title,
-          expectProofMode: true
+          expectProofMode: true,
+          allowHiddenHostFallback: true,
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'proof-mode-readiness',
+            detail
+          })
+        });
+        await emitLifecycle('PROOF_MODE_READY', {
+          pageId: page.id,
+          referenceTitle: reference.title
         });
 
-        const outputPath = backgroundProofPocOutputPath(backgroundProofPocOutputDir, reference.title);
+        const outputPath = backgroundProofPoc001OutputPath(backgroundProofPocOutputDir, reference.title);
+        await emitLifecycle('PDF_INVOKE_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'createStudioPdfProof',
+          detail: backgroundProofPoc001SafeTraceValue(outputPath)
+        });
         await createStudioPdfProof({
           pageId: page.id,
           physicalMedium: 'A5',
           outputPath
         });
+        await emitLifecycle('PDF_INVOKE_SUCCESS', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'createStudioPdfProof',
+          detail: backgroundProofPoc001SafeTraceValue(outputPath)
+        });
+        const evidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
+          path: outputPath
+        });
+        if (!evidence.exists || evidence.byteLength <= 0) {
+          throw new Error(`BACKGROUND_PROOF_POC_001_OUTPUT_FILE_MISSING: ${reference.title}`);
+        }
+        await emitLifecycle('OUTPUT_FILE_CONFIRMED', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'output-file-evidence',
+          detail: `index=${iteration}/3 bytes=${evidence.byteLength} path=${backgroundProofPoc001SafeTraceValue(outputPath)}`
+        });
         outputs.push(outputPath);
+        await emitLifecycle('PROOF_MODE_EXIT_START', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
         document.body.classList.remove('pdf-proof-rendering');
-        await waitForStudioDomCommit();
+        await emitLifecycle('PROOF_MODE_CLASS_REMOVED', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
+        await emitLifecycle('PROOF_MODE_EXIT', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof',
+          detail: `index=${iteration}/3`
+        });
+        await waitForStudioDomCommit({
+          allowHiddenHostFallback: true,
+          domCommitStartStep: 'POST_PROOF_TICK_START',
+          domCommitCompleteStep: 'POST_PROOF_TICK_COMPLETE',
+          layoutFrameStartStep: 'POST_PROOF_LAYOUT_FRAME_START',
+          layoutFrameCompleteStep: 'POST_PROOF_LAYOUT_FRAME_COMPLETE',
+          layoutFrameFallbackStep: 'POST_PROOF_LAYOUT_FRAME_FALLBACK',
+          onTrace: (step, detail) => emitLifecycle(step, {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'post-proof-dom-commit',
+            detail: [`index=${iteration}/3`, detail].filter(Boolean).join(' ')
+          })
+        });
+        await emitLifecycle('POST_PROOF_STATE_STABLE', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'post-proof-dom-commit',
+          detail: `index=${iteration}/3`
+        });
+        await emitLifecycle('REFERENCE_ITERATION_COMPLETE', {
+          pageId: page.id,
+          referenceTitle: reference.title,
+          operation: 'reference-loop',
+          detail: `index=${iteration}/3 output=${backgroundProofPoc001SafeTraceValue(outputPath)}`
+        });
+        if (reference !== references[references.length - 1]) {
+          await emitLifecycle('NEXT_REFERENCE_PAGE', {
+            pageId: page.id,
+            referenceTitle: reference.title,
+            operation: 'reference-loop',
+            detail: `completed=${iteration}/3 next=${nextIteration}/3`
+          });
+        }
       }
 
-      await currentWebview.emitTo(backgroundProofPocReturnTo, resultEvent, { ok: true, outputs });
-    } catch (error) {
-      await currentWebview.emitTo(backgroundProofPocReturnTo, resultEvent, {
-        ok: false,
-        error: String(error)
+      await emitLifecycle('HOST_RESULT_EMIT', {
+        detail: 'success'
       });
+      await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, { ok: true, outputs, lastStep });
+    } catch (error) {
+      try {
+        await emitLifecycle('HOST_RESULT_EMIT', {
+          detail: String(error)
+        });
+        await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, {
+          ok: false,
+          error: String(error),
+          lastStep
+        });
+      } catch (emitError) {
+        console.error('[Background Proof PoC 001] result emit failed', emitError);
+      }
     } finally {
       document.body.classList.remove('pdf-proof-rendering');
     }
@@ -1819,7 +2158,7 @@
               class:contents-page={selectedPage?.type === 'contents'}
               class:notes-page={selectedPage?.type === 'notes'}
               style={`transform:scale(${previewScale});--world-paper:${editorialLayout?.paperTone ?? '#ffffff'};--world-ink:${editorialLayout?.inkTone ?? '#172a34'};--world-accent:${editorialLayout?.accentTone ?? '#547181'};--world-quiet:${editorialLayout?.quietTone ?? '#75868e'};--world-heading-family:${editorialLayout?.headingFamily ?? 'Georgia, serif'};--world-body-family:${editorialLayout?.bodyFamily ?? 'Georgia, serif'}`}
-              in:fade={{ duration: pdfProofStatus === 'rendering' ? 0 : 190 }}
+              in:fade={{ duration: studioPageFadeDurationMs(pdfProofStatus, isBackgroundProofPocHost) }}
             >
               {#if selectedPage?.type === 'destination'}
                 <div class={`destination-preview ${destinationLayoutVariant} capacity-${destinationCapacity} title-${destinationTitleLayout}`}>

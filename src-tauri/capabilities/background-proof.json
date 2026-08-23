@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "background-proof",
+  "description": "Background Proof PoC 001 hidden host permissions",
+  "windows": [
+    "background-proof-poc-001-*"
+  ],
+  "permissions": [
+    "core:event:allow-emit-to"
+  ]
+}

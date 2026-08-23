@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{collections::{BTreeMap, HashSet}, fs, path::{Path, PathBuf}, sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
+use tauri::Emitter;
 
 mod pdfa;
 
@@ -31,6 +32,31 @@ fn is_supported_editorial_world(id: &str) -> bool {
     id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
 }
 
+fn unix_timestamp_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn emit_background_proof_poc_001_native_trace(
+    window: &tauri::WebviewWindow,
+    step: &str,
+    operation: &str,
+    detail: impl Into<String>,
+) {
+    let payload = BackgroundProofPoc001NativeTrace {
+        job_id: String::new(),
+        step: step.into(),
+        source: "rust".into(),
+        component: "create_studio_pdf_proof".into(),
+        operation: operation.into(),
+        detail: detail.into(),
+        timestamp_ms: unix_timestamp_ms(),
+    };
+    let _ = window.emit("background-proof-poc-001-native-trace", payload);
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct StudioPdfProofRequest {
@@ -45,6 +71,25 @@ struct StudioPdfProofResult {
     output_path: String,
     width_pt: f64,
     height_pt: f64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BackgroundProofPoc001NativeTrace {
+    job_id: String,
+    step: String,
+    source: String,
+    component: String,
+    operation: String,
+    detail: String,
+    timestamp_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BackgroundProofPoc001OutputEvidence {
+    exists: bool,
+    byte_length: u64,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -1610,6 +1655,12 @@ async fn create_studio_pdf_proof(
     window: tauri::WebviewWindow,
     request: StudioPdfProofRequest,
 ) -> Result<StudioPdfProofResult, String> {
+    emit_background_proof_poc_001_native_trace(
+        &window,
+        "RUST_COMMAND_ENTER",
+        "create_studio_pdf_proof",
+        format!("pageId={} outputPath={}", request.page_id, request.output_path),
+    );
     if request.page_id.trim().is_empty() {
         return Err("PDF_PROOF_NO_PAGE: Es ist keine Studio-Seite ausgewählt.".into());
     }
@@ -1631,19 +1682,85 @@ async fn create_studio_pdf_proof(
     }
 
     prepare_pdf_proof_output(output_path)?;
+    emit_background_proof_poc_001_native_trace(
+        &window,
+        "NATIVE_WEBVIEW_RENDER_START",
+        "render_active_webview_a5_pdf",
+        output_path.to_string_lossy(),
+    );
+    let render_result = render_active_webview_a5_pdf(&window, output_path).await;
+    if render_result.is_ok() {
+        emit_background_proof_poc_001_native_trace(
+            &window,
+            "NATIVE_WEBVIEW_RENDER_COMPLETE",
+            "render_active_webview_a5_pdf",
+            output_path.to_string_lossy(),
+        );
+    }
     complete_studio_pdf_proof(
-        render_active_webview_a5_pdf(&window, output_path).await,
+        render_result,
         output_path,
         |path| {
+            emit_background_proof_poc_001_native_trace(
+                &window,
+                "PAGEBOX_NORMALIZE_START",
+                "normalize_pdf_a5_page_boxes",
+                path.to_string_lossy(),
+            );
             normalize_pdf_a5_page_boxes(path)?;
-            validate_pdf_a5_page_boxes(path)
+            emit_background_proof_poc_001_native_trace(
+                &window,
+                "PAGEBOX_NORMALIZE_COMPLETE",
+                "normalize_pdf_a5_page_boxes",
+                path.to_string_lossy(),
+            );
+            emit_background_proof_poc_001_native_trace(
+                &window,
+                "PDF_VALIDATE_START",
+                "validate_pdf_a5_page_boxes",
+                path.to_string_lossy(),
+            );
+            let validation = validate_pdf_a5_page_boxes(path);
+            if validation.is_ok() {
+                emit_background_proof_poc_001_native_trace(
+                    &window,
+                    "PDF_VALIDATE_COMPLETE",
+                    "validate_pdf_a5_page_boxes",
+                    path.to_string_lossy(),
+                );
+            }
+            validation
         },
     )?;
+    emit_background_proof_poc_001_native_trace(
+        &window,
+        "RUST_COMMAND_SUCCESS",
+        "create_studio_pdf_proof",
+        output_path.to_string_lossy(),
+    );
 
     Ok(StudioPdfProofResult {
         output_path: request.output_path,
         width_pt: A5_WIDTH_PT,
         height_pt: A5_HEIGHT_PT,
+    })
+}
+
+#[tauri::command]
+fn background_proof_poc_output_file_evidence(path: String) -> Result<BackgroundProofPoc001OutputEvidence, String> {
+    let output_path = Path::new(&path);
+    let metadata = match fs::metadata(output_path) {
+        Ok(metadata) => metadata,
+        Err(_) => {
+            return Ok(BackgroundProofPoc001OutputEvidence {
+                exists: false,
+                byte_length: 0,
+            });
+        }
+    };
+    Ok(BackgroundProofPoc001OutputEvidence {
+        exists: metadata.is_file(),
+        byte_length: metadata.len(),
     })
 }
 
@@ -2392,6 +2509,7 @@ pub fn run() {
             remove_destination_image,
             read_image_preview,
             create_studio_pdf_proof,
+            background_proof_poc_output_file_evidence,
             prepare_studio_document_pdf_proof,
             assemble_studio_document_pdf_proof,
             export_studio_pdfa2b,

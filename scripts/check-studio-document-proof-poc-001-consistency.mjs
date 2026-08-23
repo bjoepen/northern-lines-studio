@@ -24,7 +24,7 @@ if (!app.includes('data-studio-page-id')) fail('Rendered page identity contract 
 if (!app.includes('currentRenderedStudioPage(pageId)')) fail('Readiness must verify the requested rendered page identity.');
 if (!app.includes('waitForStudioDomCommit')) fail('Document proof must cross Svelte/browser commit boundary before capture.');
 if (!app.includes('requestAnimationFrame')) fail('Document proof must wait for a browser layout frame without sleeps.');
-if (!app.includes("in:fade={{ duration: pdfProofStatus === 'rendering' ? 0 : 190 }}")) fail('Document proof capture must not use the normal page fade duration.');
+if (!app.includes('in:fade={{ duration: studioPageFadeDurationMs(pdfProofStatus, isBackgroundProofPocHost) }}')) fail('Document proof capture must use the shared proof/hidden-host page fade policy.');
 if (!app.includes('document.fonts?.ready')) fail('Document proof readiness must include font readiness.');
 if (!app.includes("page.querySelectorAll<HTMLImageElement>('img')")) fail('Document proof readiness must check assets on the identified current page.');
 if (!app.includes('runningPageAnimationCount')) fail('Document proof readiness must reject transitional page state.');
@@ -39,6 +39,7 @@ if (!proof.includes('StudioDocumentProofRequest')) fail('Document proof request 
 if (!proof.includes('StudioDocumentProofPage')) fail('Document proof page contract missing.');
 if (!proof.includes('publicationOrderedPages')) fail('Document proof must use canonical Studio publication order.');
 if (!proof.includes('evaluateRenderedStudioPageReadiness')) fail('Rendered page readiness helper missing.');
+if (!proof.includes('studioPageFadeDurationMs')) fail('Shared page fade policy helper missing.');
 if (!proof.includes('STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE')) fail('Document proof capture sequence contract missing.');
 if (!proof.includes('prepare_studio_document_pdf_proof')) fail('Document proof staging command missing.');
 if (!proof.includes('assemble_studio_document_pdf_proof')) fail('Document proof assembly command missing.');
@@ -52,6 +53,7 @@ if (!proofTest.includes('supports variable page counts')) fail('Variable page-co
 if (!proofTest.includes('restores the originally active Studio page')) fail('State restoration regression test missing.');
 if (!proofTest.includes('rejects stale DOM identity')) fail('Stale DOM identity regression test missing.');
 if (!proofTest.includes('rejects transitional page opacity')) fail('Transitional visual state regression test missing.');
+if (!proofTest.includes('keeps normal page fade only outside proof capture and Hidden Host')) fail('Page fade policy regression test missing.');
 
 if (!rust.includes('StudioDocumentProofManifest')) fail('Document proof manifest missing.');
 if (!rust.includes('northern-lines.studio.document-proof.v1')) fail('Document proof manifest schema missing.');
