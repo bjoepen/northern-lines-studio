@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import {
   assembleStudioDocumentPdfProof,
+  backgroundProofPoc001ReferencePages,
   cleanupStudioDocumentPdfProof,
   createStudioPdfProof,
   evaluateRenderedStudioPageReadiness,
@@ -176,6 +177,25 @@ describe('Studio PDF Proof', () => {
     expect(studioDocumentProofPages(projectWithPages(pages))).toHaveLength(5);
     expect(stagedDocumentProofPagePath('/tmp/document-proof', 1)).toBe('/tmp/document-proof/0001.pdf');
     expect(stagedDocumentProofPagePath('/tmp/document-proof', 12)).toBe('/tmp/document-proof/0012.pdf');
+  });
+
+  it('selects only the three bounded Background Proof PoC 001 reference roles', () => {
+    const pages = [
+      page('cover', 1, 'cover'),
+      page('bergen', 2, 'destination'),
+      page('bergen-photo', 3, 'destination_interest'),
+      page('workshop', 4, 'workflow'),
+      page('notes', 5, 'notes')
+    ];
+
+    expect(backgroundProofPoc001ReferencePages(projectWithPages(pages)).map((entry) => ({
+      referenceId: entry.referenceId,
+      pageId: entry.page.id
+    }))).toEqual([
+      { referenceId: 'destination', pageId: 'bergen' },
+      { referenceId: 'photography-workshop', pageId: 'workshop' },
+      { referenceId: 'notes-memory', pageId: 'notes' }
+    ]);
   });
 
   it('restores the originally active Studio page after document proof orchestration', () => {

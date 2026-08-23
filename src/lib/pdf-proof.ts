@@ -58,6 +58,17 @@ export interface StudioPdfA2bExportResult {
   profile: 'PDF/A-2b';
 }
 
+export type BackgroundProofPoc001ReferenceId =
+  | 'destination'
+  | 'photography-workshop'
+  | 'notes-memory';
+
+export interface BackgroundProofPoc001ReferencePage {
+  referenceId: BackgroundProofPoc001ReferenceId;
+  title: string;
+  page: StudioPage;
+}
+
 export interface RenderedStudioPageReadinessSnapshot {
   requestedPageId: string;
   selectedPageId: string | null;
@@ -142,6 +153,19 @@ export function studioDocumentProofPages(project: StudioProject | null): StudioP
     project.pageManifest,
     project.journey?.stages.map((stage) => stage.id) ?? []
   );
+}
+
+export function backgroundProofPoc001ReferencePages(project: StudioProject): BackgroundProofPoc001ReferencePage[] {
+  const pages = studioDocumentProofPages(project);
+  const destination = pages.find((page) => page.type === 'destination') ?? null;
+  const photographyWorkshop = pages.find((page) => page.type === 'workflow') ?? null;
+  const notesMemory = pages.find((page) => page.type === 'notes') ?? null;
+
+  return [
+    destination ? { referenceId: 'destination', title: 'Destination', page: destination } : null,
+    photographyWorkshop ? { referenceId: 'photography-workshop', title: 'Photography Workshop', page: photographyWorkshop } : null,
+    notesMemory ? { referenceId: 'notes-memory', title: 'Notes / Memory', page: notesMemory } : null
+  ].filter((entry): entry is BackgroundProofPoc001ReferencePage => entry !== null);
 }
 
 export function stagedDocumentProofPagePath(stagingPath: string, index: number): string {

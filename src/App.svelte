@@ -3,6 +3,8 @@
   import { fade } from 'svelte/transition';
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
+  import type { BackgroundThrottlingPolicy } from '@tauri-apps/api/window';
+  import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
   import { open, save } from '@tauri-apps/plugin-dialog';
   import type { DestinationEditorialExtension, DestinationHighlight, DestinationInterestEntry, DestinationInterestKind, DestinationLayoutVariantId, DestinationPracticalInfo, EditorialExtensionKind, JourneyStage, StudioPage, StudioProject } from './lib/project';
   import { journeyStageFor, previewFor } from './lib/project';
@@ -47,6 +49,7 @@
   import { curatedAccentFor } from './lib/curated-accents';
   import {
     assembleStudioDocumentPdfProof,
+    backgroundProofPoc001ReferencePages,
     cleanupStudioDocumentPdfProof,
     createStudioPdfProof,
     evaluateRenderedStudioPageReadiness,
@@ -78,6 +81,8 @@
   let errorMessage = '';
   let isLoading = false;
   let pdfProofStatus: StudioPdfProofStatus = 'idle';
+  let backgroundProofPocStatus: 'idle' | 'running' | 'saved' | 'error' = 'idle';
+  let backgroundProofPocMessage = '';
   let worldChangeState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   let previewStage: HTMLDivElement | null = null;
   let previewScale = 1;
@@ -137,6 +142,13 @@
   let inspectorPreferredWidth = INSPECTOR_DEFAULT_WIDTH;
   let inspectorResizing = false;
   const journeyWorlds = availableEditorialWorlds();
+  const backgroundProofPocParams = new URLSearchParams(window.location.search);
+  const isBackgroundProofPocHost = backgroundProofPocParams.get('nlsBackgroundProofPoc') === '001';
+  const backgroundProofPocProjectPath = backgroundProofPocParams.get('projectPath') ?? '';
+  const backgroundProofPocOutputDir = backgroundProofPocParams.get('outputDir') ?? '';
+  const backgroundProofPocJobId = backgroundProofPocParams.get('jobId') ?? '';
+  const backgroundProofPocReturnTo = backgroundProofPocParams.get('returnTo') ?? 'main';
+  const backgroundProofPocNoThrottling = 'disabled' as unknown as BackgroundThrottlingPolicy;
 
   function displayPageTitle(page: StudioPage | null | undefined): string {
     if (!page) return 'Keine Seite ausgewählt';
@@ -145,6 +157,10 @@
 
   function proofFileTitle(value: string): string {
     return value.replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Northern-Lines-Studio';
+  }
+
+  function backgroundProofPocOutputPath(outputDir: string, title: string): string {
+    return `${outputDir.replace(/\/$/, '')}/${proofFileTitle(title)}-Background-Proof-PoC-001.pdf`;
   }
 
   function proofReadinessMessage(code: StudioPdfProofReadinessErrorCode, pageTitle: string | undefined, reason: string): string {
@@ -396,6 +412,169 @@
 
   async function createPdfProofForTravelbook() {
     await createTravelbookPdf('standard');
+  }
+
+  async function createBackgroundProofPoc001() {
+    if (!project?.projectPath) {
+      errorMessage = 'BACKGROUND_PROOF_POC_001_NO_PROJECT: Es ist kein gespeichertes Travelbook geöffnet.';
+      return;
+    }
+    if (hasUnsavedChanges) {
+      errorMessage = 'BACKGROUND_PROOF_POC_001_UNSAVED_CHANGES: Bitte sichere die aktuelle Bearbeitung, bevor der Background Proof PoC läuft.';
+      return;
+    }
+
+    const outputDir = await open({
+      directory: true,
+      multiple: false,
+      title: 'Zielordner für Background Proof PoC 001'
+    });
+    if (!outputDir || Array.isArray(outputDir)) return;
+
+    const currentWebview = getCurrentWebviewWindow();
+    const mainLabel = currentWebview.label;
+    const jobId = `${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
+    const resultEvent = `background-proof-poc-001-result-${jobId}`;
+    const progressEvent = `background-proof-poc-001-progress-${jobId}`;
+    const beforePageId = selectedPage?.id ?? null;
+    let duringPageId: string | null = null;
+    let hiddenHost: WebviewWindow | null = null;
+    const unlisteners: Array<() => void> = [];
+
+    backgroundProofPocStatus = 'running';
+    backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'}`;
+    errorMessage = '';
+
+    try {
+      const hostUrl = new URL(window.location.href);
+      hostUrl.searchParams.set('nlsBackgroundProofPoc', '001');
+      hostUrl.searchParams.set('projectPath', project.projectPath);
+      hostUrl.searchParams.set('outputDir', outputDir);
+      hostUrl.searchParams.set('jobId', jobId);
+      hostUrl.searchParams.set('returnTo', mainLabel);
+
+      const resultPromise = new Promise<{ ok: boolean; outputs?: string[]; error?: string }>(async (resolve) => {
+        const unlistenResult = await currentWebview.listen<{ ok: boolean; outputs?: string[]; error?: string }>(resultEvent, (event) => {
+          resolve(event.payload);
+        });
+        unlisteners.push(unlistenResult);
+      });
+      const unlistenProgress = await currentWebview.listen<{ referenceTitle: string }>(progressEvent, (event) => {
+        duringPageId = selectedPage?.id ?? null;
+        backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'} · during: ${duringPageId ?? 'none'} · Hidden: ${event.payload.referenceTitle}`;
+      });
+      unlisteners.push(unlistenProgress);
+
+      hiddenHost = new WebviewWindow(`background-proof-poc-001-${jobId}`, {
+        url: hostUrl.href,
+        title: 'Northern Lines Studio Background Proof PoC 001',
+        width: 420,
+        height: 596,
+        resizable: false,
+        decorations: false,
+        visible: false,
+        focus: false,
+        skipTaskbar: true,
+        backgroundThrottling: backgroundProofPocNoThrottling
+      });
+      await new Promise<void>((resolve, reject) => {
+        void hiddenHost?.once('tauri://created', () => resolve());
+        void hiddenHost?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+      });
+
+      const result = await resultPromise;
+      const afterPageId = selectedPage?.id ?? null;
+      const invariant = beforePageId === afterPageId && (duringPageId === null || duringPageId === beforePageId);
+      if (!result.ok) {
+        throw new Error(result.error ?? 'BACKGROUND_PROOF_POC_001_FAILED: Hidden Host meldete keinen Erfolg.');
+      }
+      if (!invariant) {
+        throw new Error(`BACKGROUND_PROOF_POC_001_MAIN_INVARIANT_FAILED: before=${beforePageId ?? 'none'} during=${duringPageId ?? 'none'} after=${afterPageId ?? 'none'}`);
+      }
+      backgroundProofPocStatus = 'saved';
+      backgroundProofPocMessage = [
+        `Main selectedPage before/during/after: ${beforePageId ?? 'none'}`,
+        ...(result.outputs ?? [])
+      ].join(' · ');
+    } catch (error) {
+      backgroundProofPocStatus = 'error';
+      errorMessage = String(error);
+    } finally {
+      for (const unlisten of unlisteners) unlisten();
+      if (hiddenHost) {
+        try {
+          await hiddenHost.close();
+        } catch {
+          // The Hidden Host may already be gone after a failed PoC run.
+        }
+      }
+    }
+  }
+
+  async function runBackgroundProofPoc001Host() {
+    const currentWebview = getCurrentWebviewWindow();
+    const resultEvent = `background-proof-poc-001-result-${backgroundProofPocJobId}`;
+    const progressEvent = `background-proof-poc-001-progress-${backgroundProofPocJobId}`;
+    const outputs: string[] = [];
+
+    try {
+      if (!backgroundProofPocProjectPath || !backgroundProofPocOutputDir || !backgroundProofPocJobId) {
+        throw new Error('BACKGROUND_PROOF_POC_001_INVALID_HOST_REQUEST: Hidden Host wurde ohne vollständige PoC-Parameter gestartet.');
+      }
+
+      await openTravelPath(backgroundProofPocProjectPath);
+      if (!project) {
+        throw new Error('BACKGROUND_PROOF_POC_001_LOAD_FAILED: Hidden Host konnte das gespeicherte Travelbook nicht laden.');
+      }
+
+      const references = backgroundProofPoc001ReferencePages(project);
+      if (references.length !== 3) {
+        throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGES_MISSING: Erwartet wurden Destination, Photography Workshop und Notes / Memory; gefunden wurden ${references.length}.`);
+      }
+
+      for (const reference of references) {
+        const page = project.pageManifest.find((entry) => entry.id === reference.page.id);
+        if (!page) {
+          throw new Error(`BACKGROUND_PROOF_POC_001_REFERENCE_PAGE_MISSING: ${reference.title}`);
+        }
+
+        selectPageNow(page);
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: reference.title
+        });
+        await currentWebview.emitTo(backgroundProofPocReturnTo, progressEvent, {
+          referenceTitle: reference.title,
+          pageId: page.id
+        });
+
+        document.body.classList.add('pdf-proof-rendering');
+        await waitForResolvedStudioPage(page.id, {
+          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
+          pageTitle: reference.title,
+          expectProofMode: true
+        });
+
+        const outputPath = backgroundProofPocOutputPath(backgroundProofPocOutputDir, reference.title);
+        await createStudioPdfProof({
+          pageId: page.id,
+          physicalMedium: 'A5',
+          outputPath
+        });
+        outputs.push(outputPath);
+        document.body.classList.remove('pdf-proof-rendering');
+        await waitForStudioDomCommit();
+      }
+
+      await currentWebview.emitTo(backgroundProofPocReturnTo, resultEvent, { ok: true, outputs });
+    } catch (error) {
+      await currentWebview.emitTo(backgroundProofPocReturnTo, resultEvent, {
+        ok: false,
+        error: String(error)
+      });
+    } finally {
+      document.body.classList.remove('pdf-proof-rendering');
+    }
   }
 
   function applyInspectorWidth(width: number) {
@@ -1292,6 +1471,8 @@
   }
 
   onMount(() => {
+    if (isBackgroundProofPocHost) return;
+
     inspectorPreferredWidth = parseStoredInspectorWidth(window.localStorage.getItem(INSPECTOR_WIDTH_STORAGE_KEY), window.innerWidth);
     inspectorWidth = inspectorPreferredWidth;
     const resize = () => {
@@ -1302,6 +1483,8 @@
   });
 
   onMount(() => {
+    if (isBackgroundProofPocHost) return;
+
     if (!previewStage) return;
     const observer = new ResizeObserver(updatePreviewScale);
     observer.observe(previewStage);
@@ -1310,6 +1493,11 @@
   });
 
   onMount(() => {
+    if (isBackgroundProofPocHost) {
+      void runBackgroundProofPoc001Host();
+      return;
+    }
+
     let unlistenOpen: (() => void) | undefined;
     let disposed = false;
 
@@ -1595,7 +1783,19 @@
           >
             {pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' ? 'PDF/A-2b …' : 'PDF/A-2b'}
           </button>
+          <button
+            class="pdf-proof-action"
+            type="button"
+            on:click={() => void createBackgroundProofPoc001()}
+            disabled={!project || pdfProofStatus === 'preparing' || pdfProofStatus === 'rendering' || backgroundProofPocStatus === 'running'}
+            title="Background Proof PoC 001 mit verstecktem Studio-WebView ausführen"
+          >
+            {backgroundProofPocStatus === 'running' ? 'Background PoC …' : 'Background PoC'}
+          </button>
         </div>
+        {#if backgroundProofPocMessage}
+          <small class="background-proof-poc-status">{backgroundProofPocMessage}</small>
+        {/if}
       </div>
 
       <div class="preview-stage" bind:this={previewStage}>
