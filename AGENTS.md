@@ -47,15 +47,19 @@ macOS application                    ACTIVE
 macOS Studio development             ACTIVE
 macOS single-page PDF proof          ACCEPTED
 macOS Document Proof                 ACCEPTED
+macOS Standard Travelbook PDF        ACCEPTED
+macOS PDF/A-2b Travelbook export     ACCEPTED
 macOS real-world validation          PASS
+external veraPDF validation          PASS
 
 Windows application                  OUT OF CURRENT SCOPE
 Windows PDF-proof adapter            DEFERRED
+Windows PDF/A export                 DEFERRED
 Windows runtime validation           DEFERRED
 Windows-specific dependencies        DO NOT EXPAND
 ```
 
-Agents must **not implement, modify, expand, test, or refactor Windows-specific PDF-proof functionality unless explicitly instructed by the user**.
+Agents must **not implement, modify, expand, test, or refactor Windows-specific PDF-proof or PDF/A functionality unless explicitly instructed by the user**.
 
 Do not add abstractions merely to prepare for Windows.
 
@@ -134,7 +138,7 @@ Do not rely on remembered Tauri, Wry, WebKit, WKWebView, Rust, Svelte, or browse
 
 # 4. Golden Build 040 — physical page contract
 
-Golden Build 040 is the baseline for all current Studio work and PDF-proof work.
+Golden Build 040 is the baseline for all current Studio work and PDF-proof/export work.
 
 ## 4.1 Logical and physical geometry
 
@@ -429,9 +433,11 @@ Do not edit historical ADRs casually. Record a superseding decision in a new cur
 
 ---
 
-# 10. Current macOS PDF-proof contract
+# 10. Current macOS PDF-proof/export contract
 
-The immediate product need is **visual PDF proof**, not production/prepress output.
+The accepted product capability includes **visual PDF proof**, **whole-document
+proof**, **Standard Travelbook PDF** and **PDF/A-2b export**. It is still not a
+professional prepress/DTP output system.
 
 The active proof implementation is macOS-only for the current development phase.
 
@@ -586,6 +592,80 @@ Errors shown to the user should remain understandable and actionable.
 
 ---
 
+## 10.7 Current PDF/A-2b export contract
+
+The accepted PDF/A-2b architecture is defined by **ADR-041** and is binding.
+
+PDF/A-2b is a bounded post-processing stage on top of the accepted Document PDF.
+It is not a rendering mode, not a second proof renderer, and not Publisher-owned
+composition.
+
+Accepted path:
+
+```text
+canonical Studio Travelbook
+→ accepted exact-A5 Document PDF
+→ bounded PDF/A-2b postprocessing
+   ├─ XMP / PDF-A identification
+   ├─ trailer /ID
+   ├─ RGB OutputIntent
+   └─ /Interpolate true → false where required
+→ integrity / structural validation
+→ atomic final output
+```
+
+The four proven post-processing operations above are the accepted path. They
+must remain bounded and auditable.
+
+Forbidden for PDF/A-2b export:
+
+- second rendering architecture;
+- re-rendering pages for PDF/A conversion;
+- page rasterization;
+- transparency flattening;
+- content-stream rewrite;
+- layout reflow;
+- scaling or translation;
+- changing PageBoxes after accepted exact-A5 Document PDF validation;
+- changing decoded page-content streams;
+- changing image stream bytes;
+- changing font resources;
+- Publisher composition/layout ownership.
+
+Protected PDF/A invariants:
+
+```text
+page count                  unchanged
+canonical page order        unchanged
+A5 PageBoxes                unchanged
+page content streams        unchanged
+image stream bytes          unchanged
+font resources              unchanged
+layout geometry             unchanged
+```
+
+The `/Interpolate true` → `/Interpolate false` change is an approved
+image-dictionary correction only. Image streams themselves remain unchanged.
+
+Studio's internal PDF/A checks are structural and integrity-oriented. They must
+not be represented as a full ISO conformance validator.
+
+**veraPDF remains the external ISO conformance authority** for engineering and
+release validation. The accepted installed-app evidence is:
+
+```text
+PDF/A-2b compliant       true
+passed rules             144
+failed rules             0
+passed checks            72,943
+failed checks            0
+```
+
+A user-facing export must never label a file PDF/A-2b after a known failed
+validation step.
+
+---
+
 # 11. macOS implementation discipline
 
 For native PDF work:
@@ -603,6 +683,10 @@ macOS-specific APIs are acceptable for the active scope.
 Do not introduce a second browser runtime such as Playwright/Puppeteer/Chromium unless the user explicitly reopens the architecture decision.
 
 Do not add PDF post-processing that scales, translates, reflows or recomposes page content. The accepted metadata-only PageBox normalization is specifically allowed by ADR-039 and must remain content-preserving.
+
+For PDF/A-2b, use only the accepted ADR-041 bounded post-processing path. Do not
+add PDF/A operations that rasterize, flatten transparency, rewrite content
+streams, or reinterpret Studio layout.
 
 ---
 
@@ -675,7 +759,10 @@ Until explicitly reopened by a new architecture decision, do not replace or rein
 - serial Document Proof orchestration;
 - content-preserving PDF assembly;
 - exact A5 validation;
-- current minimal proof request boundary.
+- current minimal proof request boundary;
+- Standard Document PDF as the accepted source for PDF/A-2b;
+- ADR-041 bounded PDF/A-2b post-processing;
+- external veraPDF as engineering/release conformance authority.
 
 Future work must build on this architecture rather than restart renderer experiments.
 
@@ -763,6 +850,9 @@ node scripts/check-studio-pdf-proof-poc-001-consistency.mjs
 node scripts/check-studio-document-proof-poc-001-consistency.mjs
 ```
 
+If the repository contains a scoped PDF/A-2b consistency gate, run it when
+touching the PDF/A export path or its documentation.
+
 macOS application build/install:
 
 ```bash
@@ -814,6 +904,16 @@ visual comparison     PASS / FAIL / NOT RUN
 
 Do not collapse these into one generic “PASS”.
 
+For PDF/A-2b changes, additionally distinguish:
+
+```text
+Standard Document PDF source         PASS / FAIL / NOT RUN
+PDF/A-2b generated                   PASS / FAIL / NOT RUN
+internal structural/integrity check  PASS / FAIL / NOT RUN
+external veraPDF                     PASS / FAIL / NOT RUN
+visual PDF/A vs accepted Proof       PASS / FAIL / NOT RUN
+```
+
 ---
 
 # 16. Branch / merge rule for PoCs
@@ -830,7 +930,7 @@ ADR-039 and ADR-040 are now accepted and integrated architecture, not active PoC
 
 # 17. Accepted Definition of Done — macOS PDF proof
 
-The accepted feature produces reliable, truthful, exact-A5 PDF proofs from resolved Studio pages and complete Travelbooks on macOS.
+The accepted proof feature produces reliable, truthful, exact-A5 PDF proofs from resolved Studio pages and complete Travelbooks on macOS.
 
 The following are proven and binding:
 
@@ -860,7 +960,7 @@ The following are proven and binding:
 Not part of the accepted proof feature yet:
 
 - Windows implementation/runtime validation;
-- production/prepress PDF;
+- professional production/prepress PDF beyond accepted Studio Standard PDF and PDF/A-2b export;
 - bleed/crop marks;
 - imposition;
 - printer/output profiles;
@@ -871,15 +971,57 @@ Those require separate scope and contracts.
 
 ---
 
+# 17.1 Accepted Definition of Done — macOS PDF/A-2b export
+
+The accepted PDF/A-2b feature produces a durable PDF/A-2b Travelbook export from
+the accepted exact-A5 Document PDF path on macOS.
+
+The following are proven and binding:
+
+- canonical Studio Travelbook is the source;
+- accepted exact-A5 Document PDF path is reused;
+- PDF/A-2b is bounded post-processing, not rendering;
+- XMP / PDF-A identification is added;
+- trailer `/ID` is added;
+- RGB OutputIntent is added from a safe embedded source profile;
+- `/Interpolate true` is normalized to `/Interpolate false` where required;
+- page count remains unchanged;
+- canonical page order remains unchanged;
+- exact-A5 PageBoxes remain unchanged;
+- decoded page content streams remain unchanged;
+- image stream bytes remain unchanged;
+- font resources remain unchanged;
+- layout geometry remains unchanged;
+- final output is atomic;
+- internal Studio validation remains structural/integrity-oriented;
+- external veraPDF validation passes;
+- installed-app real-world 16-page Travelbook export passed;
+- visual PDF/A vs accepted Studio Proof comparison passed.
+
+Not part of the accepted PDF/A-2b feature:
+
+- Windows implementation/runtime validation;
+- professional prepress output;
+- bleed/crop marks;
+- imposition;
+- output/printer profiles;
+- Publisher production integration;
+- Affinity automation.
+
+---
+
 # 18. Current immediate task priority
 
 There is **no active PDF-proof renderer defect** in the accepted architecture.
+There is **no active PDF/A-2b architecture defect** in the accepted architecture.
 
-The single-page and Document Proof paths are accepted and must be treated as stable infrastructure.
+The single-page Proof, Document Proof, Standard PDF and PDF/A-2b export paths are
+accepted and must be treated as stable infrastructure.
 
 Known pre-existing Studio layout findings, plus layout findings newly revealed by the larger/physical PDF inspection surface, belong to normal Studio layout development and are not grounds to reopen the renderer architecture.
 
-The next approved roadmap step after the accepted Document Proof is to define **Studio Proof Package v1** as a stable Studio-owned handoff contract. Publisher CLI/production integration follows later as a separate PoC and must consume Studio-resolved output rather than re-compose it.
+Publisher CLI/production integration remains a later separate PoC and must
+consume Studio-resolved output rather than re-compose it.
 
 Do not implement Windows while the current macOS-first scope remains active.
 
@@ -920,14 +1062,19 @@ Do not rewrite historical ADRs merely because a newer decision supersedes them.
 
 Where necessary, add a new ADR that explicitly supersedes the older decision.
 
-Current PDF-proof documentation must make clear that:
+Current PDF-proof/export documentation must make clear that:
 
 - the old system-print/A4 result is historical evidence;
 - native macOS WKWebView PDF is the accepted render path;
 - metadata-only PageBox normalization to exact A5 is accepted;
 - the false completion timeout was resolved;
 - Studio Document Proof is accepted through ADR-040;
+- Studio PDF/A-2b export is accepted through ADR-041;
 - the installed-app 16-page Travelbook validation passed;
+- PDF/A-2b external veraPDF validation passed;
+- PDF/A-2b is bounded post-processing of the accepted Document PDF;
+- PDF/A-2b does not introduce a second renderer, re-rendering, rasterization,
+  transparency flattening, reflow or content-stream rewrite;
 - Windows is deferred;
 - production/prepress and Publisher production integration remain separate future work.
 
