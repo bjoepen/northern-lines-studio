@@ -223,6 +223,18 @@ Interest Pages werden nicht als Sammel-Textfelder authoriert. Sie bestehen aus *
 
 Informationen, die inhaltlich zusammengehören, werden auch in der Seitenkomposition unmittelbar zusammen erzählt. Ein Routeneintrag trennt daher nicht künstlich Route, Startpunkt, Dauer und Schwierigkeit voneinander. Studio darf Daten intern getrennt speichern; für den Reisenden bleibt ihre Beziehung selbstverständlich sichtbar.
 
+Beispiele:
+
+- Fotografie: **Fotospot hinzufügen** → Ort, Brennweite, Licht, Motive, Hinweis, Kartenbezug.
+- Wandern & Natur: **Route hinzufügen** → Route, Startpunkt, Dauer, Schwierigkeit, Naturziele, Streckenhinweis, Kartenbezug.
+- Kultur & Geschichte und Kulinarik & Lokal nutzen dieselbe Foundation mit archetypspezifischen Eintragsmasken.
+
+> **Der Nutzer beschreibt den Eintrag. Studio komponiert die Darstellung.**
+
+Die Layoutentscheidung bleibt bei Studio. Abhängig von Anzahl, Textmenge, Kartenbezug und verfügbarer Seitenkapazität kann Studio eine gemeinsame Editorial-Fläche oder zwei getrennte Boxen wählen. Der Reisende wählt keine Spaltenzahl und keine Box-Geometrie.
+
+Die kompaktere Typografie bleibt dabei eine **adaptive Kapazitätsstufe ausschließlich für Interest Pages**. `comfortable` ist der Normalzustand; `tight` wird erst bei realem Platzdruck verwendet. Reicht auch `tight` nicht aus, greift `overflow`. Text wird niemals abgeschnitten. Companion und Footer bleiben harte Invarianten.
+
 ---
 
 ## 11. Editorial Worlds sind Sprachen, keine Themes
