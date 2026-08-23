@@ -1,6 +1,5 @@
-/* Northern Lines Studio · Build 026
-   CSS is intentionally split by responsibility. Import order is the cascade contract.
-   025A changes structure, not the approved Build 024 visual result. */
+/* Northern Lines Studio · Build 041
+   CSS is intentionally split by responsibility. Import order is the cascade contract. */
 @import './styles/base-shell.css';
 @import './styles/destination-editor.css';
 @import './styles/destination-foundation.css';
@@ -18,6 +17,7 @@
 @import "./styles/travel-companion-workshop.css";
 
 @import './styles/book-utility-pages.css';
+@import './styles/curated-checklist.css';
 @import './styles/layout-polish.css';
 
 @import './styles/pdf-proof.css';
