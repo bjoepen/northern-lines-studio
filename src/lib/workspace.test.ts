@@ -26,7 +26,7 @@ function project(): StudioProject {
       stages: [{ id: 'bergen', kind: 'destination', title: 'Bergen', country: 'Norway' }]
     },
     destinations: [],
-  document: { pageFormat: 'A5', orientation: 'portrait' },
+    document: { pageFormat: 'A5', orientation: 'portrait' },
     pageManifest: pages,
     projectPath: '/tmp/sample.nls'
   };
@@ -42,7 +42,6 @@ describe('workspace model', () => {
       'Erinnerungen'
     ]);
   });
-
 
   it('derives Travelbook page numbers from the current journey route', () => {
     const routePages: StudioPage[] = [
@@ -98,6 +97,8 @@ describe('workspace model', () => {
       'Licht',
       'Wetter',
       'Fotografie-Workshop',
+      'Checkliste · 1/2',
+      'Checkliste · 2/2',
       'Erinnerungen',
       'Die Reise bleibt'
     ]);
@@ -142,7 +143,7 @@ describe('workspace model', () => {
   });
 
   it('returns a calm project status instead of a technical build state', () => {
-    expect(projectStatus(project())).toBe('6 Seiten · Reise bereit');
+    expect(projectStatus(project())).toBe('8 Seiten · Reise bereit');
   });
 
   it('uses author-facing labels for page roles', () => {
