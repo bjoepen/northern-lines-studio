@@ -217,6 +217,14 @@ Die Ausnahme gilt nur für sekundäre Praxisinformationen wie Route, Startpunkt,
 
 Companion- und Footer-Safe-Zonen bleiben auch bei kompakter Interest-Typografie harte Grenzen. Wenn der Inhalt trotz erlaubter Verdichtung nicht ruhig passt, greift Capacity Protection statt weiterer Verkleinerung.
 
+### Build 030 Polish · Culinary Density & Safe-Zone Correction
+
+Für **alle Interest Pages** gelten bei informationsdichten Einträgen genau zwei feste Typografie-Stufen: `comfortable` und `tight`. `tight` ist eine definierte zweite Stufe und **niemals durch freie Skalierung** ersetzbar. Studio darf Text nicht schrittweise verkleinern, bis er zufällig in die Seite passt.
+
+> **Interest Pages dürfen einmal dichter werden. Danach wird nicht weiter geschrumpft.**
+
+Reicht die feste `tight`-Stufe nicht, wechselt die Seite in `overflow` und verwendet die bestehende Travel Language: **„Diese Seite kann diesen Inhalt nicht mehr ruhig erzählen.“** Companion- und Footer-Safe-Zonen bleiben dabei harte Invarianten.
+
 ### Interest Pages · Structured Entry Authoring
 
 Interest Pages werden nicht als Sammel-Textfelder authoriert. Sie bestehen aus **wiederholbaren semantischen Einträgen**. Der Reisende fügt zuerst einen konkreten Eintrag hinzu und beschreibt anschließend genau diesen Eintrag in einer passenden Maske.
