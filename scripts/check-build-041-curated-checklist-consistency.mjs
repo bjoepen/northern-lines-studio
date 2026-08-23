@@ -25,10 +25,11 @@ requireMatch(!component.includes('<input') && !component.includes('<textarea') &
 requireMatch(workspace.includes("from './curated-checklist'"), 'workspace must resolve curated checklist pages');
 requireMatch(workspace.includes('pagesWithCuratedChecklist(pages)'), 'publication grouping must include curated checklist pages');
 requireMatch(
-  workspace.includes("page.id === 'page-curated-checklist-1'")
-    && workspace.includes("page.id === 'page-curated-checklist-2'")
-    && workspace.includes("page.type === 'notes'")
-    && workspace.includes("page.role === 'closing_memory'"),
+  workspace.includes('function memoryPagePriority(page: StudioPage)')
+    && workspace.includes('if (isCuratedChecklistPage(page)) return 0;')
+    && workspace.includes("if (page.role === 'notes') return 1;")
+    && workspace.includes("if (page.role === 'closing_memory') return 2;")
+    && workspace.includes('memoryPagePriority(a) - memoryPagePriority(b)'),
   'memories section must use semantic checklist-before-notes-before-closing ordering'
 );
 requireMatch(main.includes('installCuratedChecklistHost'), 'Studio bootstrap must install the checklist host');
