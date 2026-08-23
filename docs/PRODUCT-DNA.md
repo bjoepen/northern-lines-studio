@@ -390,6 +390,8 @@ Stattdessen gilt:
 
 > **Wenige Archetypen + belastbare Layout Grammar.**
 
+> **Die Seitenwirkung bleibt stabil. Die innere Komposition passt sich dem Inhalt an.**
+
 Die Grammar besitzt eine endliche Menge erlaubter Kompositionen und reagiert auf reale Inhalte.
 
 Drei Boxen nebeneinander können richtig sein, wenn Inhalte kurz, gleichgewichtig und scanbar sind. Dieselbe Komposition ist falsch für lange Fließtexte.
