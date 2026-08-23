@@ -261,6 +261,8 @@ Visuelle Elemente besitzen semantische Rollen, beispielsweise:
 - Wissen;
 - Souvenir.
 
+> **Das Signet sagt, was es ist. Die Farbe sagt, zu welcher Welt es gehört.**
+
 Wo Signet und ruhige World-Fläche ausreichen, werden keine zusätzlichen Rahmen, Badges oder dekorativen Karten erfunden.
 
 > **Nicht jede freie Fläche braucht ein Gestaltungselement.**
@@ -339,6 +341,8 @@ Er besitzt definierte:
 - Pose;
 - Spiegelung;
 - Schutzfläche.
+
+> **Der Companion nimmt nicht am Layout teil. Das Layout nimmt Rücksicht auf den Companion.**
 
 > **Der Begleiter ist unantastbar – und sein Raum ebenfalls.**
 
