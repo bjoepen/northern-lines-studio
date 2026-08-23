@@ -18,6 +18,7 @@ This cleanup branch separates current repository authority from historical devel
 - `docs/engineering/ENGINEERING-STANDARD.md`
 - `docs/engineering/DROP-IN-STANDARD.md`
 - `docs/validation/STUDIO-PDFA-2B-INTEGRATION-VALIDATION.md`
+- `docs/validation/STUDIO-TRAVEL-OPENING-VALIDATION.md`
 
 ## Round 1 — historical build/process artifacts
 
@@ -40,6 +41,14 @@ Removed from active main view:
 - obsolete Swift Package / SwiftUI implementation tree (`Package.swift`, `Sources/`, `Tests/`) superseded by Tauri v2
 - `INITIALIZATION.md` from Build 001; current setup commands are maintained in README
 - `STUDIO-UNDERSTANDING.md`; it was an audit snapshot of an old PoC branch and referenced now-removed historical documentation
+
+During Round 2 an active consistency gate was found to depend on historical `BUILD-022-VALIDATION.md`. The durable travel-opening regression contract was therefore extracted into `docs/validation/STUDIO-TRAVEL-OPENING-VALIDATION.md` and the gate was updated to use that build-independent authority.
+
+## Round 3 — final hygiene
+
+- removed the duplicate historical `docs/adr/ADR-001-swiftui-appkit-publisher-cli.md`
+- retained `docs/adr/ADR-001-SWIFTUI-APPKIT.md` as the single ADR-001 record because it explicitly marks the former SwiftUI/AppKit decision as superseded by ADR-002
+- no broad renaming of Build- or PoC-named consistency scripts was performed: despite historical names, these scripts still enforce current source invariants and renaming them would create churn without improving runtime or product authority
 
 Git history remains the audit trail for all removed historical material.
 
