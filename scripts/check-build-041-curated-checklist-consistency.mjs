@@ -19,14 +19,20 @@ const styles = read('src/styles.css');
 requireMatch(content.includes("'curated_checklist_1'") && content.includes("'curated_checklist_2'"), 'both curated checklist parts must exist');
 requireMatch(content.includes('order: 27 + definition.part'), 'checklist order must remain 28/29 before memories');
 requireMatch(content.includes("role: 'notes'"), 'checklist pages must share the memories publication section');
-requireMatch(content.includes("components: []"), 'checklist must not expose authoring components');
+requireMatch(content.includes('components: []'), 'checklist must not expose authoring components');
 requireMatch(component.includes('curated-checklist-sections') && component.includes('curated-check-box'), 'dedicated checklist renderer must render sections and printable boxes');
 requireMatch(!component.includes('<input') && !component.includes('<textarea') && !component.includes('<button'), 'curated checklist must contain no user authoring controls');
-requireMatch(workspace.includes("import { curatedChecklistPages } from './curated-checklist'"), 'workspace must resolve curated checklist pages');
+requireMatch(workspace.includes("from './curated-checklist'"), 'workspace must resolve curated checklist pages');
 requireMatch(workspace.includes('pagesWithCuratedChecklist(pages)'), 'publication grouping must include curated checklist pages');
-requireMatch(workspace.includes("memories.sort((a, b) => a.order - b.order)"), 'memories section must preserve checklist-before-notes order');
-requireMatch(main.includes("installCuratedChecklistHost"), 'Studio bootstrap must install the checklist host');
-requireMatch(host.includes(".a5-page[data-studio-page-id]"), 'checklist must render inside the existing resolved Studio A5 page');
+requireMatch(
+  workspace.includes("page.id === 'page-curated-checklist-1'")
+    && workspace.includes("page.id === 'page-curated-checklist-2'")
+    && workspace.includes("page.type === 'notes'")
+    && workspace.includes("page.role === 'closing_memory'"),
+  'memories section must use semantic checklist-before-notes-before-closing ordering'
+);
+requireMatch(main.includes('installCuratedChecklistHost'), 'Studio bootstrap must install the checklist host');
+requireMatch(host.includes('.a5-page[data-studio-page-id]'), 'checklist must render inside the existing resolved Studio A5 page');
 requireMatch(css.includes('background: #fff'), 'physical checklist page must remain white');
 requireMatch(css.includes('var(--world-heading-family)') && css.includes('var(--world-body-family)'), 'checklist typography must inherit Editorial World authority');
 requireMatch(css.includes('var(--world-accent)') && css.includes('var(--world-ink)'), 'checklist colors must inherit Editorial World authority');
