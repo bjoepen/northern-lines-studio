@@ -9,7 +9,7 @@ Der PoC prüft nur den Host. Er ersetzt keinen bestehenden Proof-, Document-Proo
 ## 2. Tatsächlich implementierte minimale Änderung
 
 - `src/App.svelte` erzeugt über `WebviewWindow` einen temporären Hidden Host mit derselben Studio-App-URL.
-- Der Hidden Host erhält per URL-Parameter nur `projectPath`, `outputDir`, `jobId` und Rückkanal-Label.
+- Der Hidden Host erhält per URL-Parameter `mode`, `projectPath`, `outputDir`, `finalOutputPath` für Full Document, `jobId` und Rückkanal-Label.
 - Der Hidden Host lädt den gespeicherten `.nls`-Projektzustand über den bestehenden `load_nls_project`-Pfad.
 - Der Hidden Host wählt nacheinander genau drei begrenzte Referenzrollen aus: Destination, Photography Workshop, Notes / Memory.
 - Der Hidden Host verwendet die bestehende Readiness, den bestehenden `pdf-proof-rendering`-Modus und `createStudioPdfProof()`.
@@ -22,12 +22,15 @@ Der PoC prüft nur den Host. Er ersetzt keinen bestehenden Proof-, Document-Proo
 - `src/lib/pdf-proof.ts`
 - `src/lib/pdf-proof.test.ts`
 - `src/styles/pdf-proof.css`
+- `src/styles/base-shell.css`
 - `src-tauri/src/lib.rs`
 - `src-tauri/capabilities/default.json`
 - `src-tauri/capabilities/background-proof.json`
 - `scripts/check-background-proof-poc-001-capabilities.mjs`
 - `scripts/check-studio-document-proof-poc-001-consistency.mjs`
 - `docs/poc/background-proof-001/POC-001-ACL-EVENT-AUDIT.md`
+- `docs/poc/background-proof-001/POC-001-FULL-DOCUMENT-VALIDATION.md`
+- `docs/poc/background-proof-001/POC-001-RASTER-FIDELITY-INVESTIGATION.md`
 - `docs/poc/background-proof-001/POC-001-RESULT.md`
 
 ## 4. Verwendete Tauri/WebView-Architektur
@@ -577,6 +580,241 @@ veraPDF-Hinweis: Die vorhandene veraPDF-Evidenz bleibt ausschließlich Evidenz
 für den akzeptierten PDF/A-2b Standard-Export. Sie ist kein automatischer
 visueller PASS für diese Background-Proof-PoC-PDFs.
 
+## 4.9 Full-Travelbook Completion und UI-Konsolidierung
+
+Nach der erfolgreichen 3-Referenzseiten-Runtime wurde derselbe PoC-Branch für
+den vollständigen Travelbook-Pfad erweitert.
+
+UI-Konsolidierung:
+
+- Die Canvas-Entwicklungsbuttons wurden aus der normalen Arbeitsfläche entfernt:
+  `Seiten-Proof`, `Standard PDF`, `PDF/A-2b`, `Background PoC`.
+- Die PoC-Lifecycle-/selectedPage-Debugzeile wird nicht mehr im Canvas gerendert.
+- Die globale Toolbar enthält nun:
+
+```text
+Ausgabe ▾    Reise ▾
+```
+
+`Ausgabe` enthält:
+
+```text
+PDF exportieren
+Entwicklungs-PDF
+```
+
+`PDF exportieren` verwendet:
+
+```text
+Hidden Background Document Export
+→ bestehende Document Assembly
+→ bestehender PDF/A-2b Postprocessor
+→ finale Benutzer-PDF
+```
+
+`Entwicklungs-PDF` bleibt der bisherige akzeptierte sichtbare Standard-PDF-Pfad
+und dient als Vergleichsreferenz.
+
+Full-Document-Orchestrierung:
+
+- Seitenquelle ist ausschließlich `studioDocumentProofPages(project)`, also
+  derselbe kanonische Publication-Order-Pfad wie im akzeptierten Document Proof.
+- Variable Seitenzahlen bleiben unterstützt; das Referenzprojekt wird in der
+  Runtime mit 16 Seiten erwartet.
+- Jede Seite läuft seriell durch Hidden-Host-Seitenauswahl, bestehende
+  Readiness, bestehenden `pdf-proof-rendering`-Modus und `createStudioPdfProof()`.
+- Danach werden die staged pages mit `assembleStudioDocumentPdfProof()`
+  zusammengesetzt.
+- Anschließend erzeugt `exportStudioPdfA2b()` die finale PDF/A-2b-Datei.
+
+Der Background Standard PDF-Zwischenschritt wird als Vergleichsevidenz neben
+der finalen PDF abgelegt:
+
+```text
+<final-name>-background-standard.pdf
+```
+
+Full-Document-Trace:
+
+```text
+DOCUMENT_BACKGROUND_START
+PAGE_COUNT_RESOLVED
+PAGE_ITERATION_START
+PAGE_SELECTED
+PAGE_READY
+PAGE_PROOF_START
+PAGE_PROOF_COMPLETE
+PAGE_STAGED
+PAGE_ITERATION_COMPLETE
+DOCUMENT_ASSEMBLY_START
+DOCUMENT_ASSEMBLY_COMPLETE
+STANDARD_DOCUMENT_READY
+PDFA_POSTPROCESS_START
+PDFA_POSTPROCESS_COMPLETE
+FINAL_OUTPUT_READY
+COMPLETE
+```
+
+Zusätzliche Validierungsnotiz:
+
+```text
+docs/poc/background-proof-001/POC-001-FULL-DOCUMENT-VALIDATION.md
+```
+
+Ausstehend bleiben installierte macOS-Runtime, 16/16-Seiten-Nachweis,
+Background-vs-Entwicklungs-PDF-Vergleich, externe veraPDF-Prüfung und visuelle
+Validierung.
+
+## 4.10 Full-Document Host Request Contract Fix
+
+Runtime-Fehler in der installierten macOS-App:
+
+```text
+BACKGROUND_PROOF_POC_001_INVALID_HOST_REQUEST:
+Hidden Host wurde ohne vollständige PoC-Parameter gestartet.
+```
+
+Der Fehler trat vor `PROJECT_LOAD_START`, `REFERENCE_PAGE_SELECT_START` und
+`PDF_INVOKE_START` auf. Damit lag er im Request-/Bootstrap-Contract zwischen
+Main Window und Hidden Host, nicht im Renderer.
+
+Root Cause:
+
+- Der ursprüngliche 3-Seiten-PoC übergab einen Zielordner als `outputDir`.
+- Der Full-Document-Caller wechselte auf einen finalen Dateipfad, setzte aber
+  `outputDir` im Hidden-Host-Request auf leer.
+- Der Hidden Host validierte weiterhin `projectPath`, `outputDir` und `jobId`
+  als Pflichtfelder.
+- Dadurch war der Full-Document-Request technisch unvollständig.
+
+Request-Matrix nach Fix:
+
+| Feld | Caller schreibt | Hidden Host liest | Required? | Source | Target name | Encoding | Validation |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `nlsBackgroundProofPoc` | `001` | `isHost` | YES | constant | `nlsBackgroundProofPoc` | `URLSearchParams` | must be `001` |
+| `mode` | `reference-pages` oder `document-pdfa2b` | `mode` | YES | caller mode | `mode` | `URLSearchParams` | defaults only to reference mode if absent |
+| `projectPath` | saved `.nls` path | `projectPath` | YES | `project.projectPath` | `projectPath` | `URLSearchParams` | non-empty |
+| `outputDir` | reference output folder or derived final-output parent | `outputDir` | YES | folder dialog or `finalOutputPath` parent | `outputDir` | `URLSearchParams` | non-empty |
+| `jobId` | generated id | `jobId` | YES | Main caller | `jobId` | `URLSearchParams` | non-empty |
+| `returnTo` | current Main label | `returnTo` | YES | `getCurrentWebviewWindow().label` | `returnTo` | `URLSearchParams` | non-empty |
+| `finalOutputPath` | final PDF target for Full Document | `finalOutputPath` | YES for `document-pdfa2b`, NO for reference mode | save dialog | `finalOutputPath` | `URLSearchParams` | non-empty in Full Document |
+| `backgroundStandardPath` | not transported | derived in Hidden Host | NO URL parameter | `finalOutputPath` | none | derived by helper | deterministic derivation |
+
+Minimaler Fix:
+
+- Der Full-Document-Caller leitet `outputDir` deterministisch aus dem vom Nutzer
+  gewählten finalen PDF-Pfad ab.
+- Der finale Pfad wird eindeutig als `finalOutputPath` transportiert.
+- `backgroundStandardPath` wird nicht als zweiter Output-Parameter übertragen,
+  sondern im Hidden Host deterministisch aus `finalOutputPath` abgeleitet.
+- Die Host-Validierung wurde nicht abgeschwächt. Ein unvollständiger Request
+  bleibt `BACKGROUND_PROOF_POC_001_INVALID_HOST_REQUEST`.
+
+Neue Trace-Punkte vor Hidden-Host-Erzeugung:
+
+```text
+FULL_DOCUMENT_HOST_REQUEST
+FULL_DOCUMENT_HOST_REQUEST_VALID
+```
+
+Der nächste Runtime-Lauf soll damit mindestens erreichen:
+
+```text
+FULL_DOCUMENT_HOST_REQUEST_VALID
+HOST_MODE_PARSED
+HOST_DOM_READY
+PROJECT_LOAD_START
+PROJECT_LOADED
+PAGE_COUNT_RESOLVED
+```
+
+## 4.11 Raster-Fidelity-/Hidden-WebView-Resolution-Fix
+
+Runtime-Befund nach erfolgreichem Full-Document-Background-Export:
+
+```text
+Development PDF          sichtbar schaerfer / kontrastreicher
+Background Standard PDF  sichtbar weichere Rasterbilder
+Final PDF/A-2b           erbt die Background-Standard-Rasterdimensionen
+```
+
+Der Unterschied ist bereits im Background Standard PDF vorhanden und damit kein
+primaerer PDF/A-Befund.
+
+Identifizierte Artefakte:
+
+| Rolle | Pfad | SHA-256 | Seiten | Groesse |
+| --- | --- | --- | ---: | ---: |
+| Development PDF | `/Users/bernd/Documents/Norwegen 2027-Travelbook.pdf` | `ea2506338dd2d17e172e3067f8faf8e5af20c977dcabfc1a3bdee7d7f9489394` | 16 | 48,289,621 bytes |
+| Background Standard PDF | `/Users/bernd/Documents/Norwegen 2027-background-standard.pdf` | `1715efcfd7c764dac3d3bda105308fb46a4caa1de4192096b45fa258ebed437d` | 16 | 2,296,465 bytes |
+| Final Background PDF/A-2b | `/Users/bernd/Documents/Norwegen 2027.pdf` | `f393ae044e537b98595548cc786da8cd74f671be6f9f174229838c7cbb8d12c6` | 16 | 2,297,481 bytes |
+
+Strukturelle Evidence:
+
+```text
+page count 16/16
+page size 419.528 x 595.276 pt
+MediaBox/CropBox/TrimBox gleich
+pdffonts: gleiche eingebettete Font-Struktur
+```
+
+Raster-Evidence aus `pdfimages -list`:
+
+| Asset-Klasse | Development PDF | Background Standard PDF | Final PDF/A-2b |
+| --- | ---: | ---: | ---: |
+| Companion, p4 | 1536 x 1024 px, ca. 1907 ppi | 116 x 77 px, 144 ppi | 116 x 77 px, 144 ppi, Interpolate=no |
+| Destination/Hero, p5 | 2073 x 758 px, 463 ppi | 645 x 236 px, 144 ppi | 645 x 236 px, 144 ppi, Interpolate=no |
+| Interest/Workshop-artig, p6 | 1672 x 941 px, 1120 ppi | 215 x 121 px, 144 ppi | 215 x 121 px, 144 ppi, Interpolate=no |
+| Portrait Interest, p9 | 1023 x 1537 px, 630 ppi | 233 x 351 px, 143/144 ppi | 233 x 351 px, 143/144 ppi, Interpolate=no |
+
+Root Cause:
+
+- Der Hidden Host wurde vor dem Fix als unsichtbares WebviewWindow mit
+  `width: 420` und `height: 596` erzeugt.
+- Der sichtbare Entwicklungs-PDF-Pfad ruft denselben `createStudioPdfProof()` /
+  `create_studio_pdf_proof` / nativen `WKWebView createPDF`-Pfad aus dem
+  normalen, deutlich groesseren Main WebView auf.
+- Die Background-Rasterdimensionen korrelieren mit dem kleinen Hidden-Viewport.
+  Beispiel: Destination/Hero `2073 / 645 = 3.21`; `420 * 3.21 ~= 1348`, also
+  typische Main-Viewport-Breite im sichtbaren Studio.
+- WebKit emittiert die Bildlayer im Hidden Host deshalb unter einer kleineren
+  Backing-/Viewport-Bedingung.
+
+Minimaler Fix:
+
+- `backgroundProofPoc001HiddenHostViewportForMain()` leitet die Hidden-Host-
+  Fensterabmessung aus `window.innerWidth` / `window.innerHeight` des sichtbaren
+  Main WebViews ab.
+- Fallback ist die Main-Window-Mindestgroesse aus `tauri.conf.json`:
+
+```text
+width  >= 980
+height >= 700
+```
+
+- `new WebviewWindow(...)` nutzt jetzt diese abgeleitete Main-Viewport-Groesse.
+- Der A5-Capture bleibt unverändert: bestehendes `pdf-proof-rendering` CSS und
+  bestehender nativer `WKPDFConfiguration.rect`.
+
+Neue PoC-Evidence:
+
+```text
+MAIN_RENDER_ENVIRONMENT
+MAIN_ASSET_EVIDENCE
+HOST_RENDER_ENVIRONMENT
+PAGE_ASSET_EVIDENCE
+```
+
+Diese Trace-Punkte erfassen Browser-Viewport, DPR, Screen/VisualViewport,
+Visibility sowie DOM-Bilddaten (`naturalWidth`, `currentSrc`, CSS-/Client-/
+Bounding-Box-Groessen, `object-fit`, `image-rendering`, `srcset`/`sizes`).
+
+Ausfuehrliche Evidence:
+
+```text
+docs/poc/background-proof-001/POC-001-RASTER-FIDELITY-INVESTIGATION.md
+```
+
 ## 5. Bestehender Renderer unverändert
 
 Der bestehende PDF-Renderer blieb unverändert:
@@ -591,7 +829,7 @@ Der bestehende PDF-Renderer blieb unverändert:
 ## 6. Build-/Test-Ergebnisse
 
 - `pnpm check`: PASS
-- `pnpm test`: PASS, 23 Test Files, 126 Tests
+- `pnpm test`: PASS, 23 Test Files, 132 Tests
 - `pnpm build`: PASS
 - `cargo test --manifest-path src-tauri/Cargo.toml`: PASS, 58 Rust Tests
 - `pnpm consistency`: PASS
@@ -613,61 +851,94 @@ Runtime-Evidenz:
 - Current installed-app readiness trace before this opacity fix: `PDF_DOCUMENT_PROOF_PAGE_NOT_READY ... opacity=0`.
 - Current installed-app post-proof trace before this orchestration fix: first PDF generated, then `BACKGROUND_PROOF_POC_001_LIFECYCLE_TIMEOUT ... last=PROOF_MODE_EXIT`.
 - Agent-side runtime after this fix: NOT RUN.
+- Current raster-fidelity agent-side PDF inspection: Development PDF vs
+  Background Standard PDF shows matching page count/PageBoxes/fonts and
+  materially smaller Background raster objects before the fix.
+- Raster-fidelity installed-app runtime after this fix: NOT RUN.
 
 ## 7. Manuelle Testanleitung
 
-Gemäß `docs/poc/background-proof-001/POC-001-ACCEPTANCE.md`:
+Full-Document-Runtime gemäß aktuellem Auftrag:
 
-1. App starten und ein gespeichertes Referenz-`.nls` öffnen, das Destination, Photography Workshop und Notes / Memory enthält.
-2. Im Main Window eine eindeutig erkennbare Destination auswählen, z. B. Bergen.
+1. App starten und das 16-seitige Referenz-Travelbook öffnen.
+2. Im Main Window eine eindeutig erkennbare Seite sichtbar lassen, z. B. Bergen.
 3. Main selected page before notieren.
-4. `Background PoC` auslösen und einen Zielordner wählen.
-5. Während der PoC läuft prüfen, dass Main Window keine andere Seite zeigt, nicht in Proof Mode wechselt und nicht auf Capture-Größe resized.
+4. `Ausgabe` → `PDF exportieren` starten und finalen Zielpfad wählen.
+5. Während der Export läuft prüfen, dass Main Window keine andere Seite zeigt,
+   nicht in Proof Mode wechselt, nicht resized und nicht flackert.
 6. Main selected page during notieren.
 7. Nach Abschluss Main selected page after notieren.
-8. Die drei erzeugten PDFs prüfen:
-   - Destination
-   - Photography Workshop
-   - Notes / Memory
-9. Für alle drei PDFs prüfen: eine Seite, DIN A5, korrekte Seite, korrekte World Expression, Companion, Footer und keine Main-Window-Veränderung.
-10. Visuell gegen die akzeptierten sichtbaren Proofs derselben Seiten vergleichen.
+8. Prüfen, dass die finale PDF entsteht.
+9. Prüfen, dass die Background Standard PDF neben der finalen PDF entsteht:
+   `<final-name>-background-standard.pdf`.
+10. Prüfen, dass der Trace 16/16 Seiten in kanonischer Publication Order durchläuft.
+11. `Ausgabe` → `Entwicklungs-PDF` erzeugen.
+12. Background Standard PDF gegen Entwicklungs-PDF vergleichen:
+    page count, page order, PageBoxes, Fonts, Images, decoded content streams
+    und visuelle Stichproben.
+13. Finale PDF extern mit veraPDF prüfen:
 
-PASS ist nur zulässig, wenn Build Gate, Main-Window-Invariante, alle drei visuellen Proofs und Hidden-Host-Lifecycle bestehen.
+```text
+profileName: PDF/A-2b
+compliant: true
+failedRules: 0
+failedChecks: 0
+```
+
+Visuelle Stichproben:
+
+- Cover
+- Orientation
+- Destination
+- Interest
+- Workshop
+- Notes / Memory
+
+PASS ist für diesen erweiterten Auftrag nur zulässig, wenn Full-Document-Runtime,
+Main-Window-Invariante, Background-vs-Entwicklungs-PDF-Vergleich, finale PDF/A
+und visuelle Stichproben bestehen.
 
 ## 8. Bekannte Einschränkungen
 
 - Der PoC verwendet ausschließlich gespeicherte Projektzustände.
 - Ungespeicherte Bearbeitungen sind ausgeschlossen.
-- Es gibt keine automatische Auswahl beliebiger drei Seiten; die Auswahl ist bewusst auf die drei Referenzrollen begrenzt.
-- Der bestehende Document Proof, Standard PDF Export und PDF/A-2b Export bleiben unverändert und nutzen weiterhin den akzeptierten Produktionspfad.
-- Die installierte macOS-App und reale visuelle Proofs wurden in dieser Agent-Umgebung nicht ausgeführt.
+- Die drei Referenzseiten wurden in der Nutzer-Runtime validiert; der neue
+  Full-Document-Pfad benötigt separate 16-Seiten-Runtime-Validierung.
+- Der bestehende sichtbare Document Proof, Entwicklungs-PDF-Pfad und PDF/A-2b
+  Kern bleiben unverändert.
+- Die installierte macOS-App und reale Full-Document-PDFs wurden in dieser
+  Agent-Umgebung nicht ausgeführt.
 - Der ACL-Fix muss in der installierten macOS-App erneut validiert werden. Erwartung: `create_webview_window` wird nicht mehr von ACL blockiert.
 - Der Runtime-Hang-Fix muss in der installierten macOS-App validiert werden. Erwartung: Der Button bleibt nicht dauerhaft busy; bei weiterem Hidden-Host-Problem erscheint `BACKGROUND_PROOF_POC_001_LIFECYCLE_TIMEOUT` mit letztem Lifecycle-Zustand.
 - Der Bootstrap-Fix muss in der installierten macOS-App validiert werden. Erwartung: Kein permanentes `HOST_LOAD_STARTED`; der Trace erreicht `HOST_DOM_READY` und danach `PROJECT_LOAD_START`.
 - Der ACL-/Event-Call-Site-Audit-Fix muss in der installierten macOS-App validiert werden. Erwartung: `plugin:event|listen not allowed by ACL` tritt nicht mehr auf.
 - Der Hidden-Host-Opacity-Fix muss in der installierten macOS-App validiert werden. Erwartung: Kein `PDF_DOCUMENT_PROOF_PAGE_NOT_READY` wegen `opacity=0`; Destination erreicht `REFERENCE_PAGE_READY`.
 - Der Post-Proof-Orchestrierungsfix muss in der installierten macOS-App validiert werden. Erwartung: Kein Timeout bei `PROOF_MODE_EXIT`; der Trace erreicht `NEXT_REFERENCE_PAGE`, verarbeitet Photography Workshop und Notes / Memory und emittiert erst danach `HOST_RESULT_EMIT`.
+- Der Full-Document-Pfad muss in der installierten macOS-App validiert werden.
+  Erwartung: `PDF exportieren` läuft über 16/16 kanonische Seiten, erzeugt
+  Background Standard PDF und finale PDF/A-2b, ohne die Main-Seite zu ändern.
+- Der Raster-Fidelity-Fix muss in der installierten macOS-App validiert werden.
+  Erwartung: Background Standard PDF und Entwicklungs-PDF enthalten
+  korrespondierende Rasterobjekte ohne materielle Downsampling-Differenz.
 
 ## 9. Abschließende technische Bewertung
 
-INCONCLUSIVE – awaiting real-world visual validation
+INCONCLUSIVE – awaiting raster fidelity runtime validation
 
-Die geforderten automatisierten Build-, Test- und Consistency-Gates sind PASS. `cargo fmt --check` bleibt separat durch bestehenden Rust-Formatting-Drift rot. Der PoC darf erst nach manueller Real-World-Prüfung der drei Background-Proofs und des Main-Window-Invariants als PASS bewertet werden.
+Die frühere 3/3-Referenzseiten-Runtime ist bestanden:
 
+```text
+3/3 reference PDFs generated
+Destination PASS
+Photography Workshop PASS
+Notes / Memory PASS
+Main selectedPage remained page-bergen
+no visible page switching
+no lifecycle timeout
+terminal lifecycle completed successfully
+visual validation PASS
+```
 
-
-STATUS = PASS
-
-Runtime:
-
-- 3/3 reference PDFs generated
-- Destination PASS
-- Photography Workshop PASS
-- Notes / Memory PASS
-- Main selectedPage remained page-bergen
-- no visible page switching
-- no lifecycle timeout
-- terminal lifecycle completed successfully
-- visual validation PASS
-
-BACKGROUND_PROOF_POC_001 = PROVEN
+Der erweiterte Full-Document-Auftrag ist erst nach installierter
+16-Seiten-Runtime, Vergleich Background Standard PDF vs Entwicklungs-PDF,
+externer veraPDF-Prüfung und visueller Validierung bewertbar.

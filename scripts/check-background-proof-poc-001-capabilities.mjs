@@ -80,7 +80,7 @@ if (JSON.stringify(background.permissions) !== JSON.stringify(['core:event:allow
 
 const mainBackgroundPoc = sliceBetween(
   app,
-  'async function createBackgroundProofPoc001()',
+  "async function createBackgroundProofPoc001(mode: 'reference-pages' | 'document-pdfa2b' = 'reference-pages')",
   'async function runBackgroundProofPoc001Host()'
 );
 const hiddenBackgroundPoc = sliceBetween(
@@ -108,6 +108,18 @@ for (const listenerSnippet of [
 
 if (!mainBackgroundPoc.includes('await hiddenHost.close()')) {
   fail('Main must close the temporary Hidden Host after a terminal result or failure.');
+}
+if (!mainBackgroundPoc.includes('backgroundProofPoc001HiddenHostViewportForMain({')) {
+  fail('Hidden Host viewport must be derived from the visible Main viewport.');
+}
+if (!mainBackgroundPoc.includes('width: hiddenHostViewport.width') || !mainBackgroundPoc.includes('height: hiddenHostViewport.height')) {
+  fail('Hidden Host WebviewWindow must use the derived Main-sized viewport.');
+}
+if (!mainBackgroundPoc.includes("mode === 'document-pdfa2b'")) {
+  fail('Main Background export must support the full-document PDF/A mode.');
+}
+if (!mainBackgroundPoc.includes("title: 'Travelbook als PDF exportieren'")) {
+  fail('Final user export must be launched from a file-save target.');
 }
 if (!mainBackgroundPoc.includes("hiddenHost?.once('tauri://created'")) {
   fail('Main must observe the Hidden Host created event.');
@@ -142,6 +154,10 @@ if (!editorOpenLifecycle.includes("invoke<string | null>('take_pending_open_path
 for (const step of [
   'MAIN_POC_START',
   'MAIN_LISTENERS_READY',
+  'MAIN_RENDER_ENVIRONMENT',
+  'MAIN_ASSET_EVIDENCE',
+  'FULL_DOCUMENT_HOST_REQUEST',
+  'FULL_DOCUMENT_HOST_REQUEST_VALID',
   'HOST_CREATE_REQUEST',
   'HOST_CREATED',
   'HOST_LOAD_STARTED',
@@ -150,6 +166,7 @@ for (const step of [
   'HOST_JS_BOOTSTRAP_START',
   'HOST_LOCATION_CAPTURED',
   'HOST_MODE_PARSED',
+  'HOST_RENDER_ENVIRONMENT',
   'HOST_SVELTE_MOUNT_START',
   'HOST_SVELTE_MOUNTED',
   'HOST_DOM_COMMIT_START',
@@ -199,12 +216,79 @@ for (const step of [
   if (!pdfProof.includes(`'${step}'`)) fail(`Lifecycle step missing from typed PoC contract: ${step}`);
 }
 
+for (const step of [
+  'DOCUMENT_BACKGROUND_START',
+  'PAGE_COUNT_RESOLVED',
+  'PAGE_ITERATION_START',
+  'PAGE_SELECTED',
+  'PAGE_READY',
+  'PAGE_ASSET_EVIDENCE',
+  'PAGE_PROOF_START',
+  'PAGE_PROOF_COMPLETE',
+  'PAGE_STAGED',
+  'PAGE_ITERATION_COMPLETE',
+  'DOCUMENT_ASSEMBLY_START',
+  'DOCUMENT_ASSEMBLY_COMPLETE',
+  'STANDARD_DOCUMENT_READY',
+  'PDFA_POSTPROCESS_START',
+  'PDFA_POSTPROCESS_COMPLETE',
+  'FINAL_OUTPUT_READY',
+  'COMPLETE'
+]) {
+  if (!pdfProof.includes(`'${step}'`)) fail(`Full-document lifecycle step missing from typed PoC contract: ${step}`);
+  if (!app.includes(`emitLifecycle('${step}'`) && step !== 'COMPLETE') {
+    fail(`Full-document lifecycle step missing from Hidden Host orchestration: ${step}`);
+  }
+}
+
+if (!app.includes('>Ausgabe</span>')) fail('Global toolbar must expose Ausgabe menu.');
+if (!app.includes('PDF exportieren')) fail('Ausgabe menu must expose PDF exportieren.');
+if (!app.includes('Entwicklungs-PDF')) fail('Ausgabe menu must expose Entwicklungs-PDF.');
+const canvasHeader = sliceBetween(app, '<div class="canvas-header">', '<div class="preview-stage"');
+for (const forbiddenCanvasText of [
+  'Seiten-Proof',
+  'Standard PDF',
+  'PDF/A-2b',
+  'Background PoC',
+  'background-proof-poc-status'
+]) {
+  if (canvasHeader.includes(forbiddenCanvasText)) {
+    fail(`Normal canvas header still exposes development control/debug text: ${forbiddenCanvasText}`);
+  }
+}
+if (!hiddenBackgroundPoc.includes('studioDocumentProofPages(project)')) {
+  fail('Hidden Host full-document export must reuse the canonical Document Proof page source.');
+}
+if (!hiddenBackgroundPoc.includes('prepareStudioDocumentPdfProof({ pageCount: pages.length })')) {
+  fail('Hidden Host full-document export must reuse document proof staging.');
+}
+if (!hiddenBackgroundPoc.includes('assembleStudioDocumentPdfProof({')) {
+  fail('Hidden Host full-document export must reuse document assembly.');
+}
+if (!hiddenBackgroundPoc.includes('exportStudioPdfA2b({')) {
+  fail('Hidden Host final user export must reuse the PDF/A-2b postprocessor.');
+}
+if (!mainBackgroundPoc.includes('backgroundProofPoc001OutputDirForFinalOutputPath(finalOutputPath)')) {
+  fail('Full-document caller must derive outputDir from the selected final output path.');
+}
+if (!mainBackgroundPoc.includes('finalOutputPath,')) {
+  fail('Full-document caller must pass finalOutputPath to the Hidden Host URL contract.');
+}
+if (!hiddenBackgroundPoc.includes('backgroundProofPoc001HostRequestIsComplete(backgroundProofPocHostParams)')) {
+  fail('Hidden Host must validate the typed host request contract.');
+}
+if (!hiddenBackgroundPoc.includes('backgroundProofPoc001BackgroundStandardOutputPath(backgroundProofPocFinalOutputPath)')) {
+  fail('Hidden Host must leave a Background Standard PDF comparison artifact beside the final output.');
+}
+
 for (const requiredSnippet of [
   'backgroundProofPoc001BuildHostUrl',
   'backgroundProofPoc001ParseHostParams',
   "const backgroundProofPocNoThrottling = 'disabled' as BackgroundThrottlingPolicy",
   "recordLifecycle('MAIN_POC_START'",
   "recordLifecycle('MAIN_LISTENERS_READY'",
+  "recordLifecycle('FULL_DOCUMENT_HOST_REQUEST'",
+  "recordLifecycle('FULL_DOCUMENT_HOST_REQUEST_VALID'",
   "recordLifecycle('HOST_CREATE_REQUEST'",
   "recordLifecycle('HOST_CREATED'",
   "recordLifecycle('MAIN_RESULT_RECEIVED'",
@@ -214,6 +298,8 @@ for (const requiredSnippet of [
   "emitLifecycle('HOST_JS_BOOTSTRAP_START'",
   "emitLifecycle('HOST_LOCATION_CAPTURED'",
   "emitLifecycle('HOST_MODE_PARSED'",
+  'finalOutputPath=${backgroundProofPocFinalOutputPath ?',
+  'backgroundStandardPath=${backgroundProofPocMode',
   "emitLifecycle('HOST_LOAD_STARTED'",
   "emitLifecycle('HOST_LOAD_FINISHED'",
   "emitLifecycle('HOST_DOM_READY'",
@@ -230,7 +316,9 @@ for (const requiredSnippet of [
   "emitLifecycle('OUTPUT_FILE_CONFIRMED'",
   'background_proof_poc_output_file_evidence',
   'backgroundProofPoc001LifecycleTimeoutError',
-  'Promise.race([resultPromise, watchdogPromise])'
+  'Promise.race([resultPromise, watchdogPromise])',
+  'createFinalTravelbookPdf',
+  'createDevelopmentPdf'
 ]) {
   if (!app.includes(requiredSnippet)) fail(`Lifecycle evidence path missing App snippet: ${requiredSnippet}`);
 }

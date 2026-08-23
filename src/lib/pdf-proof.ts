@@ -73,8 +73,10 @@ export interface BackgroundProofPoc001HostParams {
   isHost: boolean;
   projectPath: string;
   outputDir: string;
+  finalOutputPath: string;
   jobId: string;
   returnTo: string;
+  mode: 'reference-pages' | 'document-pdfa2b';
 }
 
 export function studioPageFadeDurationMs(
@@ -92,9 +94,54 @@ export function backgroundProofPoc001OutputPath(outputDir: string, title: string
   return `${outputDir.replace(/\/$/, '')}/${backgroundProofPoc001ProofFileTitle(title)}-Background-Proof-PoC-001.pdf`;
 }
 
+export function backgroundProofPoc001StandardDocumentPath(stagingPath: string): string {
+  return `${stagingPath.replace(/\/$/, '')}/travelbook-standard.pdf`;
+}
+
+export function backgroundProofPoc001BackgroundStandardOutputPath(finalOutputPath: string): string {
+  const normalized = finalOutputPath.trim();
+  if (normalized.toLowerCase().endsWith('.pdf')) {
+    return `${normalized.slice(0, -4)}-background-standard.pdf`;
+  }
+  return `${normalized}-background-standard.pdf`;
+}
+
+export function backgroundProofPoc001OutputDirForFinalOutputPath(finalOutputPath: string): string {
+  const normalized = finalOutputPath.trim().replace(/\/+$/, '');
+  const separatorIndex = normalized.lastIndexOf('/');
+  return separatorIndex > 0 ? normalized.slice(0, separatorIndex) : '';
+}
+
+export interface BackgroundProofPoc001ViewportSize {
+  width: number;
+  height: number;
+}
+
+export const BACKGROUND_PROOF_POC_001_MIN_HOST_VIEWPORT: BackgroundProofPoc001ViewportSize = {
+  width: 980,
+  height: 700
+};
+
+export function backgroundProofPoc001HiddenHostViewportForMain(
+  viewport: Partial<BackgroundProofPoc001ViewportSize>
+): BackgroundProofPoc001ViewportSize {
+  const rawWidth = viewport.width ?? 0;
+  const rawHeight = viewport.height ?? 0;
+  const width = Number.isFinite(rawWidth) && rawWidth > 0 ? Math.ceil(rawWidth) : 0;
+  const height = Number.isFinite(rawHeight) && rawHeight > 0 ? Math.ceil(rawHeight) : 0;
+  return {
+    width: Math.max(width, BACKGROUND_PROOF_POC_001_MIN_HOST_VIEWPORT.width),
+    height: Math.max(height, BACKGROUND_PROOF_POC_001_MIN_HOST_VIEWPORT.height)
+  };
+}
+
 export const BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS = [
   'MAIN_POC_START',
   'MAIN_LISTENERS_READY',
+  'MAIN_RENDER_ENVIRONMENT',
+  'MAIN_ASSET_EVIDENCE',
+  'FULL_DOCUMENT_HOST_REQUEST',
+  'FULL_DOCUMENT_HOST_REQUEST_VALID',
   'HOST_CREATE_REQUEST',
   'HOST_CREATED',
   'HOST_LOAD_STARTED',
@@ -103,6 +150,7 @@ export const BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS = [
   'HOST_JS_BOOTSTRAP_START',
   'HOST_LOCATION_CAPTURED',
   'HOST_MODE_PARSED',
+  'HOST_RENDER_ENVIRONMENT',
   'HOST_SVELTE_MOUNT_START',
   'HOST_SVELTE_MOUNTED',
   'HOST_DOM_COMMIT_START',
@@ -150,8 +198,29 @@ export const BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS = [
   'COMPLETE'
 ] as const;
 
+export const BACKGROUND_PROOF_POC_001_DOCUMENT_LIFECYCLE_STEPS = [
+  'DOCUMENT_BACKGROUND_START',
+  'PAGE_COUNT_RESOLVED',
+  'PAGE_ITERATION_START',
+  'PAGE_SELECTED',
+  'PAGE_READY',
+  'PAGE_ASSET_EVIDENCE',
+  'PAGE_PROOF_START',
+  'PAGE_PROOF_COMPLETE',
+  'PAGE_STAGED',
+  'PAGE_ITERATION_COMPLETE',
+  'DOCUMENT_ASSEMBLY_START',
+  'DOCUMENT_ASSEMBLY_COMPLETE',
+  'STANDARD_DOCUMENT_READY',
+  'PDFA_POSTPROCESS_START',
+  'PDFA_POSTPROCESS_COMPLETE',
+  'FINAL_OUTPUT_READY',
+  'COMPLETE'
+] as const;
+
 export type BackgroundProofPoc001LifecycleStep =
-  typeof BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS[number];
+  | typeof BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS[number]
+  | typeof BACKGROUND_PROOF_POC_001_DOCUMENT_LIFECYCLE_STEPS[number];
 
 export interface BackgroundProofPoc001LifecycleEvent {
   jobId: string;
@@ -168,6 +237,9 @@ export interface BackgroundProofPoc001LifecycleEvent {
 export interface BackgroundProofPoc001Result {
   ok: boolean;
   outputs?: string[];
+  standardOutputPath?: string;
+  finalOutputPath?: string;
+  pageCount?: number;
   error?: string;
   lastStep?: BackgroundProofPoc001LifecycleStep;
 }
@@ -197,9 +269,21 @@ export function backgroundProofPoc001ParseHostParams(search: string): Background
     isHost: params.get('nlsBackgroundProofPoc') === '001',
     projectPath: params.get('projectPath') ?? '',
     outputDir: params.get('outputDir') ?? '',
+    finalOutputPath: params.get('finalOutputPath') ?? params.get('outputPath') ?? '',
     jobId: params.get('jobId') ?? '',
-    returnTo: params.get('returnTo') ?? 'main'
+    returnTo: params.get('returnTo') ?? 'main',
+    mode: params.get('mode') === 'document-pdfa2b' ? 'document-pdfa2b' : 'reference-pages'
   };
+}
+
+export function backgroundProofPoc001HostRequestIsComplete(params: BackgroundProofPoc001HostParams): boolean {
+  if (!params.isHost || !params.projectPath || !params.outputDir || !params.jobId || !params.returnTo) {
+    return false;
+  }
+  if (params.mode === 'document-pdfa2b') {
+    return Boolean(params.finalOutputPath);
+  }
+  return true;
 }
 
 export function backgroundProofPoc001BuildHostUrl(
@@ -212,8 +296,14 @@ export function backgroundProofPoc001BuildHostUrl(
   hostUrl.searchParams.set('nlsBackgroundProofPoc', '001');
   hostUrl.searchParams.set('projectPath', params.projectPath);
   hostUrl.searchParams.set('outputDir', params.outputDir);
+  if ('finalOutputPath' in params && typeof params.finalOutputPath === 'string') {
+    hostUrl.searchParams.set('finalOutputPath', params.finalOutputPath);
+  }
   hostUrl.searchParams.set('jobId', params.jobId);
   hostUrl.searchParams.set('returnTo', params.returnTo);
+  if ('mode' in params && typeof params.mode === 'string') {
+    hostUrl.searchParams.set('mode', params.mode);
+  }
   return hostUrl.href;
 }
 

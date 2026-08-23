@@ -40,6 +40,7 @@ button { font: inherit; }
 .toolbar-zone-start { justify-self: start; justify-content: flex-start; }
 .toolbar-zone-center { justify-self: center; justify-content: center; }
 .toolbar-zone-end { justify-self: end; justify-content: flex-end; }
+.toolbar-actions { gap: 10px; }
 .brand { gap: 12px; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #aac4d2; border-radius: 50%; font-size: 11px; letter-spacing: .08em; flex: 0 0 auto; }
 .brand strong, .brand small { display: block; }

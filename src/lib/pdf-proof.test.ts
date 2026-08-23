@@ -3,11 +3,16 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import {
   assembleStudioDocumentPdfProof,
+  BACKGROUND_PROOF_POC_001_DOCUMENT_LIFECYCLE_STEPS,
   BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS,
+  backgroundProofPoc001BackgroundStandardOutputPath,
   backgroundProofPoc001BuildHostUrl,
   backgroundProofPoc001EventNames,
+  backgroundProofPoc001HiddenHostViewportForMain,
+  backgroundProofPoc001HostRequestIsComplete,
   backgroundProofPoc001LifecycleTimeoutError,
   backgroundProofPoc001MainWindowInvariant,
+  backgroundProofPoc001OutputDirForFinalOutputPath,
   backgroundProofPoc001OutputPath,
   backgroundProofPoc001ParseHostParams,
   backgroundProofPoc001ReferencePages,
@@ -219,8 +224,10 @@ describe('Studio PDF Proof', () => {
     const href = backgroundProofPoc001BuildHostUrl('tauri://localhost/index.html?stale=true#old', {
       projectPath: '/Users/test/Norway.nls',
       outputDir: '/Users/test/Proofs',
+      finalOutputPath: '/Users/test/Norway & Fjords.pdf',
       jobId: 'job-42',
-      returnTo: 'main'
+      returnTo: 'main',
+      mode: 'document-pdfa2b'
     });
     const url = new URL(href);
 
@@ -232,31 +239,79 @@ describe('Studio PDF Proof', () => {
     expect(url.searchParams.get('nlsBackgroundProofPoc')).toBe('001');
     expect(url.searchParams.get('projectPath')).toBe('/Users/test/Norway.nls');
     expect(url.searchParams.get('outputDir')).toBe('/Users/test/Proofs');
+    expect(url.searchParams.get('finalOutputPath')).toBe('/Users/test/Norway & Fjords.pdf');
+    expect(url.searchParams.get('outputPath')).toBeNull();
     expect(url.searchParams.get('jobId')).toBe('job-42');
     expect(url.searchParams.get('returnTo')).toBe('main');
+    expect(url.searchParams.get('mode')).toBe('document-pdfa2b');
   });
 
   it('parses Background Proof PoC 001 Hidden Host mode from query parameters', () => {
-    expect(backgroundProofPoc001ParseHostParams('?nlsBackgroundProofPoc=001&projectPath=/p.nls&outputDir=/out&jobId=j&returnTo=main')).toEqual({
+    expect(backgroundProofPoc001ParseHostParams('?nlsBackgroundProofPoc=001&projectPath=/p.nls&outputDir=/out&finalOutputPath=/final.pdf&jobId=j&returnTo=main&mode=document-pdfa2b')).toEqual({
       isHost: true,
       projectPath: '/p.nls',
       outputDir: '/out',
+      finalOutputPath: '/final.pdf',
       jobId: 'j',
-      returnTo: 'main'
+      returnTo: 'main',
+      mode: 'document-pdfa2b'
     });
     expect(backgroundProofPoc001ParseHostParams('?projectPath=/p.nls')).toEqual({
       isHost: false,
       projectPath: '/p.nls',
       outputDir: '',
+      finalOutputPath: '',
       jobId: '',
-      returnTo: 'main'
+      returnTo: 'main',
+      mode: 'reference-pages'
     });
+  });
+
+  it('keeps caller and Hidden Host parameter names aligned for full-document requests', () => {
+    const finalOutputPath = '/Users/test/Norway & Fjords/Travelbook Final.pdf';
+    const outputDir = backgroundProofPoc001OutputDirForFinalOutputPath(finalOutputPath);
+    const hostUrl = backgroundProofPoc001BuildHostUrl('tauri://localhost/index.html?stale=true#old', {
+      projectPath: '/Users/test/Project With Spaces.nls',
+      outputDir,
+      finalOutputPath,
+      jobId: 'job-42',
+      returnTo: 'main',
+      mode: 'document-pdfa2b'
+    });
+    const parsed = backgroundProofPoc001ParseHostParams(new URL(hostUrl).search);
+
+    expect(parsed).toEqual({
+      isHost: true,
+      projectPath: '/Users/test/Project With Spaces.nls',
+      outputDir: '/Users/test/Norway & Fjords',
+      finalOutputPath,
+      jobId: 'job-42',
+      returnTo: 'main',
+      mode: 'document-pdfa2b'
+    });
+    expect(backgroundProofPoc001HostRequestIsComplete(parsed)).toBe(true);
+  });
+
+  it('keeps invalid Hidden Host requests invalid instead of weakening validation', () => {
+    expect(backgroundProofPoc001HostRequestIsComplete(backgroundProofPoc001ParseHostParams(
+      '?nlsBackgroundProofPoc=001&mode=document-pdfa2b&projectPath=/p.nls&finalOutputPath=/final.pdf&jobId=j&returnTo=main'
+    ))).toBe(false);
+    expect(backgroundProofPoc001HostRequestIsComplete(backgroundProofPoc001ParseHostParams(
+      '?nlsBackgroundProofPoc=001&mode=document-pdfa2b&projectPath=/p.nls&outputDir=/out&jobId=j&returnTo=main'
+    ))).toBe(false);
+    expect(backgroundProofPoc001HostRequestIsComplete(backgroundProofPoc001ParseHostParams(
+      '?nlsBackgroundProofPoc=001&mode=reference-pages&projectPath=/p.nls&outputDir=/out&jobId=j&returnTo=main'
+    ))).toBe(true);
   });
 
   it('enumerates every required Background Proof PoC 001 lifecycle state', () => {
     expect(BACKGROUND_PROOF_POC_001_LIFECYCLE_STEPS).toEqual([
       'MAIN_POC_START',
       'MAIN_LISTENERS_READY',
+      'MAIN_RENDER_ENVIRONMENT',
+      'MAIN_ASSET_EVIDENCE',
+      'FULL_DOCUMENT_HOST_REQUEST',
+      'FULL_DOCUMENT_HOST_REQUEST_VALID',
       'HOST_CREATE_REQUEST',
       'HOST_CREATED',
       'HOST_LOAD_STARTED',
@@ -265,6 +320,7 @@ describe('Studio PDF Proof', () => {
       'HOST_JS_BOOTSTRAP_START',
       'HOST_LOCATION_CAPTURED',
       'HOST_MODE_PARSED',
+      'HOST_RENDER_ENVIRONMENT',
       'HOST_SVELTE_MOUNT_START',
       'HOST_SVELTE_MOUNTED',
       'HOST_DOM_COMMIT_START',
@@ -349,6 +405,57 @@ describe('Studio PDF Proof', () => {
       '/tmp/background-proof/Notes - Memory-Background-Proof-PoC-001.pdf'
     ]);
     expect(new Set(outputs).size).toBe(3);
+  });
+
+  it('enumerates the full Background Document export lifecycle in canonical order', () => {
+    expect(BACKGROUND_PROOF_POC_001_DOCUMENT_LIFECYCLE_STEPS).toEqual([
+      'DOCUMENT_BACKGROUND_START',
+      'PAGE_COUNT_RESOLVED',
+      'PAGE_ITERATION_START',
+      'PAGE_SELECTED',
+      'PAGE_READY',
+      'PAGE_ASSET_EVIDENCE',
+      'PAGE_PROOF_START',
+      'PAGE_PROOF_COMPLETE',
+      'PAGE_STAGED',
+      'PAGE_ITERATION_COMPLETE',
+      'DOCUMENT_ASSEMBLY_START',
+      'DOCUMENT_ASSEMBLY_COMPLETE',
+      'STANDARD_DOCUMENT_READY',
+      'PDFA_POSTPROCESS_START',
+      'PDFA_POSTPROCESS_COMPLETE',
+      'FINAL_OUTPUT_READY',
+      'COMPLETE'
+    ]);
+  });
+
+  it('uses publication order for a 16-page Background Document export source', () => {
+    const pages = Array.from({ length: 16 }, (_, index) => page(`page-${String(index + 1).padStart(2, '0')}`, index + 1));
+    const project = projectWithPages([...pages].reverse());
+
+    expect(studioDocumentProofPages(project).map((entry) => entry.id)).toEqual(pages.map((entry) => entry.id));
+    expect(studioDocumentProofPages(project)).toHaveLength(16);
+  });
+
+  it('keeps Background Standard PDF beside the final PDF/A output for comparison', () => {
+    expect(backgroundProofPoc001BackgroundStandardOutputPath('/tmp/Norway.pdf')).toBe('/tmp/Norway-background-standard.pdf');
+    expect(backgroundProofPoc001BackgroundStandardOutputPath('/tmp/Norway')).toBe('/tmp/Norway-background-standard.pdf');
+    expect(backgroundProofPoc001OutputDirForFinalOutputPath('/tmp/Northern Lines/Norway.pdf')).toBe('/tmp/Northern Lines');
+  });
+
+  it('keeps the Hidden Host viewport aligned with the visible Main viewport', () => {
+    expect(backgroundProofPoc001HiddenHostViewportForMain({ width: 1280, height: 820 })).toEqual({
+      width: 1280,
+      height: 820
+    });
+    expect(backgroundProofPoc001HiddenHostViewportForMain({ width: 420, height: 596 })).toEqual({
+      width: 980,
+      height: 700
+    });
+    expect(backgroundProofPoc001HiddenHostViewportForMain({ width: Number.NaN, height: 0 })).toEqual({
+      width: 980,
+      height: 700
+    });
   });
 
   it('detects Background Proof PoC 001 Main Window selected-page drift', () => {
