@@ -183,6 +183,8 @@ describe('Studio PDF Proof', () => {
       'bergen',
       'bergen-photo',
       'light',
+      'page-curated-checklist-1',
+      'page-curated-checklist-2',
       'notes'
     ]);
   });
@@ -190,7 +192,7 @@ describe('Studio PDF Proof', () => {
   it('supports variable page counts and deterministic staged filenames', () => {
     const pages = [page('a', 1), page('b', 2), page('c', 3), page('d', 4), page('e', 5)];
 
-    expect(studioDocumentProofPages(projectWithPages(pages))).toHaveLength(5);
+    expect(studioDocumentProofPages(projectWithPages(pages))).toHaveLength(7);
     expect(stagedDocumentProofPagePath('/tmp/document-proof', 1)).toBe('/tmp/document-proof/0001.pdf');
     expect(stagedDocumentProofPagePath('/tmp/document-proof', 12)).toBe('/tmp/document-proof/0012.pdf');
   });
@@ -466,9 +468,14 @@ describe('Studio PDF Proof', () => {
   it('uses publication order for a 16-page Background Document export source', () => {
     const pages = Array.from({ length: 16 }, (_, index) => page(`page-${String(index + 1).padStart(2, '0')}`, index + 1));
     const project = projectWithPages([...pages].reverse());
+    const expectedIds = [
+      ...pages.map((entry) => entry.id),
+      'page-curated-checklist-1',
+      'page-curated-checklist-2'
+    ];
 
-    expect(studioDocumentProofPages(project).map((entry) => entry.id)).toEqual(pages.map((entry) => entry.id));
-    expect(studioDocumentProofPages(project)).toHaveLength(16);
+    expect(studioDocumentProofPages(project).map((entry) => entry.id)).toEqual(expectedIds);
+    expect(studioDocumentProofPages(project)).toHaveLength(18);
   });
 
   it('keeps Background Standard PDF beside the final PDF/A output for comparison', () => {
