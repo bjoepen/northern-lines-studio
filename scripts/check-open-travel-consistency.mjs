@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const app = readFileSync(resolve(root, 'src/App.svelte'), 'utf8');
 const rust = readFileSync(resolve(root, 'src-tauri/src/lib.rs'), 'utf8');
-const validation = readFileSync(resolve(root, 'docs/validation/BUILD-022-VALIDATION.md'), 'utf8');
+const validation = readFileSync(
+  resolve(root, 'docs/validation/STUDIO-TRAVEL-OPENING-VALIDATION.md'),
+  'utf8'
+);
 const failures = [];
 
 const openTravelStart = app.indexOf('async function openTravelNow()');
@@ -37,8 +40,8 @@ for (const required of [
   'Studio geschlossen → `.nls` im Finder doppelklicken',
   'Studio geöffnet → `.nls` im Finder doppelklicken',
   'Studio geöffnet → Reise innerhalb von Studio öffnen',
-  'Build-019-Datei',
-  'Build-020-Datei',
+  'Legacy `.nls` migration path',
+  'Current `.nls` path',
   'Hero-Referenzen'
 ]) {
   if (!validation.includes(required)) failures.push(`Validation case missing: ${required}`);
