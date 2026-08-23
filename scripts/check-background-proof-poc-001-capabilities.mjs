@@ -13,6 +13,7 @@ const app = read('src/App.svelte');
 const pdfProof = read('src/lib/pdf-proof.ts');
 const main = readJson('src-tauri/capabilities/default.json');
 const background = readJson('src-tauri/capabilities/background-proof.json');
+const exportCover = readJson('src-tauri/capabilities/main-renderer-export-cover.json');
 const schema = readJson('src-tauri/gen/schemas/desktop-schema.json');
 
 const sliceBetween = (source, start, end) => {
@@ -31,7 +32,8 @@ const identifiers = new Set(
 
 for (const [file, capability] of [
   ['default.json', main],
-  ['background-proof.json', background]
+  ['background-proof.json', background],
+  ['main-renderer-export-cover.json', exportCover]
 ]) {
   for (const key of ['identifier', 'permissions']) {
     if (!(key in capability)) fail(`${file} missing required key: ${key}`);
@@ -54,6 +56,9 @@ if (!main.permissions.includes('core:window:allow-close')) {
 if (!main.permissions.includes('core:event:allow-listen')) {
   fail('main must be allowed to register Background Proof PoC event listeners.');
 }
+if (!main.permissions.includes('core:event:allow-emit-to')) {
+  fail('main must be allowed to emit Plan B export progress only to the passive cover window.');
+}
 
 for (const forbidden of [
   'core:webview:allow-create-webview',
@@ -64,7 +69,6 @@ for (const forbidden of [
   'core:window:default',
   'core:event:default',
   'core:event:allow-emit',
-  'core:event:allow-emit-to',
   'core:event:allow-unlisten'
 ]) {
   if (main.permissions.includes(forbidden)) fail(`main gained unnecessary broad permission: ${forbidden}`);
@@ -76,6 +80,13 @@ if (JSON.stringify(background.windows) !== JSON.stringify(['background-proof-poc
 }
 if (JSON.stringify(background.permissions) !== JSON.stringify(['core:event:allow-emit-to'])) {
   fail('Hidden Host capability must only allow emitting progress/result events back to main.');
+}
+if (exportCover.identifier !== 'main-renderer-export-cover') fail('Plan B export cover capability identifier changed.');
+if (JSON.stringify(exportCover.windows) !== JSON.stringify(['main-renderer-export-cover-*'])) {
+  fail('Plan B export cover capability must only match the cover label pattern.');
+}
+if (JSON.stringify(exportCover.permissions) !== JSON.stringify(['core:event:allow-listen'])) {
+  fail('Plan B export cover must only listen for Main progress events.');
 }
 
 const mainBackgroundPoc = sliceBetween(
@@ -90,7 +101,7 @@ const hiddenBackgroundPoc = sliceBetween(
 );
 const editorOpenLifecycle = sliceBetween(
   app,
-  "onMount(() => {\n    if (isBackgroundProofPocHost) {\n      void runBackgroundProofPoc001Host();",
+  "onMount(() => {\n    if (isMainRendererExportCoverHost) {",
   '$: preview = previewFor(selectedPage);'
 );
 
@@ -141,6 +152,9 @@ if (!hiddenBackgroundPoc.includes('currentWebview.emitTo(backgroundProofPocRetur
   fail('Hidden Host must emit terminal result back to main.');
 }
 
+if (!editorOpenLifecycle.includes("if (isMainRendererExportCoverHost) {")) {
+  fail('Plan B cover host must enter passive cover lifecycle before Main-only open-nls registration.');
+}
 if (!editorOpenLifecycle.includes("if (isBackgroundProofPocHost) {\n      void runBackgroundProofPoc001Host();\n      return;\n    }")) {
   fail('Hidden Host must enter PoC host lifecycle before Main-only open-nls registration.');
 }
@@ -244,6 +258,56 @@ for (const step of [
 if (!app.includes('>Ausgabe</span>')) fail('Global toolbar must expose Ausgabe menu.');
 if (!app.includes('PDF exportieren')) fail('Ausgabe menu must expose PDF exportieren.');
 if (!app.includes('Entwicklungs-PDF')) fail('Ausgabe menu must expose Entwicklungs-PDF.');
+if (!app.includes("await createTravelbookPdf('pdfa2b');")) {
+  fail('PDF exportieren must route to the accepted Main document renderer with PDF/A-2b postprocessing.');
+}
+if (app.includes("await createBackgroundProofPoc001('document-pdfa2b');")) {
+  fail('PDF exportieren must no longer route to the Hidden Background Host.');
+}
+if (!app.includes("await createTravelbookPdf('standard');")) {
+  fail('Entwicklungs-PDF must stay on the accepted Main standard document path.');
+}
+if (!app.includes('new WebviewWindow(`main-renderer-export-cover-${exportCoverJobId}`')) {
+  fail('Plan B final export must create a visible passive cover window.');
+}
+if (!app.includes('mainRendererExportCoverBuildUrl(window.location.href')) {
+  fail('Plan B cover URL must be a typed passive cover URL.');
+}
+if (!app.includes('mainRendererExportCoverEventName(exportCoverJobId)')) {
+  fail('Plan B cover progress event must be job-scoped.');
+}
+if (!app.includes('await getCurrentWebviewWindow().emitTo(exportCover.label, exportCoverProgressEvent')) {
+  fail('Main renderer export must report page progress to the passive cover window.');
+}
+if (!app.includes('await exportCover.close();')) {
+  fail('Plan B export cover must be closed in the export lifecycle.');
+}
+if (!app.includes('if (isMainRendererExportCoverHost) {')) {
+  fail('Plan B cover host must have its own early lifecycle branch.');
+}
+const coverMarkup = sliceBetween(app, '{#if isMainRendererExportCoverHost}', '{:else}');
+if (coverMarkup.includes('a5-page') || coverMarkup.includes('pdf-proof-rendering')) {
+  fail('Plan B cover markup must not render proof-capturable Studio page content.');
+}
+const coverLifecycle = sliceBetween(
+  app,
+  'if (isMainRendererExportCoverHost) {',
+  'if (isBackgroundProofPocHost) {'
+);
+for (const forbiddenCoverSnippet of [
+  'createStudioPdfProof',
+  'assembleStudioDocumentPdfProof',
+  'exportStudioPdfA2b',
+  'createTravelbookPdf',
+  'createBackgroundProofPoc001',
+  'openTravelPath',
+  'load_nls_project',
+  'prepareStudioDocumentPdfProof'
+]) {
+  if (coverLifecycle.includes(forbiddenCoverSnippet)) {
+    fail(`Plan B cover lifecycle must never call PDF/project renderer code: ${forbiddenCoverSnippet}`);
+  }
+}
 const canvasHeader = sliceBetween(app, '<div class="canvas-header">', '<div class="preview-stage"');
 for (const forbiddenCanvasText of [
   'Seiten-Proof',
@@ -256,23 +320,11 @@ for (const forbiddenCanvasText of [
     fail(`Normal canvas header still exposes development control/debug text: ${forbiddenCanvasText}`);
   }
 }
-if (!hiddenBackgroundPoc.includes('studioDocumentProofPages(project)')) {
-  fail('Hidden Host full-document export must reuse the canonical Document Proof page source.');
-}
-if (!hiddenBackgroundPoc.includes('prepareStudioDocumentPdfProof({ pageCount: pages.length })')) {
-  fail('Hidden Host full-document export must reuse document proof staging.');
-}
-if (!hiddenBackgroundPoc.includes('assembleStudioDocumentPdfProof({')) {
-  fail('Hidden Host full-document export must reuse document assembly.');
-}
-if (!hiddenBackgroundPoc.includes('exportStudioPdfA2b({')) {
-  fail('Hidden Host final user export must reuse the PDF/A-2b postprocessor.');
-}
 if (!mainBackgroundPoc.includes('backgroundProofPoc001OutputDirForFinalOutputPath(finalOutputPath)')) {
-  fail('Full-document caller must derive outputDir from the selected final output path.');
+  fail('Diagnostic Hidden PoC full-document caller must still derive outputDir from the selected final output path.');
 }
 if (!mainBackgroundPoc.includes('finalOutputPath,')) {
-  fail('Full-document caller must pass finalOutputPath to the Hidden Host URL contract.');
+  fail('Diagnostic Hidden PoC full-document caller must still pass finalOutputPath to the Hidden Host URL contract.');
 }
 if (!hiddenBackgroundPoc.includes('backgroundProofPoc001HostRequestIsComplete(backgroundProofPocHostParams)')) {
   fail('Hidden Host must validate the typed host request contract.');

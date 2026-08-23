@@ -66,6 +66,9 @@
     evaluateRenderedStudioPageReadiness,
     exportStudioPdfA2b,
     incompleteStudioPageImages,
+    mainRendererExportCoverBuildUrl,
+    mainRendererExportCoverEventName,
+    mainRendererExportCoverParseParams,
     prepareStudioDocumentPdfProof,
     restoredDocumentProofPage,
     stagedDocumentProofPagePath,
@@ -73,6 +76,7 @@
     studioDocumentProofPages,
     type BackgroundProofPoc001LifecycleEvent,
     type BackgroundProofPoc001LifecycleStep,
+    type MainRendererExportCoverProgress,
     type BackgroundProofPoc001OutputEvidence,
     type BackgroundProofPoc001Result,
     type StudioDocumentProofPage,
@@ -168,6 +172,13 @@
   const backgroundProofPocReturnTo = backgroundProofPocHostParams.returnTo;
   const backgroundProofPocMode = backgroundProofPocHostParams.mode;
   const backgroundProofPocNoThrottling = 'disabled' as BackgroundThrottlingPolicy;
+  const mainRendererExportCoverParams = mainRendererExportCoverParseParams(window.location.search);
+  const isMainRendererExportCoverHost = mainRendererExportCoverParams.isCover;
+  const mainRendererExportCoverJobId = mainRendererExportCoverParams.jobId;
+  let mainRendererExportCoverProgress: MainRendererExportCoverProgress = {
+    currentPage: 0,
+    pageCount: mainRendererExportCoverParams.pageCount
+  };
   const BACKGROUND_PROOF_POC_001_WATCHDOG_MS = 45_000;
 
   function displayPageTitle(page: StudioPage | null | undefined): string {
@@ -445,6 +456,9 @@
     const projectTitle = project.title;
     let stagingPath = '';
     let temporaryStandardPath = '';
+    let exportCover: WebviewWindow | null = null;
+    const exportCoverJobId = `plan-b-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
+    const exportCoverProgressEvent = mainRendererExportCoverEventName(exportCoverJobId);
     pdfProofStatus = 'preparing';
     errorMessage = '';
     await tick();
@@ -462,12 +476,48 @@
         return;
       }
 
+      if (profile === 'pdfa2b') {
+        const coverUrl = mainRendererExportCoverBuildUrl(window.location.href, {
+          jobId: exportCoverJobId,
+          pageCount: pages.length
+        });
+        const coverWidth = Math.max(Math.ceil(window.outerWidth || window.innerWidth), 980);
+        const coverHeight = Math.max(Math.ceil(window.outerHeight || window.innerHeight), 700);
+        exportCover = new WebviewWindow(`main-renderer-export-cover-${exportCoverJobId}`, {
+          url: coverUrl,
+          title: 'Northern Lines Studio · Travelbook Export',
+          width: coverWidth,
+          height: coverHeight,
+          x: Number.isFinite(window.screenX) ? Math.round(window.screenX) : undefined,
+          y: Number.isFinite(window.screenY) ? Math.round(window.screenY) : undefined,
+          resizable: false,
+          decorations: false,
+          visible: true,
+          focus: true,
+          skipTaskbar: true,
+          alwaysOnTop: true,
+          parent: getCurrentWebviewWindow().label,
+          backgroundThrottling: backgroundProofPocNoThrottling
+        });
+        await new Promise<void>((resolve, reject) => {
+          void exportCover?.once('tauri://created', () => resolve());
+          void exportCover?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+        });
+      }
+
       const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
       stagingPath = staging.stagingPath;
       const stagedPages: StudioDocumentProofPage[] = [];
 
       pdfProofStatus = 'rendering';
       for (const [position, page] of pages.entries()) {
+        const index = position + 1;
+        if (exportCover) {
+          await getCurrentWebviewWindow().emitTo(exportCover.label, exportCoverProgressEvent, {
+            currentPage: index,
+            pageCount: pages.length
+          } satisfies MainRendererExportCoverProgress);
+        }
         selectPageNow(page);
         await waitForResolvedStudioPage(page.id, {
           code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
@@ -479,7 +529,6 @@
           pageTitle: displayPageTitle(page),
           expectProofMode: true
         });
-        const index = position + 1;
         const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
         await createStudioPdfProof({
           pageId: page.id,
@@ -520,6 +569,13 @@
         const originalPage = restoredDocumentProofPage(studioDocumentProofPages(project), originalPageId);
         if (originalPage) selectPageNow(originalPage);
       }
+      if (exportCover) {
+        try {
+          await exportCover.close();
+        } catch {
+          // The export cover may already be gone after a window lifecycle failure.
+        }
+      }
       if (stagingPath) {
         try {
           await cleanupStudioDocumentPdfProof(stagingPath);
@@ -536,7 +592,7 @@
 
   async function createFinalTravelbookPdf() {
     outputMenuOpen = false;
-    await createBackgroundProofPoc001('document-pdfa2b');
+    await createTravelbookPdf('pdfa2b');
   }
 
   async function createDevelopmentPdf() {
@@ -2146,7 +2202,7 @@
   }
 
   onMount(() => {
-    if (isBackgroundProofPocHost) return;
+    if (isBackgroundProofPocHost || isMainRendererExportCoverHost) return;
 
     inspectorPreferredWidth = parseStoredInspectorWidth(window.localStorage.getItem(INSPECTOR_WIDTH_STORAGE_KEY), window.innerWidth);
     inspectorWidth = inspectorPreferredWidth;
@@ -2158,7 +2214,7 @@
   });
 
   onMount(() => {
-    if (isBackgroundProofPocHost) return;
+    if (isBackgroundProofPocHost || isMainRendererExportCoverHost) return;
 
     if (!previewStage) return;
     const observer = new ResizeObserver(updatePreviewScale);
@@ -2168,6 +2224,23 @@
   });
 
   onMount(() => {
+    if (isMainRendererExportCoverHost) {
+      let unlistenProgress: (() => void) | undefined;
+      let disposed = false;
+      void (async () => {
+        unlistenProgress = await listen<MainRendererExportCoverProgress>(
+          mainRendererExportCoverEventName(mainRendererExportCoverJobId),
+          (event) => {
+            if (!disposed) mainRendererExportCoverProgress = event.payload;
+          }
+        );
+      })();
+      return () => {
+        disposed = true;
+        unlistenProgress?.();
+      };
+    }
+
     if (isBackgroundProofPocHost) {
       void runBackgroundProofPoc001Host();
       return;
@@ -2295,6 +2368,20 @@
   <title>{project ? `${project.title} – Northern Lines Studio` : 'Northern Lines Studio'}</title>
 </svelte:head>
 
+{#if isMainRendererExportCoverHost}
+  <main class="export-cover-shell" aria-label="Travelbook Export">
+    <section class="export-cover-panel" aria-live="polite">
+      <span class="export-cover-mark">NL</span>
+      <div>
+        <p>Travelbook wird exportiert …</p>
+        <strong>
+          Seite {Math.min(mainRendererExportCoverProgress.currentPage || 1, mainRendererExportCoverProgress.pageCount || 1)}
+          von {mainRendererExportCoverProgress.pageCount || 1}
+        </strong>
+      </div>
+    </section>
+  </main>
+{:else}
 <div class="app-shell">
   <header class="toolbar">
     <div class="brand toolbar-zone toolbar-zone-start">
@@ -3716,3 +3803,4 @@
     </div>
   {/if}
 </div>
+{/if}

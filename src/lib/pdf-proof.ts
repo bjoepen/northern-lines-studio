@@ -249,6 +249,44 @@ export interface BackgroundProofPoc001OutputEvidence {
   byteLength: number;
 }
 
+export interface MainRendererExportCoverParams {
+  isCover: boolean;
+  jobId: string;
+  pageCount: number;
+}
+
+export interface MainRendererExportCoverProgress {
+  currentPage: number;
+  pageCount: number;
+}
+
+export function mainRendererExportCoverEventName(jobId: string): string {
+  return `main-renderer-export-cover-progress-${jobId}`;
+}
+
+export function mainRendererExportCoverBuildUrl(
+  currentHref: string,
+  params: Omit<MainRendererExportCoverParams, 'isCover'>
+): string {
+  const coverUrl = new URL(currentHref);
+  coverUrl.search = '';
+  coverUrl.hash = '';
+  coverUrl.searchParams.set('nlsMainRendererExportCover', '001');
+  coverUrl.searchParams.set('jobId', params.jobId);
+  coverUrl.searchParams.set('pageCount', String(params.pageCount));
+  return coverUrl.href;
+}
+
+export function mainRendererExportCoverParseParams(search: string): MainRendererExportCoverParams {
+  const params = new URLSearchParams(search);
+  const rawPageCount = Number(params.get('pageCount') ?? 0);
+  return {
+    isCover: params.get('nlsMainRendererExportCover') === '001',
+    jobId: params.get('jobId') ?? '',
+    pageCount: Number.isFinite(rawPageCount) && rawPageCount > 0 ? Math.floor(rawPageCount) : 0
+  };
+}
+
 export function backgroundProofPoc001EventNames(jobId: string): {
   native: string;
   lifecycle: string;

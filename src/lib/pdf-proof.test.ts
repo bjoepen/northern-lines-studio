@@ -21,6 +21,9 @@ import {
   evaluateRenderedStudioPageReadiness,
   exportStudioPdfA2b,
   incompleteStudioPageImages,
+  mainRendererExportCoverBuildUrl,
+  mainRendererExportCoverEventName,
+  mainRendererExportCoverParseParams,
   prepareStudioDocumentPdfProof,
   restoredDocumentProofPage,
   STUDIO_DOCUMENT_PROOF_CAPTURE_SEQUENCE,
@@ -217,6 +220,37 @@ describe('Studio PDF Proof', () => {
       lifecycle: 'background-proof-poc-001-lifecycle-job-42',
       progress: 'background-proof-poc-001-progress-job-42',
       result: 'background-proof-poc-001-result-job-42'
+    });
+  });
+
+  it('keeps the Plan B export cover URL scoped to a passive cover host', () => {
+    const href = mainRendererExportCoverBuildUrl('tauri://localhost/index.html?stale=true#old', {
+      jobId: 'job-42',
+      pageCount: 16
+    });
+    const url = new URL(href);
+
+    expect(url.protocol).toBe('tauri:');
+    expect(url.host).toBe('localhost');
+    expect(url.pathname).toBe('/index.html');
+    expect(url.hash).toBe('');
+    expect(url.searchParams.get('stale')).toBeNull();
+    expect(url.searchParams.get('nlsMainRendererExportCover')).toBe('001');
+    expect(url.searchParams.get('jobId')).toBe('job-42');
+    expect(url.searchParams.get('pageCount')).toBe('16');
+    expect(mainRendererExportCoverParseParams(url.search)).toEqual({
+      isCover: true,
+      jobId: 'job-42',
+      pageCount: 16
+    });
+  });
+
+  it('keeps Plan B export cover progress events job-scoped', () => {
+    expect(mainRendererExportCoverEventName('job-42')).toBe('main-renderer-export-cover-progress-job-42');
+    expect(mainRendererExportCoverParseParams('?nlsMainRendererExportCover=001&jobId=j&pageCount=bad')).toEqual({
+      isCover: true,
+      jobId: 'j',
+      pageCount: 0
     });
   });
 
