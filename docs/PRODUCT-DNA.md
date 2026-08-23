@@ -321,6 +321,8 @@ Verbindlich geschützt sind:
 - Footer Safe Zone;
 - Binding Safe Zone.
 
+> **Eine Safe Zone ist eine Grenze, keine Empfehlung.**
+
 > **Kuscheln erlaubt, jeder im eigenen Bett.**
 
 Nähe ist erlaubt. Überlagerung und das Ausleihen geschützten Raums sind es nicht.
