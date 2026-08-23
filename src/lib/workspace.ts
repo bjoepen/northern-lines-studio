@@ -3,7 +3,7 @@ import { loadEditorialWorld } from './worlds';
 import { requireCompanion } from './companions';
 import type { EditorialWorldDefinition } from './worlds/types';
 import { layoutSystemForWorld } from './layout';
-import { curatedChecklistPages } from './curated-checklist';
+import { curatedChecklistPages, isCuratedChecklistPage } from './curated-checklist';
 
 export type WorkspaceSectionId = 'book' | 'planning' | 'destinations' | 'journey' | 'workflow' | 'memories';
 
@@ -77,6 +77,13 @@ export function pagesWithCuratedChecklist(pages: StudioPage[]): StudioPage[] {
   return [...pages, ...curatedPages];
 }
 
+function memoryPagePriority(page: StudioPage): number {
+  if (isCuratedChecklistPage(page)) return 0;
+  if (page.role === 'notes') return 1;
+  if (page.role === 'closing_memory') return 2;
+  return 1;
+}
+
 export function groupPages(pages: StudioPage[], routeStageIds: readonly string[] = []): WorkspaceSection[] {
   const grouped = new Map<WorkspaceSectionId, StudioPage[]>();
   const routeOrder = new Map(routeStageIds.map((id, index) => [id, index]));
@@ -107,7 +114,12 @@ export function groupPages(pages: StudioPage[], routeStageIds: readonly string[]
   }
 
   const memories = grouped.get('memories');
-  if (memories) memories.sort((a, b) => a.order - b.order);
+  if (memories) {
+    memories.sort((a, b) => {
+      const priority = memoryPagePriority(a) - memoryPagePriority(b);
+      return priority !== 0 ? priority : a.order - b.order;
+    });
+  }
 
   return (Object.keys(sectionMeta) as WorkspaceSectionId[])
     .map((id) => ({ ...sectionMeta[id], pages: grouped.get(id) ?? [] }))
