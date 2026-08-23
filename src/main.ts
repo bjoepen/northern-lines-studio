@@ -1,7 +1,8 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
+import { installCuratedChecklistHost } from './lib/curated-checklist-host';
 import './styles.css';
 
-mount(App, {
-  target: document.getElementById('app')!
-});
+const target = document.getElementById('app')!;
+mount(App, { target });
+installCuratedChecklistHost(target);
