@@ -3,6 +3,7 @@ import { loadEditorialWorld } from './worlds';
 import { requireCompanion } from './companions';
 import type { EditorialWorldDefinition } from './worlds/types';
 import { layoutSystemForWorld } from './layout';
+import { curatedChecklistPages, isCuratedChecklistPage } from './curated-checklist';
 
 export type WorkspaceSectionId = 'book' | 'planning' | 'destinations' | 'journey' | 'workflow' | 'memories';
 
@@ -66,15 +67,28 @@ const sectionMeta: Record<WorkspaceSectionId, Omit<WorkspaceSection, 'pages'>> =
   memories: {
     id: 'memories',
     label: 'Erinnerungen',
-    description: 'Erinnerungen und Abschluss'
+    description: 'Vorbereitung, Erinnerungen und Abschluss'
   }
 };
+
+export function pagesWithCuratedChecklist(pages: StudioPage[]): StudioPage[] {
+  const existingIds = new Set(pages.map((page) => page.id));
+  const curatedPages = curatedChecklistPages().filter((page) => !existingIds.has(page.id));
+  return [...pages, ...curatedPages];
+}
+
+function memoryPagePriority(page: StudioPage): number {
+  if (isCuratedChecklistPage(page)) return 0;
+  if (page.role === 'notes') return 1;
+  if (page.role === 'closing_memory') return 2;
+  return 1;
+}
 
 export function groupPages(pages: StudioPage[], routeStageIds: readonly string[] = []): WorkspaceSection[] {
   const grouped = new Map<WorkspaceSectionId, StudioPage[]>();
   const routeOrder = new Map(routeStageIds.map((id, index) => [id, index]));
 
-  for (const page of pages) {
+  for (const page of pagesWithCuratedChecklist(pages)) {
     const section = sectionForRole[page.role];
     const current = grouped.get(section) ?? [];
     current.push(page);
@@ -96,6 +110,14 @@ export function groupPages(pages: StudioPage[], routeStageIds: readonly string[]
       if (aRoute !== undefined) return -1;
       if (bRoute !== undefined) return 1;
       return a.order - b.order;
+    });
+  }
+
+  const memories = grouped.get('memories');
+  if (memories) {
+    memories.sort((a, b) => {
+      const priority = memoryPagePriority(a) - memoryPagePriority(b);
+      return priority !== 0 ? priority : a.order - b.order;
     });
   }
 
@@ -146,7 +168,8 @@ export function editorialWorldFor(project: StudioProject | null): EditorialWorld
 
 export function projectStatus(project: StudioProject | null): string {
   if (!project) return 'Keine Reise geöffnet';
-  return `${project.pageManifest.length} Seiten · Reise bereit`;
+  const pageCount = publicationOrderedPages(project.pageManifest, project.journey?.stages.map((stage) => stage.id) ?? []).length;
+  return `${pageCount} Seiten · Reise bereit`;
 }
 
 export function pageRoleLabel(role: PageRole | undefined): string {

@@ -1,0 +1,193 @@
+/* Build 041 fix — Curated Checklist
+ *
+ * This page family does not define a second page geometry. It participates in
+ * the existing Golden-040 A5 flex layout and inherits Footer, Companion,
+ * typography authority and World expression from the resolved Studio page.
+ */
+.a5-page.curated-checklist-page {
+  background: #fff;
+}
+
+.curated-checklist-page > .page-rule,
+.curated-checklist-page > .eyebrow,
+.curated-checklist-page > h1,
+.curated-checklist-page > .preview-body {
+  display: none;
+}
+
+/* The host is ordinary page content. It must leave the existing footer in the
+ * A5 flex flow instead of painting a full-page layer over it. */
+.curated-checklist-runtime-host {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.curated-checklist-preview {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  box-sizing: border-box;
+  color: var(--world-ink);
+}
+
+/* Typography follows established Northern Lines authorities. The checklist
+ * does not use the Interest Page tight exception. */
+.curated-checklist-head {
+  margin: 0;
+}
+
+.curated-checklist-kicker {
+  margin: 0 0 5px;
+  font-family: var(--world-body-family);
+  font-size: 6.8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--world-accent);
+}
+
+.curated-checklist-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.curated-checklist-title-row h1 {
+  margin: 0;
+  max-width: 82%;
+  font-size: 28px;
+  line-height: 1.04;
+}
+
+.curated-checklist-head p {
+  margin: 8px 0 0;
+  max-width: 94%;
+  font-family: var(--world-body-family);
+  font-size: 10.2px;
+  line-height: 1.34;
+  color: var(--world-quiet);
+}
+
+/* Reuse the established two-column Travel Companion composition. The final
+ * odd module is deliberately placed on the right, leaving the lower-left
+ * Companion Safe Zone untouched. */
+.curated-checklist-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.curated-checklist-section {
+  min-width: 0;
+  padding: 7px 9px 6px;
+  background: color-mix(in srgb, var(--world-accent) 7%, #fff);
+  box-sizing: border-box;
+}
+
+.curated-checklist-section:nth-child(3):last-child {
+  grid-column: 2;
+}
+
+.curated-checklist-section header {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 5px;
+  align-items: start;
+  margin-bottom: 5px;
+}
+
+.curated-checklist-section header > span {
+  font-family: var(--world-body-family);
+  font-size: 6.8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: var(--world-accent);
+}
+
+.curated-checklist-section header strong {
+  font-family: var(--world-heading-family);
+  font-size: 10.4px;
+  line-height: 1.1;
+  color: var(--world-ink);
+}
+
+.curated-checklist-section ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.curated-checklist-section li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  align-items: start;
+  gap: 5px;
+  font-family: var(--world-body-family);
+  font-size: 9px;
+  line-height: 1.25;
+  color: var(--world-ink);
+}
+
+.curated-check-box {
+  width: 7px;
+  height: 7px;
+  margin-top: 1px;
+  border: 1px solid var(--world-accent);
+  border-radius: 1px;
+  box-sizing: border-box;
+}
+
+/* Secondary note uses the established safe bridge geometry: it starts right of
+ * the Companion Safe Zone and therefore never borrows the protected lower-left
+ * area. The footer remains an independent invariant below it. */
+.curated-checklist-note {
+  margin: 6px 0 0 72px;
+  padding-top: 5px;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent) 20%, transparent);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  font-family: var(--world-body-family);
+  font-size: 9px;
+  line-height: 1.25;
+  color: var(--world-quiet);
+}
+
+.curated-checklist-note span {
+  display: inline;
+  margin: 0;
+  font-size: 6.9px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--world-accent);
+  white-space: nowrap;
+}
+
+.curated-checklist-note p {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.baltic-page.curated-checklist-page .curated-checklist-section {
+  background: color-mix(in srgb, var(--baltic-sand, #e7d5bd) 48%, #fff);
+}
+
+/* World expression may alter semantic shape, never page geometry. */
+.baltic-page.curated-checklist-page .curated-check-box {
+  border-radius: 50%;
+}
+
+.pdf-proof-rendering .curated-checklist-preview {
+  transform: none;
+}
