@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -15,9 +15,11 @@ const workspace = read('src/lib/workspace.ts');
 const app = read('src/App.svelte');
 const base = read('src/styles/base-shell.css');
 const workshop = read('src/styles/travel-companion-workshop.css');
+const interestCss = read('src/styles/destination-interests.css');
 const main = read('src/main.ts');
 const css = read('src/styles/curated-checklist.css');
 const styles = read('src/styles.css');
+const heroAssetUrl = new URL('../public/design-library/curated-heroes/travel-preparation.png', import.meta.url);
 
 requireMatch(content.includes("'curated_checklist_1'") && content.includes("'curated_checklist_2'"), 'both curated checklist parts must exist');
 requireMatch(content.includes('order: 27 + definition.part'), 'checklist order must remain 28/29 before memories');
@@ -57,6 +59,18 @@ for (const token of ['font-size: 28px;', 'font-size: 10.2px;', 'font-size: 10.4p
   requireMatch(workshop.includes(token), `Workshop typography/layout authority missing expected token: ${token}`);
   requireMatch(css.includes(token), `checklist must reuse established Workshop authority token: ${token}`);
 }
+
+// Travel Preparation hero: one world-neutral curated asset, inserted through
+// the already approved Build-035 curated hero grammar. No checklist-specific
+// hero geometry is allowed.
+requireMatch(existsSync(heroAssetUrl), 'generic travel-preparation hero asset must exist');
+requireMatch(component.includes("'/design-library/curated-heroes/travel-preparation.png'"), 'checklist must use the approved generic travel-preparation hero');
+requireMatch(component.includes('curated-checklist-head curated-hero-flow'), 'checklist header must reuse the canonical curated hero flow');
+requireMatch(component.includes('class="curated-world-hero"'), 'checklist hero must reuse the canonical curated-world-hero class');
+for (const token of ['.curated-hero-flow', '.curated-world-hero', 'width: 34%;', 'max-width: 138px;', 'margin: 0 0 8px 14px;']) {
+  requireMatch(interestCss.includes(token), `canonical curated hero grammar missing expected token: ${token}`);
+}
+requireMatch(!css.includes('.curated-world-hero') && !css.includes('.curated-hero-flow'), 'checklist CSS must not redefine curated hero geometry');
 
 requireMatch(css.includes('background: #fff'), 'physical checklist page must remain white');
 requireMatch(css.includes('var(--world-heading-family)') && css.includes('var(--world-body-family)'), 'checklist typography must inherit Editorial World authority');

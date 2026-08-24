@@ -75,6 +75,26 @@ Build 041 follows current Northern Lines Studio:
 
 The two-page split is intentional Content Fit, not overflow recovery.
 
+### Generic Travel Preparation hero
+
+The approved **Travel Preparation** illustration is a world-neutral curated hero for the checklist unit. It depicts preparation for travel without naming a destination or Editorial World.
+
+Binding rules:
+
+- one generic asset is shared by Fjord and Ostsee/Baltic;
+- the asset lives outside World-specific asset folders;
+- the checklist reuses the already approved Build-035 `curated-hero-flow` / `curated-world-hero` grammar;
+- the checklist does not define hero width, position, margins or a second hero geometry;
+- the hero does not replace, move or compete with the World Companion;
+- Footer, Companion, Safe Zones, typography and A5 geometry remain unchanged;
+- no world-specific visual variant is created for this hero.
+
+Asset authority:
+
+```text
+public/design-library/curated-heroes/travel-preparation.png
+```
+
 ### Page 1 rhythm
 
 The first page establishes the unit with a clear `Checkliste` title, a short curated introductory line and three calm checklist groups. It should feel like preparation for departure, not a form.
@@ -117,6 +137,8 @@ Ostsee · Checkliste 2/2
 ```
 
 A World leak is a FAIL.
+
+For the generic Travel Preparation hero, the same asset must render in all four cases while the surrounding typography, accents, semantic surfaces and Companion remain World-owned.
 
 ## Architecture boundary
 
