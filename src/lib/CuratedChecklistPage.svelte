@@ -21,7 +21,6 @@
       <div class="curated-checklist-kicker">Vor der Reise</div>
       <div class="curated-checklist-title-row">
         <h1>{definition.title}</h1>
-        <span class="curated-checklist-part">{definition.part} / 2</span>
       </div>
       <p>{definition.deck}</p>
     </header>

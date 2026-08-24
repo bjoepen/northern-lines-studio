@@ -35,6 +35,8 @@ The checklist is one semantic unit made from two consecutive pages:
 
 The two checklist pages must remain adjacent in canonical Studio publication order and must appear immediately before Notes / Memories. Document Proof, Standard PDF and PDF/A-2b consume this canonical order; Build 041 adds no export-specific ordering mechanism.
 
+The `1/2` and `2/2` identities belong to navigation/publication semantics. They are **not rendered as additional visual markers inside the page composition**.
+
 ## Curated content structure
 
 ### Checkliste · 1/2
@@ -75,6 +77,8 @@ Build 041 follows current Northern Lines Studio:
 
 The two-page split is intentional Content Fit, not overflow recovery.
 
+Checklist body copy uses the established **normal utility-page body typography**. The Interest Page-only `tight` exception is not extended to the checklist.
+
 ### Generic Travel Preparation hero
 
 The approved **Travel Preparation** illustration is a world-neutral curated hero for the checklist unit. It depicts preparation for travel without naming a destination or Editorial World.
@@ -85,6 +89,8 @@ Binding rules:
 - the asset lives outside World-specific asset folders;
 - the checklist reuses the already approved Build-035 `curated-hero-flow` / `curated-world-hero` grammar;
 - the checklist does not define hero width, position, margins or a second hero geometry;
+- a slightly tighter approved asset crop may increase the hero's visual presence without changing canonical hero geometry;
+- no decorative divider is part of the hero asset;
 - the hero does not replace, move or compete with the World Companion;
 - Footer, Companion, Safe Zones, typography and A5 geometry remain unchanged;
 - no world-specific visual variant is created for this hero.

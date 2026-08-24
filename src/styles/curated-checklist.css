@@ -34,8 +34,8 @@
   color: var(--world-ink);
 }
 
-/* Typography follows the already established Travel Companion / Workshop
- * hierarchy. No checklist-specific type scale is introduced. */
+/* Typography follows established Northern Lines authorities. The checklist
+ * does not use the Interest Page tight exception. */
 .curated-checklist-head {
   margin: 0;
 }
@@ -62,15 +62,6 @@
   max-width: 82%;
   font-size: 28px;
   line-height: 1.04;
-}
-
-.curated-checklist-part {
-  flex: none;
-  font-family: var(--world-body-family);
-  font-size: 6.8px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  color: var(--world-accent);
 }
 
 .curated-checklist-head p {
@@ -140,8 +131,8 @@
   align-items: start;
   gap: 5px;
   font-family: var(--world-body-family);
-  font-size: 7.15px;
-  line-height: 1.24;
+  font-size: 9px;
+  line-height: 1.25;
   color: var(--world-ink);
 }
 
@@ -166,7 +157,7 @@
   gap: 8px;
   align-items: baseline;
   font-family: var(--world-body-family);
-  font-size: 7.05px;
+  font-size: 9px;
   line-height: 1.25;
   color: var(--world-quiet);
 }
