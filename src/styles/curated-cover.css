@@ -1,0 +1,123 @@
+/* Build 042 · Curated Cover Pages
+   Curated system page for Fjord + Ostsee.
+   Physical A5 paper remains white. World expression comes from established
+   typography, accent roles and an existing curated world hero.
+   Companion is forbidden before journey planning. */
+
+.a5-page.cover-page {
+  justify-content: flex-start;
+  background: #ffffff;
+  padding-top: 46px;
+}
+
+.curated-cover-preview {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  color: var(--world-ink, #172a34);
+}
+
+.curated-cover-kicker {
+  margin: 0 0 10px;
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.curated-cover-title {
+  margin: 0;
+  max-width: 290px;
+  font-family: var(--world-heading-family, Georgia, serif);
+  font-size: 42px;
+  font-weight: 500;
+  line-height: .98;
+  letter-spacing: -.025em;
+  color: var(--world-ink, #172a34);
+}
+
+.curated-cover-book-label {
+  margin: 7px 0 0;
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.curated-cover-tagline {
+  margin: 18px 0 0;
+  color: var(--world-ink, #172a34);
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.curated-cover-date {
+  display: grid;
+  gap: 3px;
+  width: fit-content;
+  margin-top: 17px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--world-accent, #547181) 32%, transparent);
+}
+
+.curated-cover-date span {
+  color: var(--world-accent, #547181);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.curated-cover-date strong {
+  color: var(--world-ink, #172a34);
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.curated-cover-hero-wrap {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin: 18px -12px 8px 36px;
+  overflow: hidden;
+}
+
+.curated-cover-hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  object-fit: contain;
+  object-position: right bottom;
+  filter: saturate(.92) contrast(.97);
+}
+
+.a5-page.fjord-page.cover-page,
+.a5-page.baltic-page.cover-page {
+  background: #ffffff;
+}
+
+/* Hard guard: Cover is before the Companion's first encounter. */
+.a5-page.cover-page .companion-zone {
+  display: none !important;
+}
+
+.a5-page.cover-page .editorial-footer {
+  position: relative;
+  z-index: 4;
+}
+
+@media (max-height: 720px) {
+  .curated-cover-title { font-size: 38px; }
+  .curated-cover-hero-wrap { margin-top: 14px; }
+}
