@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{collections::{BTreeMap, HashSet}, fs, path::{Path, PathBuf}, sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
-use tauri::Emitter;
+use std::{collections::{BTreeMap, HashSet}, fs, io::{self, Read, Write}, path::{Path, PathBuf}, sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
+use tauri::{Emitter, Manager};
 
 mod pdfa;
 
@@ -27,6 +27,309 @@ const BALTIC_WORLD_ID: &str = "baltic";
 const A5_WIDTH_PT: f64 = 148.0 / 25.4 * 72.0;
 const A5_HEIGHT_PT: f64 = 210.0 / 25.4 * 72.0;
 const PDF_BOX_TOLERANCE_PT: f64 = 0.01;
+
+// NLS Production PoC 001B — local production bridge.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobSource {
+    project_path: String,
+    sha256: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobOutput {
+    staging_directory: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobRender {
+    mode: String,
+    physical_medium: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobRenderEnvironment {
+    viewport_width: u32,
+    viewport_height: u32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobEnvelope {
+    schema_version: String,
+    job_id: String,
+    source: ProductionJobSource,
+    output: ProductionJobOutput,
+    render: ProductionJobRender,
+    render_environment: ProductionJobRenderEnvironment,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionJobBootstrap {
+    job_id: String,
+    project_path: String,
+    output_dir: String,
+    viewport_width: u32,
+    viewport_height: u32,
+}
+
+struct ProductionJobState(Mutex<Option<ProductionJobBootstrap>>);
+
+fn production_job_argument() -> Result<Option<PathBuf>, String> {
+    let mut args = std::env::args().skip(1);
+    while let Some(argument) = args.next() {
+        if argument == "--production-job" {
+            let path = args
+                .next()
+                .ok_or_else(|| "PRODUCTION_JOB_ARGUMENT_MISSING: --production-job benötigt einen JSON-Pfad.".to_string())?;
+            return Ok(Some(PathBuf::from(path)));
+        }
+    }
+    Ok(None)
+}
+
+fn production_package_files(root: &Path) -> Result<Vec<PathBuf>, String> {
+    fn visit(root: &Path, current: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {
+        for entry in fs::read_dir(current)
+            .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?
+        {
+            let entry = entry
+                .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?;
+            let path = entry.path();
+            let file_name = entry.file_name();
+            let file_name = file_name.to_string_lossy();
+
+            if file_name == ".DS_Store" || file_name.starts_with("._") {
+                continue;
+            }
+
+            let file_type = entry
+                .file_type()
+                .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?;
+
+            if file_type.is_symlink() {
+                return Err(format!(
+                    "PRODUCTION_JOB_INVALID: .nls package contains a symlink: {}",
+                    path.to_string_lossy()
+                ));
+            }
+            if file_type.is_dir() {
+                visit(root, &path, files)?;
+            } else if file_type.is_file() {
+                files.push(path);
+            }
+        }
+        Ok(())
+    }
+
+    let mut files = Vec::new();
+    visit(root, root, &mut files)?;
+    files.sort_by_key(|path| {
+        path.strip_prefix(root)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .replace('\\', "/")
+    });
+    Ok(files)
+}
+
+fn production_file_sha256_hex(path: &Path) -> Result<String, String> {
+    let mut hasher = Sha256::new();
+
+    for candidate in production_package_files(path)? {
+        let relative = candidate
+            .strip_prefix(path)
+            .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?
+            .to_string_lossy()
+            .replace('\\', "/");
+        hasher.update(relative.as_bytes());
+        hasher.update([0u8]);
+
+        let mut file = fs::File::open(&candidate)
+            .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?;
+        let mut buffer = [0u8; 1024 * 1024];
+        loop {
+            let read = file
+                .read(&mut buffer)
+                .map_err(|error| format!("PRODUCTION_JOB_SOURCE_READ_FAILED: {error}"))?;
+            if read == 0 {
+                break;
+            }
+            hasher.update(&buffer[..read]);
+        }
+        hasher.update([0u8]);
+    }
+
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn load_production_job_bootstrap() -> Result<Option<ProductionJobBootstrap>, String> {
+    let Some(job_path) = production_job_argument()? else {
+        return Ok(None);
+    };
+    let bytes = fs::read(&job_path)
+        .map_err(|error| format!("PRODUCTION_JOB_READ_FAILED: {error}"))?;
+    let job: ProductionJobEnvelope = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("PRODUCTION_JOB_INVALID: {error}"))?;
+
+    if job.schema_version != "1.0" {
+        return Err(format!(
+            "PRODUCTION_JOB_INVALID: schemaVersion={} statt 1.0.",
+            job.schema_version
+        ));
+    }
+    if job.job_id.trim().is_empty() {
+        return Err("PRODUCTION_JOB_INVALID: jobId fehlt.".into());
+    }
+    if job.render.mode != "reference-pages" || job.render.physical_medium != "A5" {
+        return Err("PRODUCTION_JOB_INVALID: PoC 001B unterstützt nur reference-pages/A5.".into());
+    }
+    if job.render_environment.viewport_width == 0 || job.render_environment.viewport_height == 0 {
+        return Err("PRODUCTION_JOB_INVALID: Render-Viewport muss größer als 0 sein.".into());
+    }
+
+    let project_path = PathBuf::from(&job.source.project_path);
+    let is_nls = project_path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .map(|extension| extension.eq_ignore_ascii_case("nls"))
+        .unwrap_or(false);
+    if !project_path.is_dir() || !is_nls {
+        return Err("PRODUCTION_JOB_INVALID: source.projectPath ist kein .nls-Package.".into());
+    }
+
+    let source_sha256 = production_file_sha256_hex(&project_path)?;
+    if source_sha256 != job.source.sha256 {
+        return Err(format!(
+            "PRODUCTION_JOB_SOURCE_CHANGED: SHA-256 stimmt nicht überein (job={}, actual={}).",
+            job.source.sha256, source_sha256
+        ));
+    }
+
+    let output_dir = PathBuf::from(&job.output.staging_directory);
+    fs::create_dir_all(&output_dir)
+        .map_err(|error| format!("PRODUCTION_JOB_OUTPUT_FAILED: {error}"))?;
+
+    Ok(Some(ProductionJobBootstrap {
+        job_id: job.job_id,
+        project_path: project_path.to_string_lossy().into_owned(),
+        output_dir: output_dir.to_string_lossy().into_owned(),
+        viewport_width: job.render_environment.viewport_width,
+        viewport_height: job.render_environment.viewport_height,
+    }))
+}
+
+#[tauri::command]
+fn production_job_bootstrap(
+    state: tauri::State<'_, ProductionJobState>,
+) -> Result<Option<ProductionJobBootstrap>, String> {
+    state
+        .0
+        .lock()
+        .map_err(|_| "PRODUCTION_JOB_STATE_FAILED: Production Job State ist gesperrt.".to_string())
+        .map(|job| job.clone())
+}
+
+#[tauri::command]
+fn production_host_event(
+    state: tauri::State<'_, ProductionJobState>,
+    event: serde_json::Value,
+) -> Result<(), String> {
+    let expected_job_id = state
+        .0
+        .lock()
+        .map_err(|_| "PRODUCTION_JOB_STATE_FAILED: Production Job State ist gesperrt.".to_string())?
+        .as_ref()
+        .map(|job| job.job_id.clone())
+        .ok_or_else(|| "PRODUCTION_JOB_STATE_FAILED: Kein Production Job aktiv.".to_string())?;
+
+    if event.get("schemaVersion").and_then(serde_json::Value::as_str) != Some("1.0")
+        || event.get("jobId").and_then(serde_json::Value::as_str) != Some(expected_job_id.as_str())
+    {
+        return Err("PRODUCTION_JOB_PROTOCOL_FAILED: Host-Event gehört nicht zum aktiven Job.".into());
+    }
+
+    let line = serde_json::to_string(&event)
+        .map_err(|error| format!("PRODUCTION_JOB_PROTOCOL_FAILED: {error}"))?;
+    println!("{line}");
+    io::stdout()
+        .flush()
+        .map_err(|error| format!("PRODUCTION_JOB_PROTOCOL_FAILED: stdout flush failed: {error}"))
+}
+
+#[tauri::command]
+fn production_diagnostic_trace(
+    state: tauri::State<'_, ProductionJobState>,
+    step: String,
+    detail: Option<String>,
+) {
+    let active = state
+        .0
+        .lock()
+        .ok()
+        .and_then(|job| job.as_ref().map(|job| job.job_id.clone()));
+
+    if let Some(job_id) = active {
+        match detail {
+            Some(detail) if !detail.is_empty() => eprintln!("TRACE {step} jobId={job_id} {detail}"),
+            _ => eprintln!("TRACE {step} jobId={job_id}"),
+        }
+        let _ = io::stderr().flush();
+    }
+}
+
+#[tauri::command]
+fn production_relay_event(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, ProductionJobState>,
+    event_name: String,
+    payload: serde_json::Value,
+) -> Result<bool, String> {
+    let active = state
+        .0
+        .lock()
+        .map_err(|_| "PRODUCTION_JOB_STATE_FAILED: Production Job State ist gesperrt.".to_string())?
+        .is_some();
+
+    if !active {
+        return Ok(false);
+    }
+
+    app.emit_to("main", &event_name, payload)
+        .map_err(|error| format!("PRODUCTION_JOB_RELAY_FAILED: {error}"))?;
+    Ok(true)
+}
+
+#[tauri::command]
+fn production_cover_progress_direct(
+    app: tauri::AppHandle,
+    cover_label: String,
+    current_page: usize,
+    page_count: usize,
+) -> Result<(), String> {
+    let cover = app
+        .get_webview_window(&cover_label)
+        .ok_or_else(|| format!("PRODUCTION_COVER_PROGRESS_FAILED: Cover window '{cover_label}' not found."))?;
+
+    let script = format!(
+        "window.dispatchEvent(new CustomEvent('nls-production-cover-progress', {{ detail: {{ currentPage: {}, pageCount: {} }} }}));",
+        current_page,
+        page_count
+    );
+
+    cover
+        .eval(&script)
+        .map_err(|error| format!("PRODUCTION_COVER_PROGRESS_FAILED: {error}"))
+}
+
+#[tauri::command]
+fn finish_production_job(app: tauri::AppHandle, exit_code: i32) {
+    app.exit(exit_code);
+}
 
 fn is_supported_editorial_world(id: &str) -> bool {
     id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
@@ -1640,6 +1943,57 @@ fn remove_destination_image(path: String, stage_id: String, role: String) -> Res
 }
 
 #[tauri::command]
+fn attach_production_cover_native(
+    app: tauri::AppHandle,
+    render_label: String,
+    cover_label: String,
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        use objc2_app_kit::{NSWindow, NSWindowOrderingMode};
+
+        let render_window = app
+            .get_webview_window(&render_label)
+            .ok_or_else(|| format!("PRODUCTION_NATIVE_STACK_FAILED: Render window '{render_label}' not found."))?;
+        let cover_window = app
+            .get_webview_window(&cover_label)
+            .ok_or_else(|| format!("PRODUCTION_NATIVE_STACK_FAILED: Cover window '{cover_label}' not found."))?;
+
+        let render_ptr = render_window
+            .ns_window()
+            .map_err(|error| format!("PRODUCTION_NATIVE_STACK_FAILED: Render NSWindow unavailable: {error}"))?
+            as usize;
+        let cover_ptr = cover_window
+            .ns_window()
+            .map_err(|error| format!("PRODUCTION_NATIVE_STACK_FAILED: Cover NSWindow unavailable: {error}"))?
+            as usize;
+
+        let (sender, receiver) = mpsc::channel::<Result<(), String>>();
+        render_window
+            .run_on_main_thread(move || {
+                let result = unsafe {
+                    let render_ns = &*(render_ptr as *mut NSWindow);
+                    let cover_ns = &*(cover_ptr as *mut NSWindow);
+                    render_ns.addChildWindow_ordered(cover_ns, NSWindowOrderingMode::Above);
+                    Ok(())
+                };
+                let _ = sender.send(result);
+            })
+            .map_err(|error| format!("PRODUCTION_NATIVE_STACK_FAILED: AppKit main-thread dispatch failed: {error}"))?;
+
+        return receiver
+            .recv_timeout(Duration::from_secs(5))
+            .map_err(|error| format!("PRODUCTION_NATIVE_STACK_FAILED: AppKit attach confirmation failed: {error}"))?;
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, render_label, cover_label);
+        Err("PRODUCTION_NATIVE_STACK_UNSUPPORTED: Native production window stack is currently macOS-only.".into())
+    }
+}
+
+#[tauri::command]
 fn read_image_preview(path: String) -> Result<Vec<u8>, String> {
     let image_path = Path::new(&path);
     normalized_image_extension(image_path)?;
@@ -2489,10 +2843,30 @@ mod platform_pdf {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let production_job = match load_production_job_bootstrap() {
+        Ok(job) => job,
+        Err(error) => {
+            eprintln!("{error}");
+            std::process::exit(2);
+        }
+    };
+    let production_mode = production_job.is_some();
+
     let app = tauri::Builder::default()
         .manage(OpenRequestState::default())
+        .manage(ProductionJobState(Mutex::new(production_job)))
+        .setup(move |app| {
+            if production_mode {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.hide()?;
+                }
+            }
+            Ok(())
+        })
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            production_cover_progress_direct,
+            attach_production_cover_native,
             load_nls_project,
             create_nls_project,
             update_editorial_world,
@@ -2514,7 +2888,12 @@ pub fn run() {
             assemble_studio_document_pdf_proof,
             export_studio_pdfa2b,
             cleanup_studio_document_pdf_proof,
-            take_pending_open_path
+            take_pending_open_path,
+            production_job_bootstrap,
+            production_host_event,
+            production_diagnostic_trace,
+            production_relay_event,
+            finish_production_job
         ])
         .build(tauri::generate_context!())
         .expect("error while building Northern Lines Studio");
