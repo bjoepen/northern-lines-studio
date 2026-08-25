@@ -802,6 +802,18 @@
 
   async function runBackgroundProofPoc001Host() {
     const currentWebview = getCurrentWebviewWindow();
+    async function emitBackgroundProofReturnEvent<T>(
+      eventName: string,
+      payload: T
+    ): Promise<void> {
+      const relayed = await invoke<boolean>('production_relay_event', {
+        eventName,
+        payload
+      });
+      if (relayed) return;
+      await emitBackgroundProofReturnEvent(eventName, payload);
+    }
+
     const events = backgroundProofPoc001EventNames(backgroundProofPocJobId);
     const outputs: string[] = [];
     let lastStep: BackgroundProofPoc001LifecycleStep | null = null;
@@ -820,7 +832,7 @@
         ...payload
       };
       console.info('[Background Proof PoC 001]', event);
-      await currentWebview.emitTo(backgroundProofPocReturnTo, events.lifecycle, event);
+      await emitBackgroundProofReturnEvent(events.lifecycle, event);
     };
 
     try {
@@ -956,7 +968,7 @@
               operation: 'background-document-assets',
               detail: [`index=${index}/${pages.length}`, backgroundProofPoc001AssetTraceDetail()].join(' ')
             });
-            await currentWebview.emitTo(backgroundProofPocReturnTo, events.progress, {
+            await emitBackgroundProofReturnEvent(events.progress, {
               referenceTitle: title,
               pageId: page.id
             });
@@ -1082,7 +1094,7 @@
           await emitLifecycle('HOST_RESULT_EMIT', {
             detail: 'success'
           });
-          await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, {
+          await emitBackgroundProofReturnEvent(events.result, {
             ok: true,
             outputs: [backgroundProofPocFinalOutputPath],
             standardOutputPath,
@@ -1168,7 +1180,7 @@
           operation: 'reference-page-assets',
           detail: backgroundProofPoc001AssetTraceDetail()
         });
-        await currentWebview.emitTo(backgroundProofPocReturnTo, events.progress, {
+        await emitBackgroundProofReturnEvent(events.progress, {
           referenceTitle: reference.title,
           pageId: page.id
         });
@@ -1289,13 +1301,13 @@
       await emitLifecycle('HOST_RESULT_EMIT', {
         detail: 'success'
       });
-      await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, { ok: true, outputs, lastStep });
+      await emitBackgroundProofReturnEvent(events.result, { ok: true, outputs, lastStep });
     } catch (error) {
       try {
         await emitLifecycle('HOST_RESULT_EMIT', {
           detail: String(error)
         });
-        await currentWebview.emitTo(backgroundProofPocReturnTo, events.result, {
+        await emitBackgroundProofReturnEvent(events.result, {
           ok: false,
           error: String(error),
           lastStep
@@ -1305,6 +1317,278 @@
       }
     } finally {
       document.body.classList.remove('pdf-proof-rendering');
+    }
+  }
+
+  interface ProductionJobBootstrap {
+    jobId: string;
+    projectPath: string;
+    outputDir: string;
+    viewportWidth: number;
+    viewportHeight: number;
+  }
+
+  type ProductionHostEvent =
+    | { schemaVersion: '1.0'; event: 'host-started' | 'host-ready' | 'complete'; jobId: string }
+    | { schemaVersion: '1.0'; event: 'page-started'; jobId: string; index: number; total: number }
+    | { schemaVersion: '1.0'; event: 'page-rendered'; jobId: string; index: number; total: number; path: string }
+    | { schemaVersion: '1.0'; event: 'error'; jobId: string; code: string; message: string; pageId?: string | null };
+
+  function productionLifecycleIndex(detail: string | undefined): number | null {
+    const match = detail?.match(/\bindex=(\d+)\/3\b/);
+    if (!match) return null;
+    const index = Number(match[1]);
+    return Number.isInteger(index) && index >= 1 && index <= 3 ? index : null;
+  }
+
+  function productionErrorCode(error: unknown): string {
+    const message = String(error).replace(/^Error:\s*/, '');
+    const match = message.match(/^([A-Z0-9_]+):/);
+    return match?.[1] ?? 'STUDIO_PRODUCTION_HOST_FAILED';
+  }
+
+  async function writeProductionHostEvent(event: ProductionHostEvent): Promise<void> {
+    await invoke('production_host_event', { event });
+  }
+
+  async function productionDiagnosticTrace(step: string, detail = ''): Promise<void> {
+    try {
+      await invoke('production_diagnostic_trace', {
+        step,
+        detail: detail || null
+      });
+    } catch {
+      // Diagnostics must never influence the production flow.
+    }
+  }
+
+  async function runProductionJobController(job: ProductionJobBootstrap): Promise<void> {
+    const currentWebview = getCurrentWebviewWindow();
+    await productionDiagnosticTrace('controller-start', `label=${currentWebview.label}`);
+    const events = backgroundProofPoc001EventNames(job.jobId);
+    const total = 3;
+    let hiddenHost: WebviewWindow | null = null;
+    let productionCover: WebviewWindow | null = null;
+    let finished = false;
+    let hostReadyReported = false;
+    let eventQueue = Promise.resolve();
+    const unlisteners: Array<() => void> = [];
+
+    const queueEvent = (event: ProductionHostEvent): Promise<void> => {
+      eventQueue = eventQueue.then(() => writeProductionHostEvent(event));
+      return eventQueue;
+    };
+
+    const cleanup = async () => {
+      for (const unlisten of unlisteners.splice(0)) unlisten();
+      if (productionCover) {
+        try {
+          await productionCover.close();
+        } catch {
+          // The production cover may already be gone after a lifecycle failure.
+        }
+      }
+      if (hiddenHost) {
+        try {
+          await hiddenHost.close();
+        } catch {
+          // The production Hidden Host may already have closed.
+        }
+        hiddenHost = null;
+      }
+    };
+
+    const finish = async (exitCode: number) => {
+      await eventQueue;
+      await cleanup();
+      await invoke('finish_production_job', { exitCode });
+    };
+
+    const fail = async (error: unknown, pageId: string | null = null) => {
+      if (finished) return;
+      finished = true;
+      const message = String(error).replace(/^Error:\s*/, '');
+      await queueEvent({
+        schemaVersion: '1.0',
+        event: 'error',
+        jobId: job.jobId,
+        code: productionErrorCode(error),
+        message,
+        pageId
+      });
+      await finish(1);
+    };
+
+    try {
+      await queueEvent({
+        schemaVersion: '1.0',
+        event: 'host-started',
+        jobId: job.jobId
+      });
+
+      await productionDiagnosticTrace('controller-register-lifecycle-listener');
+      const unlistenLifecycle = await listen<BackgroundProofPoc001LifecycleEvent>(
+        events.lifecycle,
+        (event) => {
+          const lifecycle = event.payload;
+          if (lifecycle.jobId !== job.jobId || finished) return;
+
+          if (lifecycle.step === 'HOST_READY' && !hostReadyReported) {
+            hostReadyReported = true;
+            void queueEvent({
+              schemaVersion: '1.0',
+              event: 'host-ready',
+              jobId: job.jobId
+            });
+            return;
+          }
+
+          if (lifecycle.step === 'REFERENCE_PAGE_SELECT_START') {
+            const index = productionLifecycleIndex(lifecycle.detail);
+            if (index !== null) {
+              void queueEvent({
+                schemaVersion: '1.0',
+                event: 'page-started',
+                jobId: job.jobId,
+                index,
+                total
+              });
+              if (productionCover) {
+                void invoke('production_cover_progress_direct', {
+                  coverLabel: productionCover.label,
+                  currentPage: index,
+                  pageCount: total
+                });
+              }
+            }
+            return;
+          }
+
+          if (lifecycle.step === 'OUTPUT_FILE_CONFIRMED') {
+            const index = productionLifecycleIndex(lifecycle.detail);
+            if (index !== null && lifecycle.referenceTitle) {
+              void queueEvent({
+                schemaVersion: '1.0',
+                event: 'page-rendered',
+                jobId: job.jobId,
+                index,
+                total,
+                path: backgroundProofPoc001OutputPath(job.outputDir, lifecycle.referenceTitle)
+              });
+            }
+          }
+        }
+      );
+      unlisteners.push(unlistenLifecycle);
+      await productionDiagnosticTrace('controller-lifecycle-listener-ready');
+
+      await productionDiagnosticTrace('controller-register-result-listener');
+      const unlistenResult = await listen<BackgroundProofPoc001Result>(
+        events.result,
+        (event) => {
+          void (async () => {
+            if (finished) return;
+            const result = event.payload;
+            if (!result.ok) {
+              await fail(result.error ?? 'STUDIO_PRODUCTION_HOST_FAILED: Hidden Host meldete keinen Erfolg.');
+              return;
+            }
+            finished = true;
+            await eventQueue;
+            await queueEvent({
+              schemaVersion: '1.0',
+              event: 'complete',
+              jobId: job.jobId
+            });
+            await finish(0);
+          })();
+        }
+      );
+      unlisteners.push(unlistenResult);
+      await productionDiagnosticTrace('controller-result-listener-ready');
+
+      const hostUrl = backgroundProofPoc001BuildHostUrl(window.location.href, {
+        projectPath: job.projectPath,
+        outputDir: job.outputDir,
+        finalOutputPath: '',
+        jobId: job.jobId,
+        returnTo: currentWebview.label,
+        mode: 'reference-pages'
+      });
+
+      await productionDiagnosticTrace(
+        'hidden-window-create-request',
+        `viewport=${job.viewportWidth}x${job.viewportHeight} returnTo=${currentWebview.label}`
+      );
+      hiddenHost = new WebviewWindow(`production-proof-${job.jobId}`, {
+        url: hostUrl,
+        title: 'Northern Lines Studio Production Host',
+        width: job.viewportWidth,
+        height: job.viewportHeight,
+        x: 40,
+        y: 40,
+        resizable: false,
+        decorations: false,
+        visible: true,
+        focus: false,
+        skipTaskbar: true,
+        backgroundThrottling: backgroundProofPocNoThrottling
+      });
+
+      await productionDiagnosticTrace('hidden-window-await-created');
+      await new Promise<void>((resolve, reject) => {
+        void hiddenHost?.once('tauri://created', () => {
+          void productionDiagnosticTrace('hidden-window-created');
+          resolve();
+        });
+        void hiddenHost?.once<string>('tauri://error', (event) => {
+          void productionDiagnosticTrace('hidden-window-error', String(event.payload));
+          reject(new Error(String(event.payload)));
+        });
+      });
+      const productionCoverUrl = mainRendererExportCoverBuildUrl(window.location.href, {
+        jobId: job.jobId,
+        pageCount: 3
+      });
+      productionCover = new WebviewWindow(`production-cover-${job.jobId}`, {
+        url: productionCoverUrl,
+        title: 'Northern Lines Studio · Travelbook Export',
+        width: job.viewportWidth,
+        height: job.viewportHeight,
+        x: 40,
+        y: 40,
+        resizable: false,
+        decorations: false,
+        visible: true,
+        focus: true,
+        skipTaskbar: true,
+        backgroundThrottling: backgroundProofPocNoThrottling
+      });
+      await new Promise<void>((resolve, reject) => {
+        void productionCover?.once('tauri://created', () => resolve());
+        void productionCover?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+      });
+      if (!hiddenHost || !productionCover) {
+        throw new Error('PRODUCTION_NATIVE_STACK_FAILED: Production windows are incomplete.');
+      }
+      await invoke('attach_production_cover_native', {
+        renderLabel: hiddenHost.label,
+        coverLabel: productionCover.label
+      });
+      await productionDiagnosticTrace(
+        'production-native-window-stack-attached',
+        `render=${hiddenHost.label} cover=${productionCover.label}`
+      );
+      await invoke('production_cover_progress_direct', {
+        coverLabel: productionCover.label,
+        currentPage: 0,
+        pageCount: total
+      });
+
+      await productionDiagnosticTrace('production-cover-ready-host-first');
+
+    } catch (error) {
+      await fail(error);
     }
   }
 
@@ -2227,17 +2511,35 @@
     if (isMainRendererExportCoverHost) {
       let unlistenProgress: (() => void) | undefined;
       let disposed = false;
+
+      const applyCoverProgress = (progress: MainRendererExportCoverProgress) => {
+        if (
+          !disposed &&
+          progress &&
+          Number.isFinite(progress.currentPage) &&
+          Number.isFinite(progress.pageCount)
+        ) {
+          mainRendererExportCoverProgress = progress;
+        }
+      };
+
+      const handleProductionCoverProgress = (event: Event) => {
+        applyCoverProgress((event as CustomEvent<MainRendererExportCoverProgress>).detail);
+      };
+
+      window.addEventListener('nls-production-cover-progress', handleProductionCoverProgress);
+
       void (async () => {
         unlistenProgress = await listen<MainRendererExportCoverProgress>(
           mainRendererExportCoverEventName(mainRendererExportCoverJobId),
-          (event) => {
-            if (!disposed) mainRendererExportCoverProgress = event.payload;
-          }
+          (event) => applyCoverProgress(event.payload)
         );
       })();
+
       return () => {
         disposed = true;
         unlistenProgress?.();
+        window.removeEventListener('nls-production-cover-progress', handleProductionCoverProgress);
       };
     }
 
@@ -2250,6 +2552,13 @@
     let disposed = false;
 
     void (async () => {
+      const productionJob = await invoke<ProductionJobBootstrap | null>('production_job_bootstrap');
+      if (disposed) return;
+      if (productionJob) {
+        await runProductionJobController(productionJob);
+        return;
+      }
+
       unlistenOpen = await listen<string>('open-nls', (event) => {
         requestOpenTravelPath(event.payload);
       });
@@ -2378,6 +2687,12 @@
           Seite {Math.min(mainRendererExportCoverProgress.currentPage || 1, mainRendererExportCoverProgress.pageCount || 1)}
           von {mainRendererExportCoverProgress.pageCount || 1}
         </strong>
+        <progress
+          aria-label="Exportfortschritt"
+          value={Math.min(mainRendererExportCoverProgress.currentPage || 1, mainRendererExportCoverProgress.pageCount || 1)}
+          max={mainRendererExportCoverProgress.pageCount || 1}
+          style="display:block;width:min(420px,60vw);margin-top:14px;"
+        ></progress>
       </div>
     </section>
   </main>
