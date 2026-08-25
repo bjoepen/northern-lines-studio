@@ -2996,6 +2996,28 @@
                     </aside>
                   </div>
                 </div>
+              {:else if selectedPage?.type === 'cover' && project}
+                <div class="curated-cover-preview" aria-label={`Cover · ${editorialWorld?.name ?? 'Northern Lines'}`}>
+                  <p class="curated-cover-kicker">Northern Lines · {editorialWorld?.name ?? 'Reisewelt'}</p>
+                  <h1 class="curated-cover-title">{project.journey.title || project.title}</h1>
+                  <p class="curated-cover-book-label">Reisebuch</p>
+                  <p class="curated-cover-tagline">Deine Reise. Deine Bilder. Deine Erinnerungen.</p>
+                  <div class="curated-cover-date" aria-label="Reisezeitraum">
+                    <span>Reisezeitraum</span>
+                    <strong>{project.journey.startDate || project.journey.endDate
+                      ? [project.journey.startDate, project.journey.endDate].filter((date): date is string => Boolean(date)).map((date) => date.split('-').reverse().join('.')).join(' – ')
+                      : 'Noch offen'}</strong>
+                  </div>
+                  <div class="curated-cover-hero-wrap" aria-hidden="true">
+                    {#if curatedHeroFor(editorialWorld?.id, 'photography')}
+                      <img
+                        class="curated-cover-hero"
+                        src={curatedHeroFor(editorialWorld?.id, 'photography') ?? ''}
+                        alt=""
+                      />
+                    {/if}
+                  </div>
+                </div>
               {:else}
                 <div class="page-rule"></div>
                 <p class="eyebrow">{preview.eyebrow}</p>
