@@ -3005,7 +3005,7 @@
                   <div class="curated-cover-date" aria-label="Reisezeitraum">
                     <span>Reisezeitraum</span>
                     <strong>{project.journey.startDate || project.journey.endDate
-                      ? [project.journey.startDate, project.journey.endDate].filter(Boolean).join(' – ')
+                      ? [project.journey.startDate, project.journey.endDate].filter(Boolean).map((date) => date.split('-').reverse().join('.')).join(' – ')
                       : 'Noch offen'}</strong>
                   </div>
                   <div class="curated-cover-hero-wrap" aria-hidden="true">
