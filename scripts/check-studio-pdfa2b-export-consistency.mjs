@@ -17,13 +17,16 @@ const pdfa = read('src-tauri/src/pdfa.rs');
 const cargo = read('src-tauri/Cargo.toml');
 const adr = read('docs/adr/ADR-041-STUDIO-PDFA-2B-EXPORT.md');
 
-if (!app.includes("createTravelbookPdf(profile: TravelbookExportProfile = 'standard')")) fail('Travelbook export orchestration must be shared.');
+if (!app.includes("createTravelbookPdf(profile: TravelbookExportProfile = 'standard')")) fail('Travelbook export orchestration must remain shared.');
+if (!app.includes("profile === 'pdfa2b' ? 'document-pdfa2b' : 'document-standard'")) fail('Studio UI must route Standard/PDF-A document export through the shared Production Host.');
+if (!app.includes("backgroundProofPocMode !== 'reference-pages'")) fail('Production Host must own full-document rendering.');
 if (!app.includes("await assembleStudioDocumentPdfProof")) fail('PDF/A export must reuse accepted Document PDF assembly as its source.');
+if (!app.includes("backgroundProofPocMode === 'document-pdfa2b'")) fail('PDF/A mode boundary is missing.');
+if (!app.includes("backgroundProofPoc001BackgroundStandardOutputPath(backgroundProofPocFinalOutputPath)")) fail('PDF/A path must assemble a temporary Standard PDF before post-processing.');
+if (!app.includes("sourcePath: standardOutputPath")) fail('PDF/A postprocessor must consume the assembled Standard PDF.');
 if (!app.includes("await exportStudioPdfA2b")) fail('PDF/A export command is not wired from Studio.');
-if (!app.includes("temporaryStandardPath = profile === 'pdfa2b'")) fail('PDF/A path must postprocess a temporary Standard PDF.');
 if (!app.includes("document.body.classList.add('pdf-proof-rendering')")) fail('accepted resolved-page capture mode must remain the source path.');
 if (!app.includes("document.body.classList.remove('pdf-proof-rendering')")) fail('Studio proof/capture state restoration is missing.');
-if (!app.includes('restoredDocumentProofPage')) fail('Travelbook export must restore the original Studio page.');
 if (!app.includes('hasUnsavedChanges')) fail('Travelbook export must require saved edits.');
 
 if (!proof.includes('StudioPdfA2bExportRequest')) fail('PDF/A TypeScript request contract missing.');

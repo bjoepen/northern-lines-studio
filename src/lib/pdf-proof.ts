@@ -76,7 +76,7 @@ export interface BackgroundProofPoc001HostParams {
   finalOutputPath: string;
   jobId: string;
   returnTo: string;
-  mode: 'reference-pages' | 'document-pdfa2b';
+  mode: 'reference-pages' | 'document-standard' | 'document-pdfa2b';
 }
 
 export function studioPageFadeDurationMs(
@@ -310,7 +310,12 @@ export function backgroundProofPoc001ParseHostParams(search: string): Background
     finalOutputPath: params.get('finalOutputPath') ?? params.get('outputPath') ?? '',
     jobId: params.get('jobId') ?? '',
     returnTo: params.get('returnTo') ?? 'main',
-    mode: params.get('mode') === 'document-pdfa2b' ? 'document-pdfa2b' : 'reference-pages'
+    mode: (() => {
+      const rawMode = params.get('mode');
+      if (rawMode === 'document-standard') return 'document-standard';
+      if (rawMode === 'document-pdfa2b') return 'document-pdfa2b';
+      return 'reference-pages';
+    })()
   };
 }
 
@@ -318,7 +323,7 @@ export function backgroundProofPoc001HostRequestIsComplete(params: BackgroundPro
   if (!params.isHost || !params.projectPath || !params.outputDir || !params.jobId || !params.returnTo) {
     return false;
   }
-  if (params.mode === 'document-pdfa2b') {
+  if (params.mode !== 'reference-pages') {
     return Boolean(params.finalOutputPath);
   }
   return true;
