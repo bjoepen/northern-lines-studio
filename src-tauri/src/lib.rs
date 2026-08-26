@@ -326,7 +326,7 @@ fn create_production_host_poc_g(
         preferences.setInactiveSchedulingPolicy(WKInactiveSchedulingPolicy::None);
     }
 
-    tauri::WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::External(parsed_url))
+    let production_host = tauri::WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::External(parsed_url))
         .title("Northern Lines Studio Production Host PoC G")
         .inner_size(width, height)
         .resizable(false)
@@ -337,6 +337,32 @@ fn create_production_host_poc_g(
         .with_webview_configuration(configuration)
         .build()
         .map_err(|error| format!("POC_G_HOST_CREATE_FAILED: {error}"))?;
+
+    // Production Host presentation invariant:
+    // Keep the WKWebView genuinely onscreen/non-occluded for full-resolution PDF rendering,
+    // while making its compositor output imperceptible to the user. H0/H0.1 validated 0.01;
+    // do not change this to 0.0 and do not geometrically align the host under the cover.
+    use objc2_app_kit::NSWindow;
+
+    let host_ptr = production_host
+        .ns_window()
+        .map_err(|error| format!("PRODUCTION_HOST_PRESENTATION_FAILED: Production Host NSWindow unavailable: {error}"))?
+        as usize;
+    let (sender, receiver) = mpsc::channel::<Result<(), String>>();
+    production_host
+        .run_on_main_thread(move || {
+            let result = unsafe {
+                let host_ns = &*(host_ptr as *mut NSWindow);
+                host_ns.setAlphaValue(0.01);
+                Ok(())
+            };
+            let _ = sender.send(result);
+        })
+        .map_err(|error| format!("PRODUCTION_HOST_PRESENTATION_FAILED: AppKit main-thread dispatch failed: {error}"))?;
+    receiver
+        .recv_timeout(Duration::from_secs(5))
+        .map_err(|error| format!("PRODUCTION_HOST_PRESENTATION_FAILED: AppKit alpha confirmation failed: {error}"))??;
+
     Ok(())
 }
 
