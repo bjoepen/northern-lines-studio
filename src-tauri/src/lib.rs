@@ -285,17 +285,10 @@ fn production_diagnostic_trace(
 #[tauri::command]
 fn production_relay_event(
     app: tauri::AppHandle,
-    state: tauri::State<'_, ProductionJobState>,
     event_name: String,
     payload: serde_json::Value,
 ) -> Result<bool, String> {
-    let active = state
-        .0
-        .lock()
-        .map_err(|_| "PRODUCTION_JOB_STATE_FAILED: Production Job State ist gesperrt.".to_string())?
-        .is_some();
-
-    if !active {
+    if !event_name.starts_with("background-proof-poc-001-") {
         return Ok(false);
     }
 
@@ -303,6 +296,58 @@ fn production_relay_event(
         .map_err(|error| format!("PRODUCTION_JOB_RELAY_FAILED: {error}"))?;
     Ok(true)
 }
+
+
+// NLS_POC_G_R2_START
+#[cfg(target_os = "macos")]
+#[tauri::command]
+fn create_production_host_poc_g(
+    app: tauri::AppHandle,
+    label: String,
+    url: String,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    use objc2::MainThreadMarker;
+    use objc2_web_kit::{WKInactiveSchedulingPolicy, WKWebViewConfiguration};
+    use tauri::utils::config::BackgroundThrottlingPolicy;
+
+    if app.get_webview_window(&label).is_some() {
+        return Err(format!("POC_G_HOST_EXISTS: {label}"));
+    }
+
+    let parsed_url = url.parse().map_err(|error| format!("POC_G_INVALID_URL: {error}"))?;
+    let mtm = MainThreadMarker::new()
+        .ok_or_else(|| "POC_G_MAIN_THREAD_REQUIRED: WKWebViewConfiguration muss auf dem macOS Main Thread erzeugt werden.".to_string())?;
+    let configuration = unsafe { WKWebViewConfiguration::new(mtm) };
+    unsafe {
+        configuration.setSuppressesIncrementalRendering(true);
+        let preferences = configuration.preferences();
+        preferences.setInactiveSchedulingPolicy(WKInactiveSchedulingPolicy::None);
+    }
+
+    tauri::WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::External(parsed_url))
+        .title("Northern Lines Studio Production Host PoC G")
+        .inner_size(width, height)
+        .resizable(false)
+        .decorations(false)
+        .visible(true)
+        .skip_taskbar(true)
+        .background_throttling(BackgroundThrottlingPolicy::Disabled)
+        .with_webview_configuration(configuration)
+        .build()
+        .map_err(|error| format!("POC_G_HOST_CREATE_FAILED: {error}"))?;
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+#[tauri::command]
+fn create_production_host_poc_g(
+    _app: tauri::AppHandle, _label: String, _url: String, _width: f64, _height: f64,
+) -> Result<(), String> {
+    Err("POC_G_UNSUPPORTED_PLATFORM".into())
+}
+// NLS_POC_G_R2_END
 
 #[tauri::command]
 fn production_cover_progress_direct(
@@ -2893,8 +2938,9 @@ pub fn run() {
             production_host_event,
             production_diagnostic_trace,
             production_relay_event,
-            finish_production_job
-        ])
+            finish_production_job,
+            create_production_host_poc_g,
+])
         .build(tauri::generate_context!())
         .expect("error while building Northern Lines Studio");
 

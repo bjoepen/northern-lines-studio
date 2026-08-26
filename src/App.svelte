@@ -277,12 +277,15 @@
         resolve();
       };
       requestAnimationFrame(() => finish());
-      if (options.allowHiddenHostFallback && document.visibilityState === 'hidden') {
+      if (options.allowHiddenHostFallback) {
         const startWatchdog = window.setTimeout.bind(window);
         startWatchdog(() => {
           if (settled) return;
           settled = true;
-          void options.onTrace?.(fallbackStep, 'requestAnimationFrame did not fire while Hidden Host was hidden');
+          void options.onTrace?.(
+            fallbackStep,
+            `requestAnimationFrame did not fire within 250 ms; visibility=${document.visibilityState}`
+          );
           resolve();
         }, 250);
       }
@@ -452,138 +455,9 @@
       return;
     }
 
-    const originalPageId = selectedPage?.id ?? null;
-    const projectTitle = project.title;
-    let stagingPath = '';
-    let temporaryStandardPath = '';
-    let exportCover: WebviewWindow | null = null;
-    const exportCoverJobId = `plan-b-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
-    const exportCoverProgressEvent = mainRendererExportCoverEventName(exportCoverJobId);
-    pdfProofStatus = 'preparing';
-    errorMessage = '';
-    await tick();
-
-    try {
-      const outputPath = await save({
-        title: profile === 'pdfa2b' ? 'Travelbook als PDF/A-2b speichern' : 'Travelbook als PDF speichern',
-        defaultPath: profile === 'pdfa2b'
-          ? `${proofFileTitle(projectTitle)}-Travelbook-PDFA-2b.pdf`
-          : `${proofFileTitle(projectTitle)}-Travelbook.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      });
-      if (!outputPath) {
-        pdfProofStatus = 'idle';
-        return;
-      }
-
-      if (profile === 'pdfa2b') {
-        const coverUrl = mainRendererExportCoverBuildUrl(window.location.href, {
-          jobId: exportCoverJobId,
-          pageCount: pages.length
-        });
-        const coverWidth = Math.max(Math.ceil(window.outerWidth || window.innerWidth), 980);
-        const coverHeight = Math.max(Math.ceil(window.outerHeight || window.innerHeight), 700);
-        exportCover = new WebviewWindow(`main-renderer-export-cover-${exportCoverJobId}`, {
-          url: coverUrl,
-          title: 'Northern Lines Studio · Travelbook Export',
-          width: coverWidth,
-          height: coverHeight,
-          x: Number.isFinite(window.screenX) ? Math.round(window.screenX) : undefined,
-          y: Number.isFinite(window.screenY) ? Math.round(window.screenY) : undefined,
-          resizable: false,
-          decorations: false,
-          visible: true,
-          focus: true,
-          skipTaskbar: true,
-          alwaysOnTop: true,
-          parent: getCurrentWebviewWindow().label,
-          backgroundThrottling: backgroundProofPocNoThrottling
-        });
-        await new Promise<void>((resolve, reject) => {
-          void exportCover?.once('tauri://created', () => resolve());
-          void exportCover?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
-        });
-      }
-
-      const staging = await prepareStudioDocumentPdfProof({ pageCount: pages.length });
-      stagingPath = staging.stagingPath;
-      const stagedPages: StudioDocumentProofPage[] = [];
-
-      pdfProofStatus = 'rendering';
-      for (const [position, page] of pages.entries()) {
-        const index = position + 1;
-        if (exportCover) {
-          await getCurrentWebviewWindow().emitTo(exportCover.label, exportCoverProgressEvent, {
-            currentPage: index,
-            pageCount: pages.length
-          } satisfies MainRendererExportCoverProgress);
-        }
-        selectPageNow(page);
-        await waitForResolvedStudioPage(page.id, {
-          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
-          pageTitle: displayPageTitle(page)
-        });
-        document.body.classList.add('pdf-proof-rendering');
-        await waitForResolvedStudioPage(page.id, {
-          code: 'PDF_DOCUMENT_PROOF_PAGE_NOT_READY',
-          pageTitle: displayPageTitle(page),
-          expectProofMode: true
-        });
-        const stagedPath = stagedDocumentProofPagePath(stagingPath, index);
-        await createStudioPdfProof({
-          pageId: page.id,
-          physicalMedium: 'A5',
-          outputPath: stagedPath
-        });
-        stagedPages.push({
-          index,
-          pageId: page.id,
-          title: displayPageTitle(page),
-          stagedPath
-        });
-        document.body.classList.remove('pdf-proof-rendering');
-        await waitForStudioDomCommit();
-      }
-
-      temporaryStandardPath = profile === 'pdfa2b'
-        ? `${stagingPath}/travelbook-standard.pdf`
-        : outputPath;
-      await assembleStudioDocumentPdfProof({
-        outputPath: temporaryStandardPath,
-        stagingPath,
-        pages: stagedPages
-      });
-      if (profile === 'pdfa2b') {
-        await exportStudioPdfA2b({
-          sourcePath: temporaryStandardPath,
-          outputPath
-        });
-      }
-      pdfProofStatus = 'saved';
-    } catch (error) {
-      pdfProofStatus = 'error';
-      errorMessage = String(error);
-    } finally {
-      document.body.classList.remove('pdf-proof-rendering');
-      if (originalPageId && project) {
-        const originalPage = restoredDocumentProofPage(studioDocumentProofPages(project), originalPageId);
-        if (originalPage) selectPageNow(originalPage);
-      }
-      if (exportCover) {
-        try {
-          await exportCover.close();
-        } catch {
-          // The export cover may already be gone after a window lifecycle failure.
-        }
-      }
-      if (stagingPath) {
-        try {
-          await cleanupStudioDocumentPdfProof(stagingPath);
-        } catch {
-          // Staging cleanup is best-effort after the proof result has been reported.
-        }
-      }
-    }
+    await createBackgroundProofPoc001(
+      profile === 'pdfa2b' ? 'document-pdfa2b' : 'document-standard'
+    );
   }
 
   async function createPdfProofForTravelbook() {
@@ -600,7 +474,7 @@
     await createPdfProofForTravelbook();
   }
 
-  async function createBackgroundProofPoc001(mode: 'reference-pages' | 'document-pdfa2b' = 'reference-pages') {
+  async function createBackgroundProofPoc001(mode: 'reference-pages' | 'document-standard' | 'document-pdfa2b' = 'reference-pages') {
     if (!project?.projectPath) {
       errorMessage = 'BACKGROUND_PROOF_POC_001_NO_PROJECT: Es ist kein gespeichertes Travelbook geöffnet.';
       return;
@@ -610,12 +484,17 @@
       return;
     }
 
+    const isDocumentProduction = mode !== 'reference-pages';
     let outputDir = '';
     let finalOutputPath = '';
-    if (mode === 'document-pdfa2b') {
+    if (isDocumentProduction) {
       const selectedOutputPath = await save({
-        title: 'Travelbook als PDF exportieren',
-        defaultPath: `${proofFileTitle(project.title)}.pdf`,
+        title: mode === 'document-pdfa2b'
+          ? 'Travelbook als PDF/A-2b speichern'
+          : 'Travelbook als PDF speichern',
+        defaultPath: mode === 'document-pdfa2b'
+          ? `${proofFileTitle(project.title)}-Travelbook-PDFA-2b.pdf`
+          : `${proofFileTitle(project.title)}-Travelbook.pdf`,
         filters: [{ name: 'PDF', extensions: ['pdf'] }]
       });
       if (!selectedOutputPath) return;
@@ -645,6 +524,13 @@
     let lastLifecycleComponent = 'main';
     let lastLifecycleOperation = 'start';
     let hiddenHost: WebviewWindow | null = null;
+    let productionCover: WebviewWindow | null = null;
+    const documentPages = isDocumentProduction ? studioDocumentProofPages(project) : [];
+    let documentProgress = 0;
+    if (isDocumentProduction && documentPages.length === 0) {
+      errorMessage = 'PDF_DOCUMENT_PROOF_NO_PAGES: Dieses Travelbook hat noch keine Seiten.';
+      return;
+    }
     let watchdogTimer: number | null = null;
     const unlisteners: Array<() => void> = [];
     let resolveResult: (result: BackgroundProofPoc001Result) => void = () => {};
@@ -671,6 +557,7 @@
     };
 
     backgroundProofPocStatus = 'running';
+    if (isDocumentProduction) pdfProofStatus = 'preparing';
     backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'}`;
     errorMessage = '';
 
@@ -690,7 +577,7 @@
       });
       recordLifecycle('MAIN_RENDER_ENVIRONMENT', 'main', backgroundProofPoc001ViewportTraceDetail(mainLabel, hiddenHostViewport));
       recordLifecycle('MAIN_ASSET_EVIDENCE', 'main', backgroundProofPoc001AssetTraceDetail());
-      if (mode === 'document-pdfa2b') {
+      if (isDocumentProduction) {
         const backgroundStandardPath = backgroundProofPoc001BackgroundStandardOutputPath(finalOutputPath);
         recordLifecycle('FULL_DOCUMENT_HOST_REQUEST', 'main', [
           `mode=${mode}`,
@@ -727,23 +614,52 @@
       const unlistenProgress = await listen<{ referenceTitle: string }>(events.progress, (event) => {
         duringPageId = selectedPage?.id ?? null;
         backgroundProofPocMessage = `Main selectedPage before: ${beforePageId ?? 'none'} · during: ${duringPageId ?? 'none'} · Hidden: ${event.payload.referenceTitle}`;
+        if (isDocumentProduction) {
+          documentProgress = Math.min(documentProgress + 1, documentPages.length);
+          if (productionCover) {
+            void invoke('production_cover_progress_direct', {
+              coverLabel: productionCover.label,
+              currentPage: documentProgress,
+              pageCount: documentPages.length
+            });
+          }
+        }
       });
       unlisteners.push(unlistenProgress);
 
       recordLifecycle('MAIN_LISTENERS_READY', 'main', `result=${events.result}`);
       recordLifecycle('HOST_CREATE_REQUEST', 'main', `url=${backgroundProofPoc001SafeTraceValue(hostUrl)} target=${mainLabel}`);
-      hiddenHost = new WebviewWindow(`background-proof-poc-001-${jobId}`, {
-        url: hostUrl,
-        title: 'Northern Lines Studio Background Proof PoC 001',
-        width: hiddenHostViewport.width,
-        height: hiddenHostViewport.height,
-        resizable: false,
-        decorations: false,
-        visible: false,
-        focus: false,
-        skipTaskbar: true,
-        backgroundThrottling: backgroundProofPocNoThrottling
-      });
+      const nlsPocGProductionHostLabel = `background-proof-poc-001-${jobId}`;
+      if (isDocumentProduction) {
+        await invoke('create_production_host_poc_g', {
+          label: nlsPocGProductionHostLabel,
+          url: hostUrl,
+          width: hiddenHostViewport.width,
+          height: hiddenHostViewport.height
+        });
+        hiddenHost = await WebviewWindow.getByLabel(nlsPocGProductionHostLabel);
+        if (!hiddenHost) {
+          throw new Error('POC_G_HOST_LOOKUP_FAILED: Rust-created Production Host not found.');
+        }
+      } else {
+      hiddenHost = new WebviewWindow(
+        isDocumentProduction ? `studio-production-${jobId}` : `background-proof-poc-001-${jobId}`,
+        {
+          url: hostUrl,
+          title: isDocumentProduction
+            ? 'Northern Lines Studio Production Host'
+            : 'Northern Lines Studio Background Proof PoC 001',
+          width: hiddenHostViewport.width,
+          height: hiddenHostViewport.height,
+          ...(isDocumentProduction ? { x: 40, y: 40 } : {}),
+          resizable: false,
+          decorations: false,
+          visible: isDocumentProduction,
+          focus: false,
+          skipTaskbar: true,
+          backgroundThrottling: backgroundProofPocNoThrottling
+        }
+      );
       await new Promise<void>((resolve, reject) => {
         void hiddenHost?.once('tauri://created', () => resolve());
         void hiddenHost?.once<string>('tauri://error', (event) => {
@@ -751,7 +667,46 @@
           reject(new Error(String(event.payload)));
         });
       });
+      }
       recordLifecycle('HOST_CREATED', 'main', hiddenHost.label);
+
+      if (isDocumentProduction) {
+        const productionCoverUrl = mainRendererExportCoverBuildUrl(window.location.href, {
+          jobId,
+          pageCount: documentPages.length
+        });
+        productionCover = new WebviewWindow(`studio-production-cover-${jobId}`, {
+          url: productionCoverUrl,
+          title: 'Northern Lines Studio · Travelbook Export',
+          width: hiddenHostViewport.width,
+          height: hiddenHostViewport.height,
+          x: 40,
+          y: 40,
+          resizable: false,
+          decorations: false,
+          visible: true,
+          focus: true,
+          skipTaskbar: true,
+          backgroundThrottling: backgroundProofPocNoThrottling
+        });
+        await new Promise<void>((resolve, reject) => {
+          void productionCover?.once('tauri://created', () => resolve());
+          void productionCover?.once<string>('tauri://error', (event) => reject(new Error(String(event.payload))));
+        });
+        if (!hiddenHost || !productionCover) {
+          throw new Error('PRODUCTION_NATIVE_STACK_FAILED: Production windows are incomplete.');
+        }
+        await invoke('attach_production_cover_native', {
+          renderLabel: hiddenHost.label,
+          coverLabel: productionCover.label
+        });
+        await invoke('production_cover_progress_direct', {
+          coverLabel: productionCover.label,
+          currentPage: documentProgress,
+          pageCount: documentPages.length
+        });
+        pdfProofStatus = 'rendering';
+      }
 
       const watchdogPromise = new Promise<never>((_, reject) => {
         const startWatchdog = window.setTimeout.bind(window);
@@ -774,6 +729,7 @@
         throw new Error(`BACKGROUND_PROOF_POC_001_MAIN_INVARIANT_FAILED: before=${beforePageId ?? 'none'} during=${duringPageId ?? 'none'} after=${afterPageId ?? 'none'}`);
       }
       backgroundProofPocStatus = 'saved';
+      if (isDocumentProduction) pdfProofStatus = 'saved';
       backgroundProofPocMessage = [
         `Main selectedPage before/during/after: ${beforePageId ?? 'none'}`,
         result.pageCount ? `pages=${result.pageCount}` : '',
@@ -783,10 +739,18 @@
       ].filter(Boolean).join(' · ');
     } catch (error) {
       backgroundProofPocStatus = 'error';
+      if (isDocumentProduction) pdfProofStatus = 'error';
       errorMessage = String(error);
     } finally {
       if (watchdogTimer !== null) window.clearTimeout(watchdogTimer);
       for (const unlisten of unlisteners) unlisten();
+      if (productionCover) {
+        try {
+          await productionCover.close();
+        } catch {
+          // Production Cover may already be gone after a failed export.
+        }
+      }
       if (hiddenHost) {
         try {
           recordLifecycle('HOST_CLOSE_REQUEST', 'main', hiddenHost.label, backgroundProofPocStatus === 'running');
@@ -802,7 +766,9 @@
 
   async function runBackgroundProofPoc001Host() {
     const currentWebview = getCurrentWebviewWindow();
+
     async function emitBackgroundProofReturnEvent<T>(
+
       eventName: string,
       payload: T
     ): Promise<void> {
@@ -811,7 +777,7 @@
         payload
       });
       if (relayed) return;
-      await emitBackgroundProofReturnEvent(eventName, payload);
+      await currentWebview.emitTo(backgroundProofPocReturnTo, eventName, payload);
     }
 
     const events = backgroundProofPoc001EventNames(backgroundProofPocJobId);
@@ -856,7 +822,7 @@
           `projectPath=${backgroundProofPoc001SafeTraceValue(backgroundProofPocProjectPath)}`,
           `outputDir=${backgroundProofPoc001SafeTraceValue(backgroundProofPocOutputDir)}`,
           `finalOutputPath=${backgroundProofPocFinalOutputPath ? 'present' : 'missing'}`,
-          `backgroundStandardPath=${backgroundProofPocMode === 'document-pdfa2b' && backgroundProofPocFinalOutputPath ? 'derived' : 'missing'}`,
+          `backgroundStandardPath=${backgroundProofPocMode === 'document-pdfa2b' && backgroundProofPocFinalOutputPath ? 'derived' : backgroundProofPocMode === 'document-standard' ? 'direct-final' : 'missing'}`,
           `jobId=${backgroundProofPoc001SafeTraceValue(backgroundProofPocJobId)}`,
           `returnTo=${backgroundProofPoc001SafeTraceValue(backgroundProofPocReturnTo)}`
         ].join(' ')
@@ -903,7 +869,7 @@
         detail: `pages=${project.pageManifest.length} world=${project.editorialWorldId ?? 'none'} path=${backgroundProofPoc001SafeTraceValue(project.projectPath ?? backgroundProofPocProjectPath)}`
       });
 
-      if (backgroundProofPocMode === 'document-pdfa2b') {
+      if (backgroundProofPocMode !== 'reference-pages') {
         if (!backgroundProofPocFinalOutputPath) {
           throw new Error('BACKGROUND_PROOF_POC_001_INVALID_OUTPUT: Hidden Host wurde ohne finalen PDF-Zielpfad gestartet.');
         }
@@ -1044,7 +1010,9 @@
             });
           }
 
-          const standardOutputPath = backgroundProofPoc001BackgroundStandardOutputPath(backgroundProofPocFinalOutputPath);
+          const standardOutputPath = backgroundProofPocMode === 'document-pdfa2b'
+            ? backgroundProofPoc001BackgroundStandardOutputPath(backgroundProofPocFinalOutputPath)
+            : backgroundProofPocFinalOutputPath;
           await emitLifecycle('DOCUMENT_ASSEMBLY_START', {
             operation: 'assembleStudioDocumentPdfProof',
             detail: `pages=${stagedPages.length} output=${backgroundProofPoc001SafeTraceValue(standardOutputPath)}`
@@ -1062,25 +1030,28 @@
             path: standardOutputPath
           });
           if (!standardEvidence.exists || standardEvidence.byteLength <= 0) {
-            throw new Error('BACKGROUND_PROOF_POC_001_STANDARD_DOCUMENT_MISSING: Background Standard PDF wurde nicht erzeugt.');
+            throw new Error('BACKGROUND_PROOF_POC_001_STANDARD_DOCUMENT_MISSING: Standard PDF wurde nicht erzeugt.');
           }
           await emitLifecycle('STANDARD_DOCUMENT_READY', {
             operation: 'output-file-evidence',
             detail: `bytes=${standardEvidence.byteLength} path=${backgroundProofPoc001SafeTraceValue(standardOutputPath)}`
           });
 
-          await emitLifecycle('PDFA_POSTPROCESS_START', {
-            operation: 'exportStudioPdfA2b',
-            detail: `source=${backgroundProofPoc001SafeTraceValue(standardOutputPath)} final=${backgroundProofPoc001SafeTraceValue(backgroundProofPocFinalOutputPath)}`
-          });
-          await exportStudioPdfA2b({
-            sourcePath: standardOutputPath,
-            outputPath: backgroundProofPocFinalOutputPath
-          });
-          await emitLifecycle('PDFA_POSTPROCESS_COMPLETE', {
-            operation: 'exportStudioPdfA2b',
-            detail: `profile=PDF/A-2b`
-          });
+          if (backgroundProofPocMode === 'document-pdfa2b') {
+            await emitLifecycle('PDFA_POSTPROCESS_START', {
+              operation: 'exportStudioPdfA2b',
+              detail: `source=${backgroundProofPoc001SafeTraceValue(standardOutputPath)} final=${backgroundProofPoc001SafeTraceValue(backgroundProofPocFinalOutputPath)}`
+            });
+            await exportStudioPdfA2b({
+              sourcePath: standardOutputPath,
+              outputPath: backgroundProofPocFinalOutputPath
+            });
+            await emitLifecycle('PDFA_POSTPROCESS_COMPLETE', {
+              operation: 'exportStudioPdfA2b',
+              detail: `profile=PDF/A-2b`
+            });
+          }
+
           const finalEvidence = await invoke<BackgroundProofPoc001OutputEvidence>('background_proof_poc_output_file_evidence', {
             path: backgroundProofPocFinalOutputPath
           });
