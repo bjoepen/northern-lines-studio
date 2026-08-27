@@ -10,6 +10,7 @@ const styles = fs.readFileSync('src/styles.css', 'utf8');
 const grammar = fs.readFileSync('src/lib/grammar/definitions.ts', 'utf8');
 const companion = fs.readFileSync('src/lib/companions/layout.ts', 'utf8');
 const closingMap = fs.readFileSync('src/lib/curated-closing.ts', 'utf8');
+const worldAssets = fs.readFileSync('src/lib/world-assets.ts', 'utf8');
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 must(grammar.includes("id: 'closing'") && grammar.includes("required('hero', 'Hero')") && grammar.includes("required('quote', 'Zitat')") && grammar.includes("required('closing_text', 'Abschlusstext')"), 'Closing grammar changed or missing');
@@ -22,8 +23,9 @@ must(app.includes('Weiter üben') && app.includes('Entdecken') && app.includes('
 must(app.includes('Unsere Highlights dieser Reise'), 'approved Closing highlights area is missing');
 must(app.includes('curatedClosingHeroFor(editorialWorld?.id)'), 'world-specific Closing hero is not wired');
 
-must(closingMap.includes("fjord") && closingMap.includes("closing.png"), 'Fjord Closing hero mapping is missing');
-must(closingMap.includes("baltic") && closingMap.includes("closing.png"), 'Ostsee Closing hero mapping is missing');
+must(closingMap.includes('worldAssetManifestFor'), 'Closing hero API bypasses the World asset registry');
+must(worldAssets.includes("closingHero: '/design-library/worlds/fjord/curated-heroes/closing.png'"), 'Fjord Closing hero mapping is missing');
+must(worldAssets.includes("closingHero: '/design-library/worlds/baltic/curated-heroes/closing.png'"), 'Ostsee Closing hero mapping is missing');
 must(fs.existsSync('public/design-library/worlds/fjord/curated-heroes/closing.png'), 'Fjord Closing hero asset is missing');
 must(fs.existsSync('public/design-library/worlds/baltic/curated-heroes/closing.png'), 'Ostsee Closing hero asset is missing');
 
