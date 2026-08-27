@@ -1,44 +1,104 @@
-# APPLY-DROPIN · Studio PDF Proof PoC 001A · Color Fidelity + A5 Evidence
+# APPLY-DROPIN · Northern Lines Studio
 
-## Dry Run
+Diese Datei ist die **generische** Drop-in-Anleitung für Northern Lines Studio.
+Build-spezifische Drop-ins können zusätzliche Schritte und eigene Consistency Gates enthalten; diese haben für den jeweiligen Build Vorrang.
+
+## 1. Repository vorbereiten
 
 ```bash
-cd /Volumes/Kioxia/Projekte/northern-lines-studio
-rsync -avn \
-  ~/Downloads/Northern-Lines-Studio-PDF-Proof-PoC-001A-Color-Fidelity/ \
-  /Volumes/Kioxia/Projekte/northern-lines-studio/
+cd ~/Projekte/northern-lines-studio
+git switch main
+git pull --ff-only origin main
 ```
 
-## Apply
+Für einen neuen Build anschließend einen eigenen Branch anlegen, zum Beispiel:
+
+```bash
+git switch -c build/NNN-kurzer-name
+```
+
+## 2. Drop-in prüfen
+
+Vor dem Überschreiben immer zuerst einen Dry Run ausführen:
+
+```bash
+rsync -avn \
+  ~/Downloads/<DROPIN-ORDNER>/ \
+  ~/Projekte/northern-lines-studio/
+```
+
+Prüfe die Ausgabe. `.git/` darf niemals Bestandteil eines Drop-ins sein oder überschrieben werden.
+
+## 3. Drop-in anwenden
 
 ```bash
 rsync -av \
-  ~/Downloads/Northern-Lines-Studio-PDF-Proof-PoC-001A-Color-Fidelity/ \
-  /Volumes/Kioxia/Projekte/northern-lines-studio/
+  ~/Downloads/<DROPIN-ORDNER>/ \
+  ~/Projekte/northern-lines-studio/
 ```
 
-## Gates
+Falls der Build eine eigene `APPLY-DROPIN.md`, ein Apply-Script oder ein build-spezifisches Gate mitliefert, diese Anweisungen zusätzlich bzw. vorrangig befolgen.
+
+## 4. Build-spezifisches Gate
+
+Beispiel:
 
 ```bash
-cd /Volumes/Kioxia/Projekte/northern-lines-studio
-node scripts/check-studio-pdf-proof-poc-001-consistency.mjs
-node scripts/check-build-040-a5-geometry-consistency.mjs
+pnpm consistency:build-NNN
+```
+
+oder den im Drop-in dokumentierten `node scripts/check-...`-Aufruf verwenden.
+
+## 5. Canonical Quality Gates
+
+```bash
 pnpm check
 pnpm test
 pnpm consistency
 pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path src-tauri/Cargo.toml
+git diff --check
+```
+
+Bei Änderungen an PDF-, PDF/A- oder Production-Host-Code zusätzlich die dafür vorgesehenen scoped Consistency Gates ausführen.
+
+## 6. Scope prüfen
+
+```bash
+git status --short
+git diff --stat
+git diff --check
+```
+
+Nur der freigegebene Build-Scope darf im Diff erscheinen. Temporäre Apply-Helper vor dem Commit entfernen, sofern die build-spezifische Anleitung nichts anderes vorgibt.
+
+## 7. Real-World-Test
+
+Nach den technischen Gates die betroffene Funktion in der installierten macOS-App prüfen:
+
+```bash
 ./scripts/install-macos-app.sh
 ```
 
-## Real-world evidence
+Danach die konkrete Reise bzw. Referenzseite im Studio öffnen und gegen den freigegebenen Stand testen.
 
-Open the Golden reference page, choose `PDF-Proof`, and in the macOS print dialog set:
+## 8. Commit und Push
 
-```text
-Paper Size: A5
-Scale: 100 %
-Fit/Scale to paper: disabled
+Nach PASS:
+
+```bash
+git add <freigegebene-dateien>
+git diff --cached --check
+git diff --cached --stat
+git commit -m "<commit message>"
+git push --set-upstream origin <branch-name>
 ```
 
-Save as PDF and compare colors and layout against Studio.
+Anschließend Pull Request gegen `main` erstellen und erst nach Review/Quality Gate mergen.
+
+## Verbindliche Regel
+
+> **Drop-ins verändern genau den genehmigten Scope. Sie etablieren weder einen zweiten Renderer noch eine zweite Layout- oder World-Semantik.**
+
+Studio bleibt Eigentümer der Seite; Publisher bzw. Production-Code besitzt ausschließlich den Production Job.
