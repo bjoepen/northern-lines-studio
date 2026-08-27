@@ -1779,7 +1779,7 @@ fn update_journey_place(
     let project_path = Path::new(&path);
     let mut project = read_project(project_path)?;
 
-    {
+    let destination_id = {
         let journey = project
             .journey
             .as_mut()
@@ -1799,9 +1799,15 @@ fn update_journey_place(
             .find(|stage| stage.id == stage_id)
             .ok_or_else(|| format!("Der Ort '{stage_id}' gehört nicht zu deiner Route."))?;
 
+        let destination_id = stage
+            .destination_id
+            .clone()
+            .ok_or_else(|| "Der Ort besitzt noch keine Destination-Referenz.".to_string())?;
+
         stage.title = title.to_string();
         stage.country = (!country.trim().is_empty()).then(|| country.trim().to_string());
-    }
+        destination_id
+    };
 
     let page = project
         .page_manifest
@@ -1813,9 +1819,13 @@ fn update_journey_place(
     if let Some(entry) = page.authoring.get_mut("title") {
         entry.content = title.to_string();
     }
-    if let Some(destination) = project.destinations.iter_mut().find(|destination| destination.id == format!("destination-{stage_id}")) {
-        destination.name = title.to_string();
-    }
+
+    let destination = project
+        .destinations
+        .iter_mut()
+        .find(|destination| destination.id == destination_id)
+        .ok_or_else(|| format!("Destination Profile '{destination_id}' wurde nicht gefunden."))?;
+    destination.name = title.to_string();
 
     validate_project(&project)?;
     write_project(project_path, &project)?;
@@ -3314,6 +3324,104 @@ mod tests {
         );
 
         assert!(validate_project(&updated.project).is_ok());
+    }
+
+    #[test]
+    fn renames_journey_place_through_persisted_destination_identity() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            temp.path().to_string_lossy().into_owned(),
+            "Identity Test".into(),
+            REFERENCE_WORLD_ID.into(),
+            "de".into(),
+        )
+        .expect("new journey");
+
+        let path = created.project_path.clone();
+        let with_alesund = add_journey_place(
+            path.clone(),
+            "Ålesund".into(),
+            "Norwegen".into(),
+        )
+        .expect("alesund");
+
+        let stage = with_alesund
+            .project
+            .journey
+            .as_ref()
+            .expect("journey")
+            .stages[0]
+            .clone();
+        let original_destination_id = stage.destination_id.clone().expect("destination id");
+        let stable_destination_id = "destination-stable-4711".to_string();
+
+        let mut project = read_project(Path::new(&path)).expect("read project");
+        project
+            .journey
+            .as_mut()
+            .expect("journey")
+            .stages
+            .iter_mut()
+            .find(|entry| entry.id == stage.id)
+            .expect("stage")
+            .destination_id = Some(stable_destination_id.clone());
+
+        project
+            .destinations
+            .iter_mut()
+            .find(|destination| destination.id == original_destination_id)
+            .expect("destination")
+            .id = stable_destination_id.clone();
+
+        validate_project(&project).expect("custom stable identity must validate");
+        write_project(Path::new(&path), &project).expect("write project");
+
+        let updated = update_journey_place(
+            path,
+            stage.id.clone(),
+            "Stavanger".into(),
+            "Norwegen".into(),
+        )
+        .expect("rename");
+
+        let updated_stage = updated
+            .project
+            .journey
+            .as_ref()
+            .expect("journey")
+            .stages
+            .iter()
+            .find(|entry| entry.id == stage.id)
+            .expect("updated stage");
+
+        assert_eq!(updated_stage.id, stage.id);
+        assert_eq!(
+            updated_stage.destination_id.as_deref(),
+            Some(stable_destination_id.as_str())
+        );
+        assert_eq!(updated_stage.title, "Stavanger");
+
+        let destination = updated
+            .project
+            .destinations
+            .iter()
+            .find(|destination| destination.id == stable_destination_id)
+            .expect("updated destination");
+        assert_eq!(destination.name, "Stavanger");
+
+        let page = updated
+            .project
+            .page_manifest
+            .iter()
+            .find(|page| {
+                page.page_type == "destination"
+                    && page.journey_stage.as_deref() == Some(stage.id.as_str())
+            })
+            .expect("destination page");
+        assert_eq!(page.title, "Stavanger");
+        assert_eq!(page.journey_stage.as_deref(), Some(stage.id.as_str()));
+
+        validate_project(&updated.project).expect("renamed project must validate");
     }
 
     #[test]
