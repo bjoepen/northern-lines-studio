@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const app = fs.readFileSync('src/App.svelte', 'utf8');
 const workspace = fs.readFileSync('src/lib/workspace.ts', 'utf8');
 const accents = fs.readFileSync('src/lib/curated-accents.ts', 'utf8');
+const worldAssets = fs.readFileSync('src/lib/world-assets.ts', 'utf8');
 const css = fs.readFileSync('src/styles/book-utility-pages.css', 'utf8');
 const project = fs.readFileSync('src/lib/project.ts', 'utf8');
 const rust = fs.readFileSync('src-tauri/src/lib.rs', 'utf8');
@@ -15,7 +16,8 @@ const checks = [
   ['Erinnerungen visible title', app.includes('<h1>Erinnerungen</h1>')],
   ['Orientierung has no curated accent', !app.includes("curatedAccentFor(editorialWorld?.id, 'contents')")],
   ['Erinnerungen keeps curated accent', app.includes("curatedAccentFor(editorialWorld?.id, 'notes')")],
-  ['Accent API only exposes notes', accents.includes("CuratedAccentKey = 'notes'") && !accents.includes("contents:" )],
+  ['Accent API delegates to World asset registry', accents.includes('worldAssetManifestFor') && accents.includes('CuratedAccentKey')],
+  ['Accent role contract only exposes notes', worldAssets.includes("CuratedAccentKey = 'notes'") && !worldAssets.includes('contents:')],
   ['Workspace speaks Erinnerungen', workspace.includes("case 'notes': return 'Erinnerungen'")],
   ['Project headings speak Travel Language', project.includes("heading: 'Orientierung'") && project.includes("heading: 'Erinnerungen'")],
   ['Starter pages speak Travel Language', rust.includes('"Orientierung", "content/pages/003-contents.md"') && rust.includes('"Erinnerungen", "content/pages/030-notes.md"')],
