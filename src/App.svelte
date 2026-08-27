@@ -47,6 +47,7 @@
   import { CURATED_WORKSHOP_BRIDGE, CURATED_WORKSHOP_WORLDS } from './lib/travel-companion-workshop';
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
+  import { curatedWelcomeHeroFor } from './lib/curated-welcome';
   import {
     backgroundProofPoc001BuildHostUrl,
     backgroundProofPoc001EventNames,
@@ -2847,6 +2848,7 @@
               class="a5-page"
               data-studio-page-id={selectedPage?.id ?? ''}
               class:cover-page={selectedPage?.type === 'cover'}
+              class:welcome-page={selectedPage?.type === 'welcome'}
               class:fjord-page={editorialWorld?.id === 'fjord'}
               class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
@@ -3280,6 +3282,27 @@
                       <section><span>Ideen</span><div class="notes-mini-lines" aria-hidden="true"></div></section>
                       <section class="notes-sketch"><span>Skizze</span><div class="notes-dot-grid" aria-hidden="true"></div></section>
                     </aside>
+                  </div>
+                </div>
+              {:else if selectedPage?.type === 'welcome'}
+                <div class="curated-welcome-preview" aria-label={`Willkommen · ${editorialWorld?.name ?? 'Northern Lines'}`}>
+                  <div class="curated-welcome-copy">
+                    <p class="curated-welcome-kicker">Die Reise beginnt</p>
+                    <h1 class="curated-welcome-title">Willkommen</h1>
+                    <p class="curated-welcome-introduction">{selectedPage.authoring?.introduction?.content?.trim() || 'Orte, Licht und Erinnerungen – gesammelt für unterwegs.'}</p>
+                    <blockquote class="curated-welcome-quote">{selectedPage.authoring?.quote?.content?.trim() || 'Jede Reise beginnt mit einer Ahnung von dem, was bleiben könnte.'}</blockquote>
+                  </div>
+                  <section class="curated-welcome-thoughts" aria-label="Meine Gedanken zur Reise">
+                    <span>Meine Gedanken zur Reise</span>
+                    <p>Worauf freue ich mich? Was möchte ich sehen, erleben oder mit nach Hause nehmen?</p>
+                    <div class="curated-welcome-thought-lines" aria-hidden="true">
+                      <i></i><i></i><i></i>
+                    </div>
+                  </section>
+                  <div class="curated-welcome-hero-wrap" aria-hidden="true">
+                    {#if curatedWelcomeHeroFor(editorialWorld?.id)}
+                      <img class="curated-welcome-hero" src={curatedWelcomeHeroFor(editorialWorld?.id) ?? ''} alt="" />
+                    {/if}
                   </div>
                 </div>
               {:else if selectedPage?.type === 'cover' && project}
