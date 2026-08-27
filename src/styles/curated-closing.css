@@ -1,0 +1,264 @@
+/* Build 044 · Curated Closing
+   Visual specification is frozen to the approved “Die Reise bleibt” reference.
+   No free layout, no new typography, no independent Companion geometry. */
+
+.a5-page.closing-page {
+  justify-content: flex-start;
+  background: #ffffff;
+  padding-top: 40px;
+}
+
+.curated-closing-preview {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  color: var(--world-ink, #172a34);
+  overflow: hidden;
+}
+
+.curated-closing-copy {
+  max-width: 310px;
+}
+
+.curated-closing-kicker,
+.curated-closing-section-label,
+.curated-closing-card h2,
+.curated-closing-highlights-title {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  text-transform: uppercase;
+  color: var(--world-accent, #547181);
+}
+
+.curated-closing-kicker {
+  margin: 0 0 8px;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.curated-closing-title {
+  margin: 0;
+  font-family: var(--world-heading-family, Georgia, serif);
+  font-size: 37px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.022em;
+  color: var(--world-ink, #172a34);
+}
+
+.curated-closing-deck {
+  margin: 13px 0 0;
+  max-width: 294px;
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.curated-closing-quote {
+  margin: 10px 0 0;
+  max-width: 286px;
+  padding-left: 13px;
+  border-left: 1px solid color-mix(in srgb, var(--world-accent, #547181) 42%, transparent);
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 9.5px;
+  font-style: italic;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--world-ink, #172a34) 82%, white);
+}
+
+.curated-closing-text-block {
+  margin-top: 10px;
+  max-width: 310px;
+}
+
+.curated-closing-section-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 6.2px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.curated-closing-text {
+  margin: 0;
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 8.7px;
+  line-height: 1.42;
+  color: color-mix(in srgb, var(--world-ink, #172a34) 90%, white);
+}
+
+.curated-closing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.curated-closing-card {
+  min-width: 0;
+  padding: 9px 8px 8px;
+  border: 1px solid color-mix(in srgb, var(--world-accent, #547181) 16%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--world-accent, #547181) 5%, white);
+  text-align: center;
+}
+
+.curated-closing-card-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 5px;
+  color: var(--world-accent, #547181);
+}
+
+.curated-closing-card-icon svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.curated-closing-card h2 {
+  margin: 0;
+  font-size: 6.6px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.curated-closing-card-rule {
+  width: 18px;
+  height: 1px;
+  margin: 5px auto 6px;
+  background: color-mix(in srgb, var(--world-accent, #547181) 60%, transparent);
+}
+
+.curated-closing-card p {
+  margin: 0;
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 6.7px;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--world-ink, #172a34) 88%, white);
+}
+
+.curated-closing-highlights {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 12px;
+  margin-top: 10px;
+  align-items: end;
+}
+
+.curated-closing-highlights-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+}
+
+.curated-closing-world-mark {
+  width: 22px;
+  height: 22px;
+  color: var(--world-accent, #547181);
+  flex: 0 0 auto;
+}
+
+.curated-closing-world-mark svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.curated-closing-highlights-title {
+  font-size: 6.3px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.curated-closing-highlight-lines {
+  display: grid;
+  gap: 6px;
+}
+
+.curated-closing-highlight-lines i {
+  display: block;
+  height: 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--world-accent, #547181) 22%, transparent);
+}
+
+.curated-closing-highlight-memory {
+  margin: 0 0 2px;
+  font-family: var(--world-body-family, Georgia, serif);
+  font-size: 7.4px;
+  font-style: italic;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--world-ink, #172a34) 78%, white);
+}
+
+.curated-closing-hero-wrap {
+  position: relative;
+  min-height: 78px;
+  flex: 1 1 auto;
+  margin: 8px 20px 28px 42px;
+  overflow: hidden;
+}
+
+.curated-closing-hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  border: 0;
+}
+
+.a5-page.fjord-page.closing-page,
+.a5-page.baltic-page.closing-page {
+  background: #ffffff;
+}
+
+/* Closing memory is part of the Companion-visible journey. Keep its protected slot. */
+.a5-page.closing-page .companion-zone {
+  z-index: 5;
+}
+
+/* Footer geometry remains owned by the shared Editorial Frame. */
+.a5-page.closing-page .editorial-footer {
+  position: relative;
+  z-index: 4;
+}
+
+/* Ostsee World Expression · Closing cards only.
+   Geometry and content stay shared with Fjord.
+   Ostsee uses its warm amber / sand language here — no Fjord blue. */
+.a5-page.baltic-page.closing-page .curated-closing-card {
+  border-color: color-mix(in srgb, #b58a4a 18%, transparent);
+  background: color-mix(in srgb, #c6a46a 9%, white);
+}
+
+.a5-page.baltic-page.closing-page .curated-closing-card-icon,
+.a5-page.baltic-page.closing-page .curated-closing-card h2 {
+  color: #9b6f32;
+}
+
+.a5-page.baltic-page.closing-page .curated-closing-card-rule {
+  background: color-mix(in srgb, #a97938 58%, transparent);
+}
+
+@media (max-height: 720px) {
+  .curated-closing-title { font-size: 34px; }
+  .curated-closing-cards { gap: 7px; margin-top: 9px; }
+  .curated-closing-card { padding: 8px 7px 7px; }
+  .curated-closing-card p { font-size: 6.3px; }
+  .curated-closing-highlights { margin-top: 8px; }
+  .curated-closing-hero-wrap { margin-bottom: 25px; }
+}
