@@ -1,15 +1,12 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Golden Build 040 · Studio `0.40.0-alpha.1`
+**Aktueller Stand:** Build 045 · Studio `0.40.0-alpha.1`
 
-Northern Lines Studio ist eine spezialisierte macOS-Desktop-Anwendung für
-Travelbook-Authoring, visuelle Studio-Komposition und PDF-Export im
-Northern-Lines-Reise- und Fotografie-Ökosystem.
+**Geometrische Authority:** Golden Build 040
 
-Studio ist kein allgemeines DTP-Programm, kein CMS und kein freier
-Layout-Baukasten. Der Reisende beschreibt Reise, Orte, Interessen und
-Geschichten in Travel Language. Studio komponiert daraus kuratierte,
-exakt-A5-fähige Seiten.
+Northern Lines Studio ist eine spezialisierte macOS-Desktop-Anwendung für Travelbook-Authoring, visuelle Studio-Komposition und PDF-Export im Northern-Lines-Reise- und Fotografie-Ökosystem.
+
+Studio ist kein allgemeines DTP-Programm, kein CMS und kein freier Layout-Baukasten. Der Reisende beschreibt Reise, Orte, Interessen und Geschichten in Travel Language. Studio komponiert daraus kuratierte, exakt-A5-fähige Seiten.
 
 > **Der Reisende öffnet kein Projekt. Er öffnet seine Reise.**
 
@@ -33,25 +30,25 @@ Aktueller Scope:
 ```text
 macOS                              ACTIVE
 Tauri v2                           ACTIVE
-Golden Build 040                   AUTHORITATIVE
+Build 045                          CURRENT BASELINE
+Golden Build 040                   A5 GEOMETRY AUTHORITY
+Curated Cover / Welcome / Closing  ACCEPTED
 Single-page PDF Proof              ACCEPTED
 Document Proof                     ACCEPTED
 canonical publication order        ACCEPTED
 exact DIN A5                       ACCEPTED
 Standard whole-document PDF        ACCEPTED
 PDF/A-2b Studio export             ACCEPTED
+Publisher Production Host          INTEGRATED
 external veraPDF validation         PASS
 Windows                            OUT OF CURRENT SCOPE
 ```
 
-Die akzeptierte PDF/A-2b-Fähigkeit ist ein RC-relevanter Meilenstein. Das
-README erklärt damit einen deutlich reiferen Studio-Stand, behauptet aber
-nicht, dass Studio bereits RC, fertig oder production-ready ist.
+Die akzeptierte PDF/A-2b-Fähigkeit und die integrierte Production-Host-Architektur sind RC-relevante Meilensteine. Das README beschreibt damit den aktuellen belastbaren Studio-Stand, behauptet aber nicht, dass Studio bereits RC, fertig oder production-ready ist.
 
 ## Produktidee
 
-Northern Lines Studio spricht in **Travel Language**. Technische Mechanismen
-bleiben im Hintergrund:
+Northern Lines Studio spricht in **Travel Language**. Technische Mechanismen bleiben im Hintergrund:
 
 - **Neue Reise beginnen** statt Projekt anlegen
 - **Reiseplanung** statt Journey-Metadaten
@@ -65,8 +62,7 @@ bleiben im Hintergrund:
 
 ## Studio / Publisher
 
-Studio ist für den normalen Studio-Travelbook-Pfad heute die autoritative
-Anwendung für:
+Studio ist für den normalen Studio-Travelbook-Pfad die autoritative Anwendung für:
 
 - Authoring
 - Editorial Worlds
@@ -77,15 +73,13 @@ Anwendung für:
 - Standard PDF
 - PDF/A-2b
 
-Northern Lines Publisher bleibt eine eigenständige spätere Publishing- und
-Production-Perspektive. Er kann künftig professionelle oder
-prepress-orientierte Erweiterungen, Validierung, Staging, Packaging oder
-Produktionsinfrastruktur beitragen. Für Studio-originierte Seiten gilt aber:
-Publisher darf die von Studio entschiedenen Seiten nicht neu interpretieren
-oder mit einer zweiten Layout-Engine neu komponieren.
+Für die Production-Integration gilt die verbindliche Architekturregel:
 
-Studio ist damit nicht zu einem professionellen Prepress-/DTP-System geworden.
-Es bleibt eine fokussierte Travelbook-Anwendung.
+> **Northern Lines Studio owns the page. Publisher owns the production job.**
+
+Publisher darf die von Studio entschiedenen Seiten nicht neu interpretieren und keinen zweiten Renderer etablieren. Der integrierte Production Host reproduziert die bereits aufgelöste Studio-Seite für den Production Job; Layout, Renderer und World-Semantik bleiben Eigentum von Studio.
+
+Studio ist damit nicht zu einem professionellen Prepress-/DTP-System geworden. Es bleibt eine fokussierte Travelbook-Anwendung.
 
 ## Architektur
 
@@ -96,7 +90,7 @@ Es bleibt eine fokussierte Travelbook-Anwendung.
 - **Projektformat:** offenes `.nls`-Package
 - **Aktive Plattform:** macOS
 
-Golden Build 040 ist die aktuelle geometrische Authority:
+Golden Build 040 bleibt die geometrische Authority:
 
 ```text
 Studio page width       = 420 u
@@ -106,11 +100,11 @@ Golden composition      = 420 × 594 u
 Physical target medium  = 148 × 210 mm
 ```
 
-Studio ist die visuelle und geometrische Quelle der Wahrheit. Proof- und
-Export-Code reproduzieren die bereits aufgelöste Studio-Seite; sie erfinden
-keine zweite Komposition.
+Build 045 ist dagegen die aktuelle funktionale Baseline. Damit werden Geometrie-Referenz und Produktstand bewusst getrennt.
 
-## PDF Proof und Export
+Studio ist die visuelle und geometrische Quelle der Wahrheit. Proof-, Export- und Production-Code reproduzieren die bereits aufgelöste Studio-Seite; sie erfinden keine zweite Komposition.
+
+## PDF Proof, Export und Production Host
 
 Der akzeptierte Single-page PDF Proof ist in ADR-039 beschrieben:
 
@@ -146,12 +140,11 @@ canonical Studio Travelbook
 → atomic final output
 ```
 
-PDF/A-2b ist ein bounded postprocessing des akzeptierten Document PDFs. Es gibt
-keinen zweiten Renderer, kein Re-Rendering, keine Rasterisierung, kein
-Transparency Flattening, kein Reflow und keinen Content-Stream-Rewrite.
+PDF/A-2b ist ein bounded postprocessing des akzeptierten Document PDFs. Es gibt keinen zweiten Renderer, kein Re-Rendering, keine Rasterisierung, kein Transparency Flattening, kein Reflow und keinen Content-Stream-Rewrite.
 
-Die installierte macOS-App wurde mit einem realen 16-seitigen Travelbook als
-PDF/A-2b validiert. Externe veraPDF-Evidence:
+Die Production-Host-Integration baut darauf auf: Studio rendert weiterhin die Seite; Publisher steuert ausschließlich den Production Job. Der macOS-WebKit-Host ist so integriert, dass der Export ohne sichtbares „Daumenkino“ durch das Dokument laufen kann und dabei dieselbe Studio-Komposition verwendet.
+
+Die installierte macOS-App wurde mit einem realen Travelbook als PDF/A-2b validiert. Externe veraPDF-Evidence:
 
 ```text
 PDF/A-2b compliant       true
@@ -165,7 +158,7 @@ failed checks            0
 
 Northern Lines Studio wird durch diese dauerhaften Referenzen geführt:
 
-- `README.md` – aktueller Produkt- und Build-Stand
+- `README.md` – aktueller Produkt- und Baseline-Stand
 - `AGENTS.md` – bindender Arbeitsvertrag für Coding Agents
 - `docs/PRODUCT-DNA.md` – Produkt-, UX-, Travel-Language- und Layoutprinzipien
 - `docs/VISION.md` – langfristiges Zielbild
@@ -176,6 +169,9 @@ Northern Lines Studio wird durch diese dauerhaften Referenzen geführt:
 - `docs/adr/ADR-040-STUDIO-DOCUMENT-PROOF.md`
 - `docs/adr/ADR-041-STUDIO-PDFA-2B-EXPORT.md`
 - `docs/validation/STUDIO-PDFA-2B-INTEGRATION-VALIDATION.md`
+- `docs/builds/BUILD-043-CURATED-WELCOME.md`
+- `docs/builds/BUILD-044-CURATED-CLOSING.md`
+- `docs/builds/BUILD-045-DESTINATION-IDENTITY-INTEGRITY.md`
 
 ## Aktueller Journey Lifecycle
 
@@ -186,11 +182,12 @@ Northern Lines Studio wird durch diese dauerhaften Referenzen geführt:
 5. Orte hinzufügen
 6. Route formen
 7. Geschichten und Vertiefungen bearbeiten
-8. Änderungen sichern
-9. Travelbook im Studio prüfen
-10. Single-page oder whole-document Proof erzeugen
-11. Standard PDF oder PDF/A-2b exportieren
-12. `.nls` direkt aus dem Finder wieder öffnen
+8. Destination-Fotografie auswählen
+9. Änderungen sichern
+10. Travelbook im Studio prüfen
+11. Single-page oder whole-document Proof erzeugen
+12. Standard PDF oder PDF/A-2b exportieren
+13. `.nls` direkt aus dem Finder wieder öffnen
 
 ## Journey Planning
 
@@ -205,20 +202,15 @@ Die Reiseplanung hält strukturierte Reisedaten fest:
 - **Route im Überblick**
 - **Fokus der Reise**
 
-Studio speichert diese Informationen im Journey-Modell und macht sie unmittelbar
-auf der Reiseplanungsseite sichtbar.
+Studio speichert diese Informationen im Journey-Modell und macht sie unmittelbar auf der Reiseplanungsseite sichtbar.
 
 > **Der Reisende beschreibt den Rahmen seiner Reise. Studio macht ihn sichtbar.**
 
-Die Dauer ist eine abgeleitete Größe und wird nicht redundant im `.nls`
-gespeichert.
+Die Dauer ist eine abgeleitete Größe und wird nicht redundant im `.nls` gespeichert.
 
-## Ortsprofil & Seitenwirkung
+## Ortsprofil, stabile Identität & Seitenwirkung
 
-Der Ort ist ein strukturiertes redaktionelles Objekt. Im normalen
-Studio-Workflow arbeitet der Reisende am **Ortsprofil** und wählt die
-**Seitenwirkung**, während technische Destination-Strukturen im Hintergrund
-bleiben.
+Der Ort ist ein strukturiertes redaktionelles Objekt. Im normalen Studio-Workflow arbeitet der Reisende am **Ortsprofil** und wählt die **Seitenwirkung**, während technische Destination-Strukturen im Hintergrund bleiben.
 
 Ein Ortsprofil kann unter anderem enthalten:
 
@@ -230,9 +222,7 @@ Ein Ortsprofil kann unter anderem enthalten:
 - nachgelagerte Hinweise **Für unterwegs**
 - eine von drei kuratierten Seitenwirkungen
 
-Die Route referenziert intern stabile `destinationId`-Werte. Ein Wechsel der
-Seitenwirkung ändert keine Inhalte, sondern ausschließlich die semantische
-Layoutentscheidung.
+Die Route referenziert intern stabile `destinationId`-Werte. Sichtbare Umbenennungen ändern die stabile technische Identität nicht. Runtime-Updates lösen ein Destination Profile über die persistierte `JourneyStage.destinationId` auf; sie leiten eine bestehende Identität nicht erneut aus einem sichtbaren Namen oder einer Stage-ID ab.
 
 > **Der Inhalt gehört zum Ort. Das Layout gehört zur Erzählweise.**
 
@@ -242,27 +232,29 @@ Layoutentscheidung.
 - **Bild links** – das Bild führt in den Ort
 - **Bild rechts** – die Geschichte führt, das Bild begleitet
 
-Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner.
-Footer, Seitenzahl und Reisebegleiter bleiben beim Wechsel stabil.
+Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner. Footer, Seitenzahl und Reisebegleiter bleiben beim Wechsel stabil.
 
 ## Editorial Worlds
 
-Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv
-verfügbar sind **Fjord** und **Ostsee**. Beide teilen dieselbe semantische und
-adaptive Layout Grammar; Typografie, Palette, Extension Expression und
-Companion gehören zur jeweiligen World.
+Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv verfügbar sind **Fjord** und **Ostsee**. Beide teilen dieselbe semantische und adaptive Layout Grammar; Typografie, Palette, Extension Expression, Curated Heroes und Companion gehören zur jeweiligen World.
 
-Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt
-neutral weiß; World Expression entsteht über Typografie, Akzente, Companion,
-Signets, gezielte Editorial-/Extension-Flächen und Fotografie.
+Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt neutral weiß; World Expression entsteht über Typografie, Akzente, Companion, Signets, gezielte Editorial-/Extension-Flächen, kuratierte Illustrationen und Fotografie.
 
 > **Wenige starke Möglichkeiten. Viele persönliche Geschichten.**
 
+## Kuratierte Start- und Abschlussseiten
+
+Die Front- und Closing-Matter-Seiten folgen derselben Northern-Lines-Bildsprache wie die übrige World Expression:
+
+- **Cover** – kuratierter Einstieg, keine zweite Layoutsprache
+- **Willkommen** – Build 043, World-konformer Hero und persönlicher Gedankenraum
+- **Die Reise bleibt** – Build 044, ruhiger Abschluss mit World-konformer Expression
+
+Die Gestaltung ist kuratiert; Projektinhalt und World Expression bleiben getrennt. Fjord und Ostsee verwenden dieselbe Grammar, aber ihre jeweils eigene visuelle Sprache.
+
 ## Thematische Vertiefungen einer Destination
 
-Die Destination ist ein semantisches Zentrum mit optionalen Zusatzseiten. Die
-Haupt-Ortsseite bleibt allgemein und ruhig; Vertiefungen folgen dem Interesse
-der konkreten Reise.
+Die Destination ist ein semantisches Zentrum mit optionalen Zusatzseiten. Die Haupt-Ortsseite bleibt allgemein und ruhig; Vertiefungen folgen dem Interesse der konkreten Reise.
 
 Verbindlich vorbereitet sind genau vier Archetypen:
 
@@ -271,19 +263,15 @@ Verbindlich vorbereitet sind genau vier Archetypen:
 - **Kultur & Geschichte** – inklusive Museen, Architektur und historischen/antiken Stätten
 - **Kulinarik & Lokal**
 
-Mehrere Interessen dürfen zu demselben Ort gehören. Studio spricht dabei nicht
-von Seitentypen oder Archetypen, sondern fragt beispielsweise:
+Mehrere Interessen dürfen zu demselben Ort gehören. Studio spricht dabei nicht von Seitentypen oder Archetypen, sondern fragt beispielsweise:
 
 > **Was möchtest du in Bergen erleben?**
 
-Die neue Seite bleibt mit Bergen verbunden, erscheint direkt bei diesem Ort in
-**Deine Route** und übernimmt automatisch die aktive Editorial World.
+Die neue Seite bleibt mit Bergen verbunden, erscheint direkt bei diesem Ort in **Deine Route** und übernimmt automatisch die aktive Editorial World.
 
 ## Travel Companion Pages
 
-Studio führt wiederverwendbare Travel Companion Pages für kuratierte
-Reisebegleitung. Der kuratierte Kern bleibt programmneutral und wiederverwendbar;
-kurze optionale Reisehinweise dürfen projektspezifisch authoriert werden.
+Studio führt wiederverwendbare Travel Companion Pages für kuratierte Reisebegleitung. Der kuratierte Kern bleibt programmneutral und wiederverwendbar; kurze optionale Reisehinweise dürfen projektspezifisch authoriert werden.
 
 Aktuelle Companion-Themen umfassen unter anderem:
 
@@ -301,15 +289,11 @@ Die A5-Komposition kennt geschützte redaktionelle Zonen:
 - stabiler Northern-Lines-Footer und Seitenzahl
 - definierte Inhalts- und Extension-Zonen
 
-Studio darf intern `comfortable`, `tight` oder `overflow` erkennen. Diese
-Zustände verändern weder Inhalte noch Primärtypografie und werden nicht als
-technische Sprache in die Reiseoberfläche getragen.
+Studio darf intern `comfortable`, `tight` oder `overflow` erkennen. Diese Zustände verändern weder Inhalte noch Primärtypografie und werden nicht als technische Sprache in die Reiseoberfläche getragen.
 
 > **Der Begleiter ist unantastbar – und sein Raum ebenfalls.**
 
-Wenn die endliche Grammar erschöpft ist, meldet Studio Kapazitätsdruck statt
-Text zu clippen, Typografie willkürlich zu schrumpfen oder Companion/Footer zu
-verschieben.
+Wenn die endliche Grammar erschöpft ist, meldet Studio Kapazitätsdruck statt Text zu clippen, Typografie willkürlich zu schrumpfen oder Companion/Footer zu verschieben.
 
 ## Destination Imagery
 
@@ -318,25 +302,19 @@ Destination Pages verwenden semantische Bildrollen:
 - **Weite** – breites Panorama; Richtwert etwa **3:1–4:1**, mindestens **2400 px** breit
 - **Bild links / Bild rechts** – gemeinsames hochformatiges Leitbild, Richtwert **2:3 / 1500 × 2250 px**
 
-Studio zeigt Hilfe zur empfohlenen Geometrie. Es gibt bewusst keinen
-Crop-Editor, keinen Focal Point und keine freie Bildpositionierung. Gewählte
-Bilder werden innerhalb des `.nls`-Packages unter `assets/destinations/`
-abgelegt; sichtbare Dateipfade oder Asset-IDs gehören nicht zur Reisenden-UX.
+Studio zeigt Hilfe zur empfohlenen Geometrie. Es gibt bewusst keinen Crop-Editor, keinen Focal Point und keine freie Bildpositionierung. Gewählte Bilder werden innerhalb des `.nls`-Packages unter `assets/destinations/` abgelegt; sichtbare Dateipfade oder Asset-IDs gehören nicht zur Reisenden-UX.
+
+Damit ist Destination-Fotografie **project-owned**. Curated Heroes, Companion, Signets und World-Illustrationen bleiben dagegen **world-owned** und werden nicht in das `.nls` dupliziert.
 
 > **Die Fotografie bringt die Atmosphäre. Die Typografie gibt ihr Haltung. Die Editorial World setzt die Akzente.**
 
 ## Editorial Extension Zones
 
-Destination Pages können optionale semantische Erweiterungen tragen:
-**Wissen, Fotospot, Tipp, Souvenir, Wichtig und Geschichte**. Sie erscheinen nur
-dort, wo ein Ort tatsächlich zusätzliche redaktionelle Bedeutung trägt.
+Destination Pages können optionale semantische Erweiterungen tragen: **Wissen, Fotospot, Tipp, Souvenir, Wichtig und Geschichte**. Sie erscheinen nur dort, wo ein Ort tatsächlich zusätzliche redaktionelle Bedeutung trägt.
 
 > **Das Signet sagt, was es ist. Die Farbe sagt, zu welcher Welt es gehört. Mehr muss die Box nicht erklären.**
 
-Extension Zones sind rahmenlos. Ein gemeinsames semantisches Signet wird durch
-die aktive Editorial World eingefärbt; die Stärke der world-konformen Fläche
-übernimmt die Gewichtung. Es gibt keine frei wählbare Asset-Bibliothek und
-keinen Box-Designer.
+Extension Zones sind rahmenlos. Ein gemeinsames semantisches Signet wird durch die aktive Editorial World eingefärbt; die Stärke der world-konformen Fläche übernimmt die Gewichtung. Es gibt keine frei wählbare Asset-Bibliothek und keinen Box-Designer.
 
 ## Travel Language Footer
 
@@ -344,8 +322,7 @@ Der wiederkehrende Fieldbook-Anker lautet:
 
 **TRAVEL · PHOTOGRAPHY · Signet · MEMORIES**
 
-Die Editorial World bestimmt seine visuelle Expression. Die Seitenzahl bleibt
-davon getrennt und dient ausschließlich der Navigation.
+Die Editorial World bestimmt seine visuelle Expression. Die Seitenzahl bleibt davon getrennt und dient ausschließlich der Navigation.
 
 ## Companion Layout
 
@@ -363,24 +340,19 @@ Für Fjord gilt aktuell:
 
 ## `.nls`
 
-`.nls` ist ein offenes Northern-Lines-Studio-Package. Unter macOS ist es als
-Reisedokument registriert und lässt sich direkt im Finder öffnen.
+`.nls` ist ein offenes Northern-Lines-Studio-Package. Unter macOS ist es als Reisedokument registriert und lässt sich direkt im Finder öffnen.
 
-`.nls` speichert semantische Projekt- und Editorial-State-Daten, keine freie
-Seitengeometrie. Migrationen erhalten bestehende Journey-, Destination-, Bild-,
-Extension- und Interest-Daten; Studio erfindet keine Routen oder Interessen.
+**Aktuelles Projektformat:** `.nls` `0.16.0`
 
-Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten
-aufgebaut. Fehlende redaktionelle Inhalte werden bewusst nicht erfunden.
+`.nls` speichert semantische Projekt- und Editorial-State-Daten, keine freie Seitengeometrie. Migrationen erhalten bestehende Journey-, Destination-, Bild-, Extension- und Interest-Daten; Studio erfindet keine Routen oder Interessen.
+
+Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut. Fehlende redaktionelle Inhalte werden bewusst nicht erfunden.
 
 ## Windows Scope
 
 Der aktive Produkt-, Engineering- und Validierungsscope ist macOS.
 
-Windows-Anwendung, Windows-PDF-Proof-Adapter, Windows-PDF/A-Export und
-Windows-Runtime-Validierung sind derzeit außerhalb des aktiven Scopes /
-deferred. Das ist keine dauerhafte Absage an Windows, aber keine aktuelle
-Implementierungs- oder Roadmap-Zusage.
+Windows-Anwendung, Windows-PDF-Proof-Adapter, Windows-PDF/A-Export und Windows-Runtime-Validierung sind derzeit außerhalb des aktiven Scopes / deferred. Das ist keine dauerhafte Absage an Windows, aber keine aktuelle Implementierungs- oder Roadmap-Zusage.
 
 ## Entwicklung
 
@@ -399,11 +371,11 @@ pnpm test
 pnpm consistency
 pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path src-tauri/Cargo.toml
 git diff --check
 ```
 
-Scoped PDF/export consistency gates exist for the accepted proof and PDF/A
-architecture. Run them when touching those areas.
+Scoped PDF/export/Production-Host consistency gates exist for the accepted proof, PDF/A and Publisher-production architecture. Run them when touching those areas.
 
 ## macOS-App installieren
 
@@ -421,9 +393,7 @@ Danach liegt die Anwendung unter:
 
 > **Studio wächst mit echten Reisen.**
 
-Neue Layouts, Komponenten und Workflows entstehen aus realen Anforderungen und
-bewährten Northern-Lines-Fieldbooks, nicht aus dem Ziel, jede theoretische
-Gestaltungsmöglichkeit abzubilden.
+Neue Layouts, Komponenten und Workflows entstehen aus realen Anforderungen und bewährten Northern-Lines-Fieldbooks, nicht aus dem Ziel, jede theoretische Gestaltungsmöglichkeit abzubilden.
 
 ## Build-Meilensteine
 
@@ -458,17 +428,23 @@ Gestaltungsmöglichkeit abzubilden.
 - **039** Studio Resolved Page PDF Proof accepted
 - **040** Golden Geometry Authority und Studio Document Proof accepted
 - **041** Studio PDF/A-2b Export accepted
+- **042** Curated Cover
+- **Production Integration** Publisher Production Host ohne zweiten Renderer
+- **043** Curated Welcome – Fjord und Ostsee
+- **044** Curated Closing – „Die Reise bleibt“
+- **045** Destination Identity Integrity – Rename über persistierte `destinationId`
+
+## Repository-Beispiele
+
+`examples/Norway-Sample.nls` ist ein bewusst historisches `.nls`-Beispiel im Format `0.5.0`. Es dient als Legacy-/Migration-Referenz und ist **nicht** die kanonische Vorlage für ein neu erzeugtes Projekt. Das aktuelle Projektformat ist in `docs/project-format.md` dokumentiert.
 
 ## License and source availability
 
 Northern Lines Studio is **source available, but not open source**.
 
-The source code is publicly visible to make development transparent. The public
-repository may be viewed and forked using GitHub's functionality in accordance
-with the GitHub Terms of Service.
+The source code is publicly visible to make development transparent. The public repository may be viewed and forked using GitHub's functionality in accordance with the GitHub Terms of Service.
 
-No general license is granted for independent redistribution, relicensing,
-incorporation into another product, or commercial exploitation.
+No general license is granted for independent redistribution, relicensing, incorporation into another product, or commercial exploitation.
 
 Northern Lines brand and design materials remain separately reserved.
 
