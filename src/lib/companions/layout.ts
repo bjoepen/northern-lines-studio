@@ -28,11 +28,27 @@ export const fjordCompanionLayout: CompanionLayoutRule = {
   ]
 };
 
+export const balticCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
+
+const companionLayoutRegistry: ReadonlyMap<string, CompanionLayoutRule> = new Map([
+  ['fjord-companion-layout', fjordCompanionLayout],
+  ['baltic-companion-layout', balticCompanionLayout]
+]);
+
+export function loadCompanionLayout(id: string | undefined): CompanionLayoutRule | null {
+  if (!id) return null;
+  return companionLayoutRegistry.get(id) ?? null;
+}
+
+export function requireCompanionLayout(id: string): CompanionLayoutRule {
+  const layout = loadCompanionLayout(id);
+  if (!layout) throw new Error(`Unbekanntes Companion Layout: ${id}`);
+  return layout;
+}
+
 export function companionVisibleForRole(
   rule: CompanionLayoutRule,
   role: PageRole | undefined
 ): boolean {
   return Boolean(role && rule.visibleRoles.includes(role));
 }
-
-export const balticCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
