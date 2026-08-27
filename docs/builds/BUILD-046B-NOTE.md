@@ -1,0 +1,1 @@
+Build 046B uses `scripts/check-build-046b-world-wireup-hardening-consistency-v2.mjs` as the corrected validation gate for the local apply step. The earlier gate file is superseded and will be consolidated before merge.
