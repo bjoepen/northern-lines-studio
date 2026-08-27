@@ -48,6 +48,7 @@
   import { curatedHeroFor } from './lib/curated-heroes';
   import { curatedAccentFor } from './lib/curated-accents';
   import { curatedWelcomeHeroFor } from './lib/curated-welcome';
+  import { curatedClosingHeroFor } from './lib/curated-closing';
   import {
     backgroundProofPoc001BuildHostUrl,
     backgroundProofPoc001EventNames,
@@ -2849,6 +2850,7 @@
               data-studio-page-id={selectedPage?.id ?? ''}
               class:cover-page={selectedPage?.type === 'cover'}
               class:welcome-page={selectedPage?.type === 'welcome'}
+              class:closing-page={selectedPage?.type === 'closing'}
               class:fjord-page={editorialWorld?.id === 'fjord'}
               class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
@@ -3302,6 +3304,68 @@
                   <div class="curated-welcome-hero-wrap" aria-hidden="true">
                     {#if curatedWelcomeHeroFor(editorialWorld?.id)}
                       <img class="curated-welcome-hero" src={curatedWelcomeHeroFor(editorialWorld?.id) ?? ''} alt="" />
+                    {/if}
+                  </div>
+                </div>
+              {:else if selectedPage?.type === 'closing'}
+                <div class="curated-closing-preview" aria-label={`Die Reise bleibt · ${editorialWorld?.name ?? 'Northern Lines'}`}>
+                  <div class="curated-closing-copy">
+                    <p class="curated-closing-kicker">Erinnerung</p>
+                    <h1 class="curated-closing-title">Die Reise bleibt</h1>
+                    <p class="curated-closing-deck">Orte, Begegnungen und Augenblicke – verankert in unseren Erinnerungen.</p>
+                    <blockquote class="curated-closing-quote">{selectedPage.authoring?.quote?.content?.trim() || 'Am Ende bleiben nicht die Wege – sondern das, was sie in uns hinterlassen.'}</blockquote>
+                    <div class="curated-closing-text-block">
+                      <span class="curated-closing-section-label">Ein letzter Blick</span>
+                      <p class="curated-closing-text">{selectedPage.authoring?.closing_text?.content?.trim() || (editorialWorld?.id === 'baltic'
+                        ? 'Diese Reise war mehr als eine Route auf der Karte. Sie war Wind, Weite, Begegnung und Stille – und all die kleinen Momente dazwischen.'
+                        : 'Diese Reise war mehr als eine Route auf der Karte. Sie war Licht, Landschaft, Begegnung und Stille – und all die kleinen Momente dazwischen.')}</p>
+                    </div>
+                  </div>
+
+                  <div class="curated-closing-cards" aria-label="Was von der Reise weiterwirkt">
+                    <section class="curated-closing-card">
+                      <span class="curated-closing-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><rect x="6" y="10" width="20" height="15" rx="2"/><path d="M11 10l2-4h6l2 4"/><circle cx="16" cy="17.5" r="4.5"/></svg>
+                      </span>
+                      <h2>Weiter üben</h2><div class="curated-closing-card-rule"></div>
+                      <p>Fotografie ist eine Reise ohne Ende. Jeder Ausflug, jedes Licht und jede Situation macht den nächsten Blick bewusster.</p>
+                    </section>
+                    <section class="curated-closing-card">
+                      <span class="curated-closing-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><path d="M20.5 10.5l-3 7-7 3 3-7 7-3z"/><path d="M16 4v3M16 25v3"/></svg>
+                      </span>
+                      <h2>Entdecken</h2><div class="curated-closing-card-rule"></div>
+                      <p>Die Welt ist voller Orte, die darauf warten, gesehen zu werden – und voller Geschichten, die noch erzählt werden wollen.</p>
+                    </section>
+                    <section class="curated-closing-card">
+                      <span class="curated-closing-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><path d="M5 7.5c4-1 7-.2 11 3.2 4-3.4 7-4.2 11-3.2v18c-4-1-7-.2-11 3.2-4-3.4-7-4.2-11-3.2v-18z"/><path d="M16 10.7v18"/></svg>
+                      </span>
+                      <h2>Erinnern</h2><div class="curated-closing-card-rule"></div>
+                      <p>Bilder sind mehr als Fotos – sie sind Momente, die bleiben. Teile sie, bewahre sie und lass sie in deinem Reisebuch weiterleben.</p>
+                    </section>
+                  </div>
+
+                  <section class="curated-closing-highlights" aria-label="Unsere Highlights dieser Reise">
+                    <div>
+                      <div class="curated-closing-highlights-head">
+                        <span class="curated-closing-world-mark" aria-hidden="true">
+                          {#if editorialWorld?.id === 'baltic'}
+                            <svg viewBox="0 0 28 28"><path d="M11 24h9M13 24V10h5v14M12 10h7l-1.5-4h-4zM10 15l3-1M18 14l3 1M13 19h5"/></svg>
+                          {:else}
+                            <svg viewBox="0 0 28 28"><path d="M3 23l7-12 5 7 3-5 7 10H3zM8 23l7-12 4 6"/></svg>
+                          {/if}
+                        </span>
+                        <span class="curated-closing-highlights-title">Unsere Highlights dieser Reise</span>
+                      </div>
+                      <div class="curated-closing-highlight-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+                    </div>
+                    <p class="curated-closing-highlight-memory">„Die schönsten Momente sind die, die uns festhalten.“</p>
+                  </section>
+
+                  <div class="curated-closing-hero-wrap" aria-hidden="true">
+                    {#if curatedClosingHeroFor(editorialWorld?.id)}
+                      <img class="curated-closing-hero" src={curatedClosingHeroFor(editorialWorld?.id) ?? ''} alt="" />
                     {/if}
                   </div>
                 </div>
