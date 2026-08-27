@@ -5,6 +5,7 @@ const app = read('src/App.svelte');
 const interestCss = read('src/styles/destination-interests.css');
 const workshopCss = read('src/styles/travel-companion-workshop.css');
 const heroes = read('src/lib/curated-heroes.ts');
+const worldAssets = read('src/lib/world-assets.ts');
 const pkg = JSON.parse(read('package.json'));
 const tauri = JSON.parse(read('src-tauri/tauri.conf.json'));
 const cargo = read('src-tauri/Cargo.toml');
@@ -20,9 +21,10 @@ const assetPaths = [
 
 const checks = [
   ['five Fjord curated hero assets exist', assetPaths.every((p) => fs.existsSync(p))],
-  ['hero registry retains Fjord ownership', heroes.includes('FJORD_CURATED_HEROES') && heroes.includes('fjord: FJORD_CURATED_HEROES')],
-  ['all four interest archetypes are mapped', ['photography:', 'hiking_nature:', 'culture_history:', 'culinary_local:'].every((x) => heroes.includes(x))],
-  ['workshop hero is mapped', heroes.includes('photography_workshop:')],
+  ['hero registry retains Fjord ownership', worldAssets.includes("['fjord', fjordAssets]") && worldAssets.includes('const fjordAssets: WorldAssetManifest')],
+  ['all four interest archetypes are mapped', ['photography:', 'hiking_nature:', 'culture_history:', 'culinary_local:'].every((x) => worldAssets.includes(x))],
+  ['workshop hero is mapped', worldAssets.includes('photography_workshop:')],
+  ['curated hero lookup remains world-driven', heroes.includes('worldAssetManifestFor')],
   ['interest pages render the curated hero in header flow', app.includes('curated-hero-flow') && app.includes('selectedPage.destinationInterestKind')],
   ['workshop renders its curated hero', app.includes("curatedHeroFor(editorialWorld?.id, 'photography_workshop')")],
   ['hero uses float flow instead of persistent split grid', interestCss.includes('float: right') && interestCss.includes('display: flow-root') && !interestCss.includes('.curated-hero-flow {\n  display: grid')],
