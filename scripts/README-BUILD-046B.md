@@ -1,1 +1,0 @@
-Temporary Build 046B helpers are intentionally kept outside the final source set until local validation succeeds. After PASS, consolidate the corrected gate as `check-build-046b-world-wireup-hardening-consistency.mjs` and remove superseded helper notes.
