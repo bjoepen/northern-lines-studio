@@ -128,7 +128,7 @@
 .baltic-page.destination-interest-page .page-rule { background: var(--baltic-brick); }
 
 .mediterranean-page.destination-interest-page {
-  --interest-surface: color-mix(in srgb, var(--med-stone) 48%, #ffffff);
+  --interest-surface: color-mix(in srgb, var(--med-olive) 16%, #ffffff);
   --interest-ink: var(--med-ink);
   --interest-meta: var(--med-terracotta);
   --interest-quiet: color-mix(in srgb, var(--med-olive) 68%, #938c7d);
