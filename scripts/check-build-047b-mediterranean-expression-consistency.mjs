@@ -12,7 +12,7 @@ must(css.includes('.mediterranean-page {'), 'Mediterranean page expression is mi
 must(css.includes('background: #ffffff;'), 'World expression must preserve a literal white page');
 must(css.includes('--med-cypress: #405447'), 'Cypress anchor is missing');
 must(css.includes('--med-stone: #d8cdbb'), 'Stone anchor is missing');
-must(css.includes('--med-terracotta: #b86f4b'), 'Terracotta accent is missing');
+must(css.includes('--med-terracotta: #9a5f49'), 'Terracotta accent is missing');
 must(css.includes('.mediterranean-page.destination-interest-page'), 'Interest pages do not inherit Mediterranean expression');
 must(css.includes('.mediterranean-page .destination-extension-zone.extension-history'), 'History extension expression is missing');
 must(css.includes('.mediterranean-page .extension-souvenir .editorial-signet'), 'Souvenir signet expression is missing');
