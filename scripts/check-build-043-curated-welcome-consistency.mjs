@@ -12,6 +12,7 @@ const companion = fs.readFileSync('src/lib/companions/layout.ts', 'utf8');
 const worldContract = fs.readFileSync('docs/editorial-worlds/EDITORIAL-WORLD-CONTRACT.md', 'utf8');
 const dna = fs.readFileSync('docs/PRODUCT-DNA.md', 'utf8');
 const welcomeMap = fs.readFileSync('src/lib/curated-welcome.ts', 'utf8');
+const worldAssets = fs.readFileSync('src/lib/world-assets.ts', 'utf8');
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 must(grammar.includes("id: 'welcome'") && grammar.includes("required('hero', 'Hero')") && grammar.includes("required('introduction', 'Willkommenstext')") && grammar.includes("optional('quote', 'Zitat')"), 'existing Welcome grammar changed or missing');
@@ -23,8 +24,9 @@ must(app.includes("selectedPage.authoring?.quote?.content?.trim()"), 'authored Q
 must(app.includes('Jede Reise beginnt mit einer Ahnung von dem, was bleiben könnte.'), 'approved Northern Lines quote fallback is missing');
 must(app.includes('curatedWelcomeHeroFor(editorialWorld?.id)'), 'world-specific Welcome hero is not wired');
 
-must(welcomeMap.includes("fjord: '/design-library/worlds/fjord/curated-heroes/welcome.png'"), 'Fjord Welcome hero mapping is missing');
-must(welcomeMap.includes("baltic: '/design-library/worlds/baltic/curated-heroes/welcome.png'"), 'Ostsee Welcome hero mapping is missing');
+must(welcomeMap.includes('worldAssetManifestFor'), 'Welcome hero API bypasses the World asset registry');
+must(worldAssets.includes("welcomeHero: '/design-library/worlds/fjord/curated-heroes/welcome.png'"), 'Fjord Welcome hero mapping is missing');
+must(worldAssets.includes("welcomeHero: '/design-library/worlds/baltic/curated-heroes/welcome.png'"), 'Ostsee Welcome hero mapping is missing');
 must(fs.existsSync('public/design-library/worlds/fjord/curated-heroes/welcome.png'), 'Fjord Welcome hero asset is missing');
 must(fs.existsSync('public/design-library/worlds/baltic/curated-heroes/welcome.png'), 'Ostsee Welcome hero asset is missing');
 

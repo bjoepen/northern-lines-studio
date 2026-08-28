@@ -13,7 +13,7 @@ const required = [
   [layout.includes("worldId: 'baltic'"), 'Ostsee layout language'],
   [companion.includes("id: 'baltic-otter'") && companion.includes("status: 'active'"), 'active Fischotter'],
   [app.includes('update_editorial_world') && app.includes('Welt wechseln'), 'traveller-facing World switch'],
-  [app.includes('class:baltic-page'), 'Ostsee preview expression'],
+  [app.includes("$: worldPageClass = editorialWorld ? `${editorialWorld.id}-page` : '';") && app.includes('class={`a5-page ${worldPageClass}`}'), 'Ostsee preview expression'],
   [rust.includes('fn update_editorial_world') && rust.includes('BALTIC_WORLD_ID'), 'persisted World switch'],
   [css.includes('.baltic-page') && css.includes('--baltic-amber'), 'world-specific palette expression'],
   [css.includes('.destination-extension-zone.extension-souvenir'), 'world-specific extension expression']

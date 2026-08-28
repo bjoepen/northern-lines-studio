@@ -1,19 +1,8 @@
-export type CuratedAccentKey = 'notes';
+import { worldAssetManifestFor } from './world-assets';
+import type { CuratedAccentKey } from './world-assets';
 
-const FJORD_CURATED_ACCENTS: Record<CuratedAccentKey, string> = {
-  notes: '/design-library/worlds/fjord/curated-accents/notes.png'
-};
-
-const BALTIC_CURATED_ACCENTS: Record<CuratedAccentKey, string> = {
-  notes: '/design-library/worlds/baltic/curated-accents/notes.png'
-};
-
-const CURATED_ACCENTS_BY_WORLD: Partial<Record<string, Record<CuratedAccentKey, string>>> = {
-  fjord: FJORD_CURATED_ACCENTS,
-  baltic: BALTIC_CURATED_ACCENTS
-};
+export type { CuratedAccentKey } from './world-assets';
 
 export function curatedAccentFor(worldId: string | undefined, key: CuratedAccentKey): string | null {
-  if (!worldId) return null;
-  return CURATED_ACCENTS_BY_WORLD[worldId]?.[key] ?? null;
+  return worldAssetManifestFor(worldId)?.curatedAccents[key] ?? null;
 }

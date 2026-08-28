@@ -16,7 +16,14 @@ const capability = JSON.parse(read('src-tauri/capabilities/default.json'));
 
 if (capability.permissions?.includes('core:webview:allow-print')) fail('abandoned system-print permission was restored.');
 if (!capability.permissions?.includes('dialog:allow-save')) fail('save dialog permission missing.');
-if (!app.includes('class="a5-page"')) fail('Studio page authority missing.');
+const studioPageAuthority =
+  app.includes('class="a5-page"') ||
+  (
+    app.includes('class={`a5-page ${worldPageClass}`}') &&
+    app.includes("$: worldPageClass = editorialWorld ? `${editorialWorld.id}-page` : '';")
+  );
+
+if (!studioPageAuthority) fail('Studio page authority missing.');
 if (!app.includes("document.body.classList.add('pdf-proof-rendering')")) fail('resolved Studio page is not isolated before PDF capture.');
 if (!app.includes("document.body.classList.remove('pdf-proof-rendering')")) fail('proof capture mode must be restored after completion.');
 if (!app.includes('document.fonts?.ready')) fail('font readiness wait missing.');

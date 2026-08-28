@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const read = (path) => fs.readFileSync(path, 'utf8');
 const app = read('src/App.svelte');
 const accents = read('src/lib/curated-accents.ts');
+const worldAssets = read('src/lib/world-assets.ts');
 const accentTests = read('src/lib/curated-accents.test.ts');
 const css = read('src/styles/book-utility-pages.css');
 const worldCss = read('src/styles/editorial-worlds.css');
@@ -23,8 +24,9 @@ if (contentsBlock.includes("curatedAccentFor(editorialWorld?.id, 'contents')")) 
 if (!app.includes('<h1>Erinnerungen</h1>')) fail('Erinnerungen title missing');
 if (!app.includes("curatedAccentFor(editorialWorld?.id, 'notes')")) fail('Memories Curated Accent missing');
 
-if (!accents.includes("CuratedAccentKey = 'notes'")) fail('Curated Accent API must expose notes only');
-if (accents.includes("'contents' | 'notes'") || accents.includes('contents:')) fail('obsolete contents Curated Accent mapping returned');
+if (!accents.includes('worldAssetManifestFor')) fail('Curated Accent API must delegate to World asset registry');
+if (!worldAssets.includes("export type CuratedAccentKey = 'notes';")) fail('Curated Accent API must expose notes only');
+if (worldAssets.includes("'contents' | 'notes'") || worldAssets.includes('contents:')) fail('obsolete contents Curated Accent mapping returned');
 if (accentTests.includes("'contents'")) fail('stale contents Curated Accent test returned');
 if (!accentTests.includes("'notes'")) fail('notes Curated Accent regression coverage missing');
 

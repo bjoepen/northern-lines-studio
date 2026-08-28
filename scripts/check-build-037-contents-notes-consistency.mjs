@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const read = (path) => fs.readFileSync(path, 'utf8');
 const app = read('src/App.svelte');
 const accents = read('src/lib/curated-accents.ts');
+const worldAssets = read('src/lib/world-assets.ts');
 const css = read('src/styles/book-utility-pages.css');
 const grammar = read('src/lib/grammar/definitions.ts');
 const pkg = JSON.parse(read('package.json'));
@@ -14,8 +15,9 @@ const fail = (message) => { console.error(`Build 037 Utility Pages Foundation Ga
 for (const token of ["class:contents-page", "class:notes-page", "curatedAccentFor(editorialWorld?.id, 'notes')", 'Schnellnotiz', 'Ideen', 'Skizze']) {
   if (!app.includes(token)) fail(`missing App token: ${token}`);
 }
+if (!accents.includes('worldAssetManifestFor')) fail('Curated accents bypass the World asset manifest');
 for (const token of ['fjord/curated-accents/notes.png','baltic/curated-accents/notes.png']) {
-  if (!accents.includes(token)) fail(`missing memories accent mapping: ${token}`);
+  if (!worldAssets.includes(token)) fail(`missing memories accent mapping: ${token}`);
   if (!fs.existsSync(`public/design-library/worlds/${token}`)) fail(`missing asset: public/design-library/worlds/${token}`);
 }
 if (!css.includes('.contents-preview') || !css.includes('.notes-layout')) fail('utility page CSS missing');
