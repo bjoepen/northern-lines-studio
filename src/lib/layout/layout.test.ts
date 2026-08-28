@@ -9,25 +9,30 @@ describe('editorial layout systems', () => {
   });
 
   it('keeps the destination layout vocabulary intentionally small', () => {
-    expect(requireLayoutSystem('fjord').destinationLayouts.map((layout) => layout.label)).toEqual([
-      'Weite',
-      'Bild links',
-      'Bild rechts'
-    ]);
+    for (const worldId of ['fjord', 'baltic', 'mediterranean']) {
+      expect(requireLayoutSystem(worldId).destinationLayouts.map((layout) => layout.label)).toEqual([
+        'Weite',
+        'Bild links',
+        'Bild rechts'
+      ]);
+    }
   });
 
-  it('uses Weite as the Fjord destination default', () => {
-    expect(requireLayoutSystem('fjord').defaultLayoutByPageType.destination).toBe('destination-hero-banner');
+  it('uses Weite as the destination default across registered worlds', () => {
+    for (const worldId of ['fjord', 'baltic', 'mediterranean']) {
+      expect(requireLayoutSystem(worldId).defaultLayoutByPageType.destination).toBe('destination-hero-banner');
+    }
   });
 
-  it('binds Fjord to its fixed companion layout foundation', () => {
+  it('binds each world to its registered companion layout foundation', () => {
     expect(requireLayoutSystem('fjord').companionLayoutId).toBe('fjord-companion-layout');
+    expect(requireLayoutSystem('baltic').companionLayoutId).toBe('baltic-companion-layout');
+    expect(requireLayoutSystem('mediterranean').companionLayoutId).toBe('mediterranean-companion-layout');
   });
 
-  it('loads the Ostsee layout language with the same destination vocabulary', () => {
-    const layout = requireLayoutSystem('baltic');
-    expect(layout.name).toBe('Ostsee Layout Language');
-    expect(layout.destinationLayouts.map((item) => item.label)).toEqual(['Weite', 'Bild links', 'Bild rechts']);
+  it('loads Ostsee and Mittelmeer without changing the shared destination vocabulary', () => {
+    expect(requireLayoutSystem('baltic').name).toBe('Ostsee Layout Language');
+    expect(requireLayoutSystem('mediterranean').name).toBe('Mittelmeer Layout Language');
   });
 
   it('does not invent layout languages for unknown worlds', () => {
