@@ -53,7 +53,7 @@ const companions: readonly CompanionDefinition[] = [
     name: 'Iberischer Luchs',
     scientificName: 'Lynx pardinus',
     role: 'editorial_companion',
-    status: 'planned',
+    status: 'active',
     character: 'würdevoll, ruhig, wild',
     editorialMood: ['Weite', 'Wärme', 'Wildnis'],
     assetPath: 'design-library/companions/iberian/companion.png',
