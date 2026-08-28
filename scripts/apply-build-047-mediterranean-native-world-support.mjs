@@ -18,7 +18,7 @@ replaceOnce(
 
 replaceOnce(
   'fn is_supported_editorial_world(id: &str) -> bool {\n    id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID\n}',
-  'fn is_supported_editorial_world(id: &str) -> bool {\n    matches!(id, REFERENCE_WORLD_ID | BALTIC_WORLD_ID | MEDITERRANEAN_WORLD_ID)\n}',
+  'fn is_supported_editorial_world(id: &str) -> bool {\n    id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID || id == MEDITERRANEAN_WORLD_ID\n}',
   'native supported world validation'
 );
 
