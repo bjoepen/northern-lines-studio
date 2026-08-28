@@ -49,7 +49,7 @@ const companions: readonly CompanionDefinition[] = [
   },
   {
     id: 'iberian-lynx',
-    editorialWorldId: 'iberian',
+    editorialWorldId: 'mediterranean',
     name: 'Iberischer Luchs',
     scientificName: 'Lynx pardinus',
     role: 'editorial_companion',
