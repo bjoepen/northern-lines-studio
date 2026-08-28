@@ -1,6 +1,6 @@
 # Northern Lines Studio
 
-**Aktueller Stand:** Build 045 · Studio `0.40.0-alpha.1`
+**Aktueller Stand:** Build 047 · Mediterranean Editorial World · Studio `0.40.0-alpha.1`
 
 **Geometrische Authority:** Golden Build 040
 
@@ -30,8 +30,10 @@ Aktueller Scope:
 ```text
 macOS                              ACTIVE
 Tauri v2                           ACTIVE
-Build 045                          CURRENT BASELINE
+Build 047                          CURRENT DEVELOPMENT BASELINE
 Golden Build 040                   A5 GEOMETRY AUTHORITY
+Editorial Worlds                   FJORD · OSTSEE · MITTELMEER
+World extensibility                PROVEN
 Curated Cover / Welcome / Closing  ACCEPTED
 Single-page PDF Proof              ACCEPTED
 Document Proof                     ACCEPTED
@@ -44,7 +46,7 @@ external veraPDF validation         PASS
 Windows                            OUT OF CURRENT SCOPE
 ```
 
-Die akzeptierte PDF/A-2b-Fähigkeit und die integrierte Production-Host-Architektur sind RC-relevante Meilensteine. Das README beschreibt damit den aktuellen belastbaren Studio-Stand, behauptet aber nicht, dass Studio bereits RC, fertig oder production-ready ist.
+Build 047 liefert mit Mittelmeer den praktischen Architekturbeweis, dass eine neue Editorial World über die vorgesehenen Registries, Contracts und World Expression hinzugefügt werden kann, ohne Studio eine neue Page Grammar oder einen neuen Renderer beizubringen. Die akzeptierte PDF/A-2b-Fähigkeit und die integrierte Production-Host-Architektur bleiben RC-relevante Meilensteine. Das README beschreibt damit den aktuellen belastbaren Studio-Stand, behauptet aber nicht, dass Studio bereits RC, fertig oder production-ready ist.
 
 ## Produktidee
 
@@ -100,9 +102,31 @@ Golden composition      = 420 × 594 u
 Physical target medium  = 148 × 210 mm
 ```
 
-Build 045 ist dagegen die aktuelle funktionale Baseline. Damit werden Geometrie-Referenz und Produktstand bewusst getrennt.
+Build 047 ist die aktuelle Development-Baseline; Golden Build 040 bleibt davon unabhängig die geometrische Authority. Damit werden Geometrie-Referenz und Produktstand bewusst getrennt.
 
 Studio ist die visuelle und geometrische Quelle der Wahrheit. Proof-, Export- und Production-Code reproduzieren die bereits aufgelöste Studio-Seite; sie erfinden keine zweite Komposition.
+
+### Editorial World Extensibility Milestone
+
+Build 046 härtete die World Registries und das World Wiring. Build 047 führt mit **Mittelmeer** erstmals eine dritte reale Editorial World über diese Extension Points ein.
+
+```text
+Editorial World
+    ↓
+World / Layout / Companion Registries
+    ↓
+World Expression
+    ↓
+shared semantic page model
+    ↓
+shared adaptive Layout Grammar
+    ↓
+shared Studio renderer
+```
+
+Für Mittelmeer waren keine neuen Page Types, keine neue Destination Grammar, kein World-spezifischer Renderer-Branch und keine `.nls`-Migration erforderlich. Die native Tauri-Projektvalidierung wurde als Teil des End-to-End-World-Contracts auf die dritte World erweitert und durch das Build-047-Gate abgesichert.
+
+> **Build 047 proves Editorial World extensibility: a new World can be added without teaching Studio a new page language.**
 
 ## PDF Proof, Export und Production Host
 
@@ -164,7 +188,10 @@ Northern Lines Studio wird durch diese dauerhaften Referenzen geführt:
 - `docs/VISION.md` – langfristiges Zielbild
 - `docs/ARCHITECTURE.md` – technische Verantwortungsgrenzen
 - `docs/editorial-worlds/EDITORIAL-WORLD-CONTRACT.md` – Vertrag für Editorial Worlds
-- `docs/editorial-worlds/FJORD.md` / `docs/editorial-worlds/OSTSEE.md` – World Expressions
+- `docs/editorial-worlds/FJORD.md` / `docs/editorial-worlds/OSTSEE.md` – bestehende World Expressions
+- `docs/builds/BUILD-046-WORLD-REGISTRY-HARDENING.md`
+- `docs/builds/BUILD-046B-WORLD-WIREUP-HARDENING.md`
+- `docs/builds/BUILD-047-MEDITERRANEAN-WORLD-EXTENSIBILITY-MILESTONE.md` – praktischer World-Extensibility-Nachweis
 - `docs/adr/ADR-039-STUDIO-RESOLVED-PAGE-PDF-PROOF.md`
 - `docs/adr/ADR-040-STUDIO-DOCUMENT-PROOF.md`
 - `docs/adr/ADR-041-STUDIO-PDFA-2B-EXPORT.md`
@@ -236,9 +263,13 @@ Es gibt keine freie Positionierung, keine Koordinaten und keinen Layoutdesigner.
 
 ## Editorial Worlds
 
-Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv verfügbar sind **Fjord** und **Ostsee**. Beide teilen dieselbe semantische und adaptive Layout Grammar; Typografie, Palette, Extension Expression, Curated Heroes und Companion gehören zur jeweiligen World.
+Eine Reisewelt bringt eine visuelle und redaktionelle Haltung mit. Aktiv verfügbar sind **Fjord**, **Ostsee** und **Mittelmeer**. Alle drei teilen dieselbe semantische und adaptive Layout Grammar; Typografie, Palette, Extension Expression, Curated Assets und Companion gehören zur jeweiligen World.
+
+Mittelmeer trägt die World Expression **„Zypresse & Stein“**: Zypressengrün führt die typografische Hierarchie, helle Olive- und Steinflächen schaffen Wärme und Ruhe, gebrannte Terrakotta setzt kleine Akzente. Der **Iberische Luchs** ist der World Mittelmeer zugeordnet; seine Companion-Identität bleibt fachlich `iberian-lynx`.
 
 Editorial Worlds färben die Seitenfläche nicht ein. Die A5-Seite bleibt neutral weiß; World Expression entsteht über Typografie, Akzente, Companion, Signets, gezielte Editorial-/Extension-Flächen, kuratierte Illustrationen und Fotografie.
+
+Der praktische Nachweis aus Build 047 ist verbindlich: Eine neue World erweitert die Expression, nicht die Seitensprache. Neue World Expression allein ist kein Grund für eine neue Grammar oder einen Renderer-Sonderpfad.
 
 > **Wenige starke Möglichkeiten. Viele persönliche Geschichten.**
 
@@ -250,7 +281,7 @@ Die Front- und Closing-Matter-Seiten folgen derselben Northern-Lines-Bildsprache
 - **Willkommen** – Build 043, World-konformer Hero und persönlicher Gedankenraum
 - **Die Reise bleibt** – Build 044, ruhiger Abschluss mit World-konformer Expression
 
-Die Gestaltung ist kuratiert; Projektinhalt und World Expression bleiben getrennt. Fjord und Ostsee verwenden dieselbe Grammar, aber ihre jeweils eigene visuelle Sprache.
+Die Gestaltung ist kuratiert; Projektinhalt und World Expression bleiben getrennt. Editorial Worlds verwenden dieselbe Grammar, aber ihre jeweils eigene visuelle Sprache.
 
 ## Thematische Vertiefungen einer Destination
 
@@ -326,7 +357,9 @@ Die Editorial World bestimmt seine visuelle Expression. Die Seitenzahl bleibt da
 
 ## Companion Layout
 
-Für Fjord gilt aktuell:
+Der Companion ist World Expression innerhalb eines gemeinsamen geschützten Layout-Vertrags. Für die aktiven Worlds gilt derselbe Grundsatz: Companion-Position und -Proportionen dürfen World-spezifisch ausgedrückt werden; sein geschützter Raum nimmt nicht am Content-Fit teil.
+
+Für Fjord gilt als Referenz:
 
 - kein Companion auf Cover, Willkommen und Orientierung
 - erster Auftritt mit **Reiseplanung**
@@ -336,118 +369,31 @@ Für Fjord gilt aktuell:
 - Spiegelung: **aus**
 - Größe: **klein**
 
-> **Der Companion begleitet die Reise. Er eröffnet sie nicht.**
-
-## `.nls`
-
-`.nls` ist ein offenes Northern-Lines-Studio-Package. Unter macOS ist es als Reisedokument registriert und lässt sich direkt im Finder öffnen.
-
-**Aktuelles Projektformat:** `.nls` `0.16.0`
-
-`.nls` speichert semantische Projekt- und Editorial-State-Daten, keine freie Seitengeometrie. Migrationen erhalten bestehende Journey-, Destination-, Bild-, Extension- und Interest-Daten; Studio erfindet keine Routen oder Interessen.
-
-Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut. Fehlende redaktionelle Inhalte werden bewusst nicht erfunden.
-
-## Windows Scope
-
-Der aktive Produkt-, Engineering- und Validierungsscope ist macOS.
-
-Windows-Anwendung, Windows-PDF-Proof-Adapter, Windows-PDF/A-Export und Windows-Runtime-Validierung sind derzeit außerhalb des aktiven Scopes / deferred. Das ist keine dauerhafte Absage an Windows, aber keine aktuelle Implementierungs- oder Roadmap-Zusage.
+> **Der Begleiter ist unantastbar.**
 
 ## Entwicklung
 
 ```bash
 pnpm install
-pnpm tauri dev
-```
-
-## Validation Gates
-
-Canonical local gate from repository root:
-
-```bash
 pnpm check
 pnpm test
 pnpm consistency
 pnpm build
-cargo test --manifest-path src-tauri/Cargo.toml
-cargo check --manifest-path src-tauri/Cargo.toml
-git diff --check
 ```
 
-Scoped PDF/export/Production-Host consistency gates exist for the accepted proof, PDF/A and Publisher-production architecture. Run them when touching those areas.
-
-## macOS-App installieren
+Für den aktuellen Build 047 stehen zusätzlich die fokussierten Gates zur Verfügung:
 
 ```bash
-./scripts/install-macos-app.sh
+pnpm consistency:build-047a
+pnpm consistency:build-047b
 ```
 
-Danach liegt die Anwendung unter:
+Für Tauri:
 
-```text
-/Applications/Northern Lines Studio.app
+```bash
+pnpm tauri dev
 ```
 
-## Entwicklungsprinzipien
+## Status
 
-> **Studio wächst mit echten Reisen.**
-
-Neue Layouts, Komponenten und Workflows entstehen aus realen Anforderungen und bewährten Northern-Lines-Fieldbooks, nicht aus dem Ziel, jede theoretische Gestaltungsmöglichkeit abzubilden.
-
-## Build-Meilensteine
-
-- **010** Story Authoring Foundation
-- **011** Travel Language und Preview-Integration
-- **013** Journey Beginning + Companion First Encounter
-- **014** Journey Places Foundation
-- **015** Journey Route Foundation
-- **016** Journey Opening Foundation – `.nls` als echtes macOS-Reisedokument
-- **017** Editorial World Layout Foundation
-- **018** Companion Layout Foundation + Reiseplanung
-- **019** Journey Planning Foundation – strukturierte Reisedaten
-- **020** Destination Profile & Layout Variants Foundation – Ortsprofil und Seitenwirkung
-- **021** Layout Resilience & Content Capacity Foundation – geschützte A5-Zonen
-- **022** Destination Imagery Foundation – semantische Bildrollen und `.nls`-Assets
-- **023** Destination Composition Refinement – stabile Hero/Title-Zonentrennung
-- **024** Editorial Extension Zones Foundation – selektive semantische Erweiterungen
-- **025C** Editorial Worlds Milestone – Fjord und Ostsee als echte World Architecture
-- **026** Destination Interest Pages Foundation
-- **027** Photography & Place Experience
-- **028** Hiking & Nature Experience
-- **029** Culture & History Experience
-- **030** Culinary & Local Experience
-- **031** Travel Companion Foundation: Licht
-- **032** Travel Companion Wetter
-- **033** Kuratierter Fotografie-Workshop
-- **034** Workshop Capacity Protection und finaler White-Page-/Version-Cleanup
-- **035** Fjord Curated Heroes
-- **036** Ostsee Curated Heroes
-- **037** Inhaltsverzeichnis & Notizen
-- **038** Orientierung & Erinnerungen
-- **039** Studio Resolved Page PDF Proof accepted
-- **040** Golden Geometry Authority und Studio Document Proof accepted
-- **041** Studio PDF/A-2b Export accepted
-- **042** Curated Cover
-- **Production Integration** Publisher Production Host ohne zweiten Renderer
-- **043** Curated Welcome – Fjord und Ostsee
-- **044** Curated Closing – „Die Reise bleibt“
-- **045** Destination Identity Integrity – Rename über persistierte `destinationId`
-
-## Repository-Beispiele
-
-`examples/Norway-Sample.nls` ist ein bewusst historisches `.nls`-Beispiel im Format `0.5.0`. Es dient als Legacy-/Migration-Referenz und ist **nicht** die kanonische Vorlage für ein neu erzeugtes Projekt. Das aktuelle Projektformat ist in `docs/project-format.md` dokumentiert.
-
-## License and source availability
-
-Northern Lines Studio is **source available, but not open source**.
-
-The source code is publicly visible to make development transparent. The public repository may be viewed and forked using GitHub's functionality in accordance with the GitHub Terms of Service.
-
-No general license is granted for independent redistribution, relicensing, incorporation into another product, or commercial exploitation.
-
-Northern Lines brand and design materials remain separately reserved.
-
-See [`LICENSE.md`](LICENSE.md) for the complete rights notice.
-
-Copyright © 2026 Northern Lines. All rights reserved.
+Northern Lines Studio befindet sich weiterhin in aktiver Entwicklung. Build 047 erweitert Studio um die dritte Editorial World Mittelmeer und hat die World-Extensibility-Architektur praktisch bewiesen. Golden Build 040 bleibt die geometrische Authority; die akzeptierten Proof-, PDF/A- und Production-Host-Pfade bleiben unverändert maßgeblich.
