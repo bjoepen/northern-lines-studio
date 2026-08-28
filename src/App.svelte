@@ -15,7 +15,7 @@
   import { destinationContentCapacity, destinationExtensionCapacityResult, destinationExtensionComposition, destinationModuleComposition, destinationTitleComposition } from './lib/layout/capacity';
   import { northernLinesFooter } from './lib/travel-language/footer';
   import { requireCompanion } from './lib/companions';
-  import { companionVisibleForRole, fjordCompanionLayout, balticCompanionLayout } from './lib/companions/layout';
+  import { companionVisibleForRole, requireCompanionLayout } from './lib/companions/layout';
   import { loadCompanion } from './lib/companions';
   import { evaluateGrammar, grammarForPage } from './lib/grammar';
   import { availableStoryComponents, buildStoryStructure, missingStoryComponents, presentStoryComponents } from './lib/story';
@@ -2568,8 +2568,10 @@
   $: destinationExtensionOverflow = destinationExtensionCapacityInfo.state === 'overflow';
   $: destinationExtensionAlternativeLabels = destinationExtensionCapacityInfo.alternatives.map((variant) => editorialLayout?.destinationLayouts.find((layout) => layout.id === variant)?.label ?? variant);
   $: activeCompanion = editorialWorld ? requireCompanion(editorialWorld.companionId) : null;
-  $: activeCompanionLayout = editorialWorld?.id === 'baltic' ? balticCompanionLayout : fjordCompanionLayout;
+  $: worldPageClass = editorialWorld ? `${editorialWorld.id}-page` : '';
+  $: activeCompanionLayout = editorialLayout ? requireCompanionLayout(editorialLayout.companionLayoutId) : null;
   $: companionVisible = Boolean(editorialWorld)
+    && activeCompanionLayout !== null
     && companionVisibleForRole(activeCompanionLayout, selectedPage?.role);
   $: statusText = projectStatus(project);
   $: planningDuration = project ? journeyDurationLabel(project.journey.startDate, project.journey.endDate) : 'Noch offen';
@@ -2846,13 +2848,11 @@
         <div class="page-scale-frame" style={`width:${previewWidth}px;height:${previewHeight}px`}>
           {#key selectedPage?.id ?? 'empty-editorial-desk'}
             <article
-              class="a5-page"
+              class={`a5-page ${worldPageClass}`}
               data-studio-page-id={selectedPage?.id ?? ''}
               class:cover-page={selectedPage?.type === 'cover'}
               class:welcome-page={selectedPage?.type === 'welcome'}
               class:closing-page={selectedPage?.type === 'closing'}
-              class:fjord-page={editorialWorld?.id === 'fjord'}
-              class:baltic-page={editorialWorld?.id === 'baltic'}
               class:destination-page={selectedPage?.type === 'destination'}
               class:destination-interest-page={selectedPage?.type === 'destination_interest'}
               class:photography-interest-page={selectedPage?.type === 'destination_interest' && selectedPage.destinationInterestKind === 'photography'}
