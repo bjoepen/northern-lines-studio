@@ -371,28 +371,129 @@ Für Fjord gilt als Referenz:
 
 > **Der Begleiter ist unantastbar.**
 
+## `.nls`
+
+`.nls` ist ein offenes Northern-Lines-Studio-Package. Unter macOS ist es als Reisedokument registriert und lässt sich direkt im Finder öffnen.
+
+**Aktuelles Projektformat:** `.nls` `0.16.0`
+
+`.nls` speichert semantische Projekt- und Editorial-State-Daten, keine freie Seitengeometrie. Migrationen erhalten bestehende Journey-, Destination-, Bild-, Extension- und Interest-Daten; Studio erfindet keine Routen oder Interessen.
+
+Interne Destination-Profile werden aus vorhandenen Reisezielen und Seiten aufgebaut. Fehlende redaktionelle Inhalte werden bewusst nicht erfunden.
+
+## Windows Scope
+
+Der aktive Produkt-, Engineering- und Validierungsscope ist macOS.
+
+Windows-Anwendung, Windows-PDF-Proof-Adapter, Windows-PDF/A-Export und Windows-Runtime-Validierung sind derzeit außerhalb des aktiven Scopes / deferred. Das ist keine dauerhafte Absage an Windows, aber keine aktuelle Implementierungs- oder Roadmap-Zusage.
+
 ## Entwicklung
 
 ```bash
 pnpm install
+pnpm tauri dev
+```
+
+## Validation Gates
+
+Canonical local gate from repository root:
+
+```bash
 pnpm check
 pnpm test
 pnpm consistency
 pnpm build
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path src-tauri/Cargo.toml
+git diff --check
 ```
 
-Für den aktuellen Build 047 stehen zusätzlich die fokussierten Gates zur Verfügung:
+Für Build 047 zusätzlich:
 
 ```bash
 pnpm consistency:build-047a
 pnpm consistency:build-047b
 ```
 
-Für Tauri:
+Scoped PDF/export/Production-Host consistency gates exist for the accepted proof, PDF/A and Publisher-production architecture. Run them when touching those areas.
+
+## macOS-App installieren
 
 ```bash
-pnpm tauri dev
+./scripts/install-macos-app.sh
 ```
+
+Danach liegt die Anwendung unter:
+
+```text
+/Applications/Northern Lines Studio.app
+```
+
+## Entwicklungsprinzipien
+
+> **Studio wächst mit echten Reisen.**
+
+Neue Layouts, Komponenten und Workflows entstehen aus realen Anforderungen und bewährten Northern-Lines-Fieldbooks, nicht aus dem Ziel, jede theoretische Gestaltungsmöglichkeit abzubilden.
+
+## Build-Meilensteine
+
+- **010** Story Authoring Foundation
+- **011** Travel Language und Preview-Integration
+- **013** Journey Beginning + Companion First Encounter
+- **014** Journey Places Foundation
+- **015** Journey Route Foundation
+- **016** Journey Opening Foundation – `.nls` als echtes macOS-Reisedokument
+- **017** Editorial World Layout Foundation
+- **018** Companion Layout Foundation + Reiseplanung
+- **019** Journey Planning Foundation – strukturierte Reisedaten
+- **020** Destination Profile & Layout Variants Foundation – Ortsprofil und Seitenwirkung
+- **021** Layout Resilience & Content Capacity Foundation – geschützte A5-Zonen
+- **022** Destination Imagery Foundation – semantische Bildrollen und `.nls`-Assets
+- **023** Destination Composition Refinement – stabile Hero/Title-Zonentrennung
+- **024** Editorial Extension Zones Foundation – selektive semantische Erweiterungen
+- **025C** Editorial Worlds Milestone – Fjord und Ostsee als echte World Architecture
+- **026** Destination Interest Pages Foundation
+- **027** Photography & Place Experience
+- **028** Hiking & Nature Experience
+- **029** Culture & History Experience
+- **030** Culinary & Local Experience
+- **031** Travel Companion Foundation: Licht
+- **032** Travel Companion Wetter
+- **033** Kuratierter Fotografie-Workshop
+- **034** Workshop Capacity Protection und finaler White-Page-/Version-Cleanup
+- **035** Fjord Curated Heroes
+- **036** Ostsee Curated Heroes
+- **037** Inhaltsverzeichnis & Notizen
+- **038** Orientierung & Erinnerungen
+- **039** Studio Resolved Page PDF Proof accepted
+- **040** Golden Geometry Authority und Studio Document Proof accepted
+- **041** Studio PDF/A-2b Export accepted
+- **042** Curated Cover
+- **Production Integration** Publisher Production Host ohne zweiten Renderer
+- **043** Curated Welcome – Fjord und Ostsee
+- **044** Curated Closing – „Die Reise bleibt“
+- **045** Destination Identity Integrity – Rename über persistierte `destinationId`
+- **046** World Registry Hardening
+- **046B** World Wire-up Hardening
+- **047** Mediterranean Editorial World – World Extensibility praktisch bewiesen
+
+## Repository-Beispiele
+
+`examples/Norway-Sample.nls` ist ein bewusst historisches `.nls`-Beispiel im Format `0.5.0`. Es dient als Legacy-/Migration-Referenz und ist **nicht** die kanonische Vorlage für ein neu erzeugtes Projekt. Das aktuelle Projektformat ist in `docs/project-format.md` dokumentiert.
+
+## License and source availability
+
+Northern Lines Studio is **source available, but not open source**.
+
+The source code is publicly visible to make development transparent. The public repository may be viewed and forked using GitHub's functionality in accordance with the GitHub Terms of Service.
+
+No general license is granted for independent redistribution, relicensing, incorporation into another product, or commercial exploitation.
+
+Northern Lines brand and design materials remain separately reserved.
+
+See [`LICENSE.md`](LICENSE.md) for the complete rights notice.
+
+Copyright © 2026 Northern Lines. All rights reserved.
 
 ## Status
 
