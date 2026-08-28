@@ -16,6 +16,7 @@ const companionRegistry = read('src/lib/companions/registry.ts');
 const companionLayouts = read('src/lib/companions/layout.ts');
 const companionMetadata = JSON.parse(read('design-library/companions/iberian/metadata.json'));
 const app = read('src/App.svelte');
+const native = read('src-tauri/src/lib.rs');
 
 must(mediterraneanWorld.includes("id: 'mediterranean'"), 'Mediterranean World id missing');
 must(mediterraneanWorld.includes("companionId: 'iberian-lynx'"), 'Mediterranean World is not bound to Iberian lynx');
@@ -35,9 +36,13 @@ must(companionMetadata.world === 'mediterranean', 'Iberian lynx metadata world m
 must(companionMetadata.status === 'active', 'Iberian lynx metadata is not active');
 must(companionLayouts.includes("['mediterranean-companion-layout', mediterraneanCompanionLayout]"), 'Mediterranean companion layout is not registered');
 
+must(native.includes('const MEDITERRANEAN_WORLD_ID: &str = "mediterranean";'), 'native project API does not know the Mediterranean World id');
+must(native.includes('id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID || id == MEDITERRANEAN_WORLD_ID'), 'native project API does not accept Mediterranean for create/open/update');
+must(native.includes('fn supports_mediterranean_world_and_persists_world_switch()'), 'native Mediterranean persistence regression test is missing');
+
 must(app.includes("$: worldPageClass = editorialWorld ? `${editorialWorld.id}-page` : '';"), 'generic World page class derivation was lost');
 must(!app.includes("editorialWorld?.id === 'mediterranean'"), 'Mediterranean-specific renderer branch introduced');
 must(!app.includes("if (worldId === 'mediterranean')"), 'Mediterranean-specific renderer branch introduced');
 
 console.log('Build 047A Mediterranean Contract Gate: PASS');
-console.log('Mediterranean is registered through existing World, layout and Companion contracts without a renderer branch.');
+console.log('Mediterranean is registered through World, layout, Companion and native persistence contracts without a renderer branch.');
