@@ -133,9 +133,18 @@
   --interest-meta: var(--med-terracotta);
   --interest-quiet: color-mix(in srgb, var(--med-olive) 68%, #938c7d);
 }
+.mediterranean-page.destination-interest-page h1 {
+  color: color-mix(in srgb, var(--med-cypress) 88%, var(--med-ink));
+}
 .mediterranean-page.destination-interest-page .destination-interest-place { color: var(--med-olive); }
 .mediterranean-page.destination-interest-page .preview-body { color: color-mix(in srgb, var(--med-ink) 78%, #777365); }
 .mediterranean-page.destination-interest-page .page-rule { background: var(--med-terracotta); }
+.mediterranean-page.destination-interest-page .interest-entry-heading strong,
+.mediterranean-page.destination-interest-page .photography-spot-row strong,
+.mediterranean-page.destination-interest-page .hiking-route-copy > strong,
+.mediterranean-page.destination-interest-page .destination-interest-foundation-note strong {
+  color: var(--med-cypress);
+}
 
 /* Companion proportions may be world-specific, but the protected room remains
    owned by the shared Companion layout contract and never participates in fit. */
