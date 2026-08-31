@@ -1,10 +1,5 @@
 import type { CompanionDefinition } from './types';
 
-const iberianLynxRuntimeAssetUrl = new URL(
-  '../../../design-library/companions/iberian/companion.png',
-  import.meta.url
-).href;
-
 const companions: readonly CompanionDefinition[] = [
   {
     id: 'fjord-puffin',
@@ -111,11 +106,6 @@ export function requireCompanion(id: string): CompanionDefinition {
   const companion = loadCompanion(id);
   if (!companion) throw new Error(`Unbekannter Editorial Companion: ${id}`);
   return companion;
-}
-
-export function companionAssetUrl(companion: CompanionDefinition): string {
-  if (companion.id === 'iberian-lynx') return iberianLynxRuntimeAssetUrl;
-  return `/${companion.assetPath}`;
 }
 
 export function availableCompanions(): CompanionDefinition[] {
