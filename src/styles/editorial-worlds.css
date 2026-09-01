@@ -1,5 +1,4 @@
-/* Build 025C · Ostsee Expression & Companion Fix
-   Shared Graphic Language, world-specific expression. World CSS may change
+/* Shared Graphic Language, world-specific expression. World CSS may change
    typography, palette and companion expression, but never semantic content or
    the adaptive Layout Grammar. */
 .a5-page {
@@ -11,20 +10,14 @@
 .preview-body {
   font-family: var(--world-body-family, Georgia, "Times New Roman", serif);
 }
-.a5-page h1 {
-  color: var(--world-ink);
-}
+.a5-page h1 { color: var(--world-ink); }
 .eyebrow,
 .destination-facts-preview span,
 .destination-modules-preview h3,
 .destination-extension-zone strong,
-.editorial-footer {
-  color: var(--world-accent);
-}
+.editorial-footer { color: var(--world-accent); }
 
-/* OSTSEE WORLD EXPRESSION
-   Same Northern Lines grammar, clearly different coastal expression. The page
-   stays neutral-white; Baltic, Steel, Fog, Sand and Amber carry the World. */
+/* OSTSEE WORLD EXPRESSION */
 .baltic-page {
   --baltic-deep: #0d3b5b;
   --baltic-steel: #457b8d;
@@ -37,144 +30,137 @@
 }
 .baltic-page h1 {
   font-family: var(--world-heading-family, "Avenir Next", "Helvetica Neue", Arial, sans-serif);
-  color: var(--baltic-deep);
-  font-weight: 600;
-  letter-spacing: -.028em;
+  color: var(--baltic-deep); font-weight: 600; letter-spacing: -.028em;
 }
 .baltic-page .eyebrow,
 .baltic-page .destination-facts-preview span,
 .baltic-page .destination-modules-preview h3,
-.baltic-page .editorial-footer {
-  color: var(--baltic-steel);
-}
-.baltic-page .destination-subtitle {
-  font-family: var(--world-body-family);
-  color: var(--baltic-steel);
-}
-.baltic-page .destination-introduction {
-  color: color-mix(in srgb, var(--baltic-deep) 72%, #667a82);
-  border-color: color-mix(in srgb, var(--baltic-steel) 44%, transparent);
-}
+.baltic-page .editorial-footer { color: var(--baltic-steel); }
+.baltic-page .destination-subtitle { font-family: var(--world-body-family); color: var(--baltic-steel); }
+.baltic-page .destination-introduction { color: color-mix(in srgb, var(--baltic-deep) 72%, #667a82); border-color: color-mix(in srgb, var(--baltic-steel) 44%, transparent); }
 .baltic-page .destination-facts-preview,
-.baltic-page .destination-modules-preview section {
-  border-color: color-mix(in srgb, var(--baltic-steel) 28%, transparent);
-}
-.baltic-page .destination-modules-preview .destination-practical-preview {
-  border-top-color: color-mix(in srgb, var(--baltic-steel) 40%, transparent);
-  background: color-mix(in srgb, var(--baltic-sand) 42%, #ffffff);
-}
-.baltic-page .destination-extension-zone {
-  /* Ostsee carries warmth through editorial surfaces, never through the page itself. */
-  background: color-mix(in srgb, var(--baltic-sand) var(--extension-strength), #ffffff);
-}
-.baltic-page .destination-extension-zone.extension-knowledge {
-  --extension-strength: 48%;
-  background: color-mix(in srgb, var(--baltic-brick) 12%, var(--baltic-warm-paper));
-}
-.baltic-page .destination-extension-zone.extension-tip {
-  --extension-strength: 34%;
-  background: color-mix(in srgb, var(--baltic-amber) 10%, var(--baltic-warm-paper));
-}
-.baltic-page .destination-extension-zone.extension-photo_spot {
-  --extension-strength: 24%;
-  background: color-mix(in srgb, var(--baltic-steel) 11%, var(--baltic-warm-paper));
-}
-.baltic-page .destination-extension-zone.extension-history {
-  background: color-mix(in srgb, var(--baltic-brick) 16%, var(--baltic-warm-paper));
-}
-.baltic-page .destination-extension-zone.extension-souvenir {
-  background: color-mix(in srgb, var(--baltic-amber) 20%, var(--baltic-warm-paper));
-}
-.baltic-page .destination-extension-zone.extension-important {
-  background: color-mix(in srgb, var(--baltic-brick) 14%, var(--baltic-sand));
-}
-.baltic-page .destination-extension-zone strong {
-  color: var(--baltic-deep);
-}
-.baltic-page .destination-extension-zone p {
-  color: color-mix(in srgb, var(--baltic-deep) 80%, #6f7d80);
-}
-.baltic-page .editorial-signet {
-  background: var(--baltic-steel);
-}
+.baltic-page .destination-modules-preview section { border-color: color-mix(in srgb, var(--baltic-steel) 28%, transparent); }
+.baltic-page .destination-modules-preview .destination-practical-preview { border-top-color: color-mix(in srgb, var(--baltic-steel) 40%, transparent); background: color-mix(in srgb, var(--baltic-sand) 42%, #ffffff); }
+.baltic-page .destination-extension-zone { background: color-mix(in srgb, var(--baltic-sand) var(--extension-strength), #ffffff); }
+.baltic-page .destination-extension-zone.extension-knowledge { --extension-strength: 48%; background: color-mix(in srgb, var(--baltic-brick) 12%, var(--baltic-warm-paper)); }
+.baltic-page .destination-extension-zone.extension-tip { --extension-strength: 34%; background: color-mix(in srgb, var(--baltic-amber) 10%, var(--baltic-warm-paper)); }
+.baltic-page .destination-extension-zone.extension-photo_spot { --extension-strength: 24%; background: color-mix(in srgb, var(--baltic-steel) 11%, var(--baltic-warm-paper)); }
+.baltic-page .destination-extension-zone.extension-history { background: color-mix(in srgb, var(--baltic-brick) 16%, var(--baltic-warm-paper)); }
+.baltic-page .destination-extension-zone.extension-souvenir { background: color-mix(in srgb, var(--baltic-amber) 20%, var(--baltic-warm-paper)); }
+.baltic-page .destination-extension-zone.extension-important { background: color-mix(in srgb, var(--baltic-brick) 14%, var(--baltic-sand)); }
+.baltic-page .destination-extension-zone strong { color: var(--baltic-deep); }
+.baltic-page .destination-extension-zone p { color: color-mix(in srgb, var(--baltic-deep) 80%, #6f7d80); }
+.baltic-page .editorial-signet { background: var(--baltic-steel); }
 .baltic-page .extension-knowledge .editorial-signet,
 .baltic-page .extension-history .editorial-signet,
-.baltic-page .extension-important .editorial-signet {
-  background: var(--baltic-brick);
-}
+.baltic-page .extension-important .editorial-signet { background: var(--baltic-brick); }
 .baltic-page .extension-tip .editorial-signet,
-.baltic-page .extension-souvenir .editorial-signet {
-  background: var(--baltic-amber);
-}
-.baltic-page .editorial-footer {
-  border-top-color: color-mix(in srgb, var(--baltic-steel) 34%, transparent);
-}
-.baltic-page .travel-footer-signet path {
-  stroke: var(--baltic-steel);
-}
+.baltic-page .extension-souvenir .editorial-signet { background: var(--baltic-amber); }
+.baltic-page .editorial-footer { border-top-color: color-mix(in srgb, var(--baltic-steel) 34%, transparent); }
+.baltic-page .travel-footer-signet path { stroke: var(--baltic-steel); }
 
+/* MITTELMEER WORLD EXPRESSION · Zypresse & Stein
+   Warmth lives in stone, terracotta and sun-touched editorial surfaces. The
+   page itself remains literal white; olive/cypress green provides restraint. */
+.mediterranean-page {
+  --med-cypress: #405447;
+  --med-olive: #6f7654;
+  --med-stone: #d8cdbb;
+  --med-limestone: #eee7da;
+  --med-terracotta: #9a5f49;
+  --med-sun: #c79b55;
+  --med-ink: #403f36;
+  background: #ffffff;
+}
+.mediterranean-page h1 {
+  font-family: var(--world-heading-family, Georgia, "Times New Roman", serif);
+  color: var(--med-ink);
+  font-weight: 500;
+  letter-spacing: -.018em;
+}
+.mediterranean-page .eyebrow,
+.mediterranean-page .destination-facts-preview span,
+.mediterranean-page .destination-modules-preview h3,
+.mediterranean-page .editorial-footer { color: var(--med-cypress); }
+.mediterranean-page .destination-subtitle { color: var(--med-olive); }
+.mediterranean-page .destination-introduction {
+  color: color-mix(in srgb, var(--med-ink) 82%, #777365);
+  border-color: color-mix(in srgb, var(--med-cypress) 36%, transparent);
+}
+.mediterranean-page .destination-facts-preview,
+.mediterranean-page .destination-modules-preview section { border-color: color-mix(in srgb, var(--med-stone) 74%, transparent); }
+.mediterranean-page .destination-modules-preview .destination-practical-preview {
+  border-top-color: color-mix(in srgb, var(--med-cypress) 30%, transparent);
+  background: color-mix(in srgb, var(--med-limestone) 66%, #ffffff);
+}
+.mediterranean-page .destination-extension-zone { background: color-mix(in srgb, var(--med-limestone) var(--extension-strength), #ffffff); }
+.mediterranean-page .destination-extension-zone.extension-knowledge { background: color-mix(in srgb, var(--med-stone) 52%, #ffffff); }
+.mediterranean-page .destination-extension-zone.extension-tip { background: color-mix(in srgb, var(--med-sun) 12%, var(--med-limestone)); }
+.mediterranean-page .destination-extension-zone.extension-photo_spot { background: color-mix(in srgb, var(--med-cypress) 8%, var(--med-limestone)); }
+.mediterranean-page .destination-extension-zone.extension-history { background: color-mix(in srgb, var(--med-terracotta) 11%, var(--med-limestone)); }
+.mediterranean-page .destination-extension-zone.extension-souvenir { background: color-mix(in srgb, var(--med-terracotta) 15%, var(--med-limestone)); }
+.mediterranean-page .destination-extension-zone.extension-important { background: color-mix(in srgb, var(--med-terracotta) 13%, var(--med-stone)); }
+.mediterranean-page .destination-extension-zone strong { color: var(--med-ink); }
+.mediterranean-page .destination-extension-zone p { color: color-mix(in srgb, var(--med-ink) 84%, #777365); }
+.mediterranean-page .editorial-signet { background: var(--med-cypress); }
+.mediterranean-page .extension-history .editorial-signet,
+.mediterranean-page .extension-souvenir .editorial-signet,
+.mediterranean-page .extension-important .editorial-signet { background: var(--med-terracotta); }
+.mediterranean-page .extension-tip .editorial-signet { background: var(--med-sun); }
+.mediterranean-page .editorial-footer { border-top-color: color-mix(in srgb, var(--med-cypress) 30%, transparent); }
+.mediterranean-page .travel-footer-signet path { stroke: var(--med-cypress); }
 
-/* Destination Interest Pages inherit the complete World Expression.
-   The page remains white; world identity lives in typography, accents and
-   editorial content surfaces. */
+/* Destination Interest Pages inherit complete World Expression. */
 .fjord-page.destination-interest-page {
   --interest-surface: color-mix(in srgb, var(--world-accent) 11%, #ffffff);
   --interest-ink: var(--world-ink);
   --interest-meta: var(--world-accent);
   --interest-quiet: var(--world-quiet);
 }
-
 .baltic-page.destination-interest-page {
   --interest-surface: color-mix(in srgb, var(--baltic-brick) 10%, var(--baltic-warm-paper));
   --interest-ink: var(--baltic-deep);
   --interest-meta: var(--baltic-brick);
   --interest-quiet: color-mix(in srgb, var(--baltic-deep) 54%, #8e8075);
 }
-.baltic-page.destination-interest-page .destination-interest-place {
-  color: color-mix(in srgb, var(--baltic-steel) 78%, #7f959d);
+.baltic-page.destination-interest-page .destination-interest-place { color: color-mix(in srgb, var(--baltic-steel) 78%, #7f959d); }
+.baltic-page.destination-interest-page .preview-body { color: color-mix(in srgb, var(--baltic-deep) 76%, #667a82); }
+.baltic-page.destination-interest-page .page-rule { background: var(--baltic-brick); }
+
+.mediterranean-page.destination-interest-page {
+  --interest-surface: color-mix(in srgb, var(--med-olive) 16%, #ffffff);
+  --interest-ink: var(--med-ink);
+  --interest-meta: var(--med-terracotta);
+  --interest-quiet: color-mix(in srgb, var(--med-olive) 68%, #938c7d);
 }
-.baltic-page.destination-interest-page .preview-body {
-  color: color-mix(in srgb, var(--baltic-deep) 76%, #667a82);
+.mediterranean-page.destination-interest-page h1 {
+  color: color-mix(in srgb, var(--med-cypress) 88%, var(--med-ink));
 }
-.baltic-page.destination-interest-page .page-rule {
-  background: var(--baltic-brick);
+.mediterranean-page.destination-interest-page .destination-interest-place { color: var(--med-olive); }
+.mediterranean-page.destination-interest-page .preview-body { color: color-mix(in srgb, var(--med-ink) 78%, #777365); }
+.mediterranean-page.destination-interest-page .page-rule { background: var(--med-terracotta); }
+.mediterranean-page.destination-interest-page .interest-entry-heading strong,
+.mediterranean-page.destination-interest-page .photography-spot-row strong,
+.mediterranean-page.destination-interest-page .hiking-route-copy > strong,
+.mediterranean-page.destination-interest-page .destination-interest-foundation-note strong {
+  color: var(--med-cypress);
 }
 
-/* The Otter owns the same protected companion room as every World companion.
-   Its visual proportions are world-specific, but it never participates in Content Fit. */
+/* Companion proportions may be world-specific, but the protected room remains
+   owned by the shared Companion layout contract and never participates in fit. */
 .a5-page.baltic-page.destination-page .companion-zone-bottom-left {
-  left: 34px;
-  bottom: calc(51px + var(--studio-a5-extension));
-  width: 78px;
-  height: 62px;
+  left: 34px; bottom: calc(51px + var(--studio-a5-extension)); width: 78px; height: 62px;
 }
-.baltic-page .page-companion {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: left bottom;
+.a5-page.mediterranean-page.destination-page .companion-zone-bottom-left {
+  left: 34px; bottom: calc(51px + var(--studio-a5-extension)); width: 82px; height: 66px;
+}
+.baltic-page .page-companion,
+.mediterranean-page .page-companion {
+  width: 100%; height: 100%; object-fit: contain; object-position: left bottom;
 }
 
 /* Workspace world switch stays deliberately quiet. */
 .world-card-copy { min-width: 0; }
-.world-switch {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 6px;
-  align-items: center;
-  margin-top: 7px;
-}
-.world-switch > span {
-  color: #829096;
-  font-size: 7px;
-}
-.world-switch select {
-  min-width: 0;
-  padding: 3px 18px 3px 5px;
-  border: 0;
-  border-bottom: 1px solid #d8e2e5;
-  border-radius: 0;
-  background: transparent;
-  color: #536971;
-  font-size: 8px;
-}
+.world-switch { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; margin-top: 7px; }
+.world-switch > span { color: #829096; font-size: 7px; }
+.world-switch select { min-width: 0; padding: 3px 18px 3px 5px; border: 0; border-bottom: 1px solid #d8e2e5; border-radius: 0; background: transparent; color: #536971; font-size: 8px; }

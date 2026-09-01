@@ -3382,10 +3382,10 @@
                       : 'Noch offen'}</strong>
                   </div>
                   <div class="curated-cover-hero-wrap" aria-hidden="true">
-                    {#if curatedHeroFor(editorialWorld?.id, 'photography')}
+                    {#if curatedWelcomeHeroFor(editorialWorld?.id)}
                       <img
                         class="curated-cover-hero"
-                        src={curatedHeroFor(editorialWorld?.id, 'photography') ?? ''}
+                        src={curatedWelcomeHeroFor(editorialWorld?.id) ?? ''}
                         alt=""
                       />
                     {/if}

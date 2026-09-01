@@ -20,11 +20,12 @@ describe('editorial world library', () => {
     expect(requireEditorialWorld('fjord').layoutSystemId).toBe('fjord-layout');
   });
 
-  it('contains the Fjord reference grammars', () => {
-    expect(requireEditorialWorld('fjord').pageGrammars).toContain('destination');
-    expect(requireEditorialWorld('fjord').pageGrammars).toContain('destination_interest');
-    expect(requireEditorialWorld('baltic').pageGrammars).toContain('destination_interest');
-    expect(requireEditorialWorld('fjord').pageGrammars).toContain('closing');
+  it('contains the shared reference grammars across registered worlds', () => {
+    for (const worldId of ['fjord', 'baltic', 'mediterranean']) {
+      expect(requireEditorialWorld(worldId).pageGrammars).toContain('destination');
+      expect(requireEditorialWorld(worldId).pageGrammars).toContain('destination_interest');
+      expect(requireEditorialWorld(worldId).pageGrammars).toContain('closing');
+    }
   });
 
   it('does not invent unknown worlds', () => {
@@ -32,9 +33,12 @@ describe('editorial world library', () => {
     expect(() => requireEditorialWorld('unknown')).toThrow('Unbekannte Editorial World');
   });
 
-  it('ships Fjord and the approved Ostsee PoC world', () => {
-    expect(availableEditorialWorlds().map((world) => world.id)).toEqual(['fjord', 'baltic']);
+  it('ships Fjord, Ostsee and Mittelmeer as registered Editorial Worlds', () => {
+    expect(availableEditorialWorlds().map((world) => world.id)).toEqual(['fjord', 'baltic', 'mediterranean']);
     expect(requireEditorialWorld('baltic').name).toBe('Ostsee');
     expect(requireEditorialWorld('baltic').companionId).toBe('baltic-otter');
+    expect(requireEditorialWorld('mediterranean').name).toBe('Mittelmeer');
+    expect(requireEditorialWorld('mediterranean').companionId).toBe('iberian-lynx');
+    expect(requireCompanion('iberian-lynx').editorialWorldId).toBe('mediterranean');
   });
 });

@@ -24,6 +24,7 @@ const BUILD_003_FORMAT_VERSION: &str = "0.2.0";
 const LEGACY_FORMAT_VERSION: &str = "0.1.0";
 const REFERENCE_WORLD_ID: &str = "fjord";
 const BALTIC_WORLD_ID: &str = "baltic";
+const MEDITERRANEAN_WORLD_ID: &str = "mediterranean";
 const A5_WIDTH_PT: f64 = 148.0 / 25.4 * 72.0;
 const A5_HEIGHT_PT: f64 = 210.0 / 25.4 * 72.0;
 const PDF_BOX_TOLERANCE_PT: f64 = 0.01;
@@ -403,7 +404,7 @@ fn finish_production_job(app: tauri::AppHandle, exit_code: i32) {
 }
 
 fn is_supported_editorial_world(id: &str) -> bool {
-    id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID
+    id == REFERENCE_WORLD_ID || id == BALTIC_WORLD_ID || id == MEDITERRANEAN_WORLD_ID
 }
 
 fn unix_timestamp_ms() -> u64 {
@@ -3190,6 +3191,29 @@ mod tests {
             REFERENCE_WORLD_ID.into(),
         ).expect("switch world");
         assert_eq!(switched.project.editorial_world_id.as_deref(), Some(REFERENCE_WORLD_ID));
+    }
+
+    #[test]
+    fn supports_mediterranean_world_and_persists_world_switch() {
+        let root = tempfile::tempdir().expect("tempdir");
+        let created = create_nls_project(
+            root.path().to_string_lossy().into_owned(),
+            "Mittelmeer Test".into(),
+            MEDITERRANEAN_WORLD_ID.into(),
+            "de".into(),
+        ).expect("create mediterranean");
+        assert_eq!(
+            created.project.editorial_world_id.as_deref(),
+            Some(MEDITERRANEAN_WORLD_ID)
+        );
+        let switched = update_editorial_world(
+            created.project.project_path.clone(),
+            REFERENCE_WORLD_ID.into(),
+        ).expect("switch world");
+        assert_eq!(
+            switched.project.editorial_world_id.as_deref(),
+            Some(REFERENCE_WORLD_ID)
+        );
     }
 
     #[test]

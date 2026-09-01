@@ -40,9 +40,25 @@ const balticAssets: WorldAssetManifest = {
   }
 };
 
+const mediterraneanAssets: WorldAssetManifest = {
+  curatedHeroes: {
+    photography: '/design-library/worlds/mediterranean/curated-heroes/photography.png',
+    hiking_nature: '/design-library/worlds/mediterranean/curated-heroes/hiking-nature.png',
+    culture_history: '/design-library/worlds/mediterranean/curated-heroes/culture-history.png',
+    culinary_local: '/design-library/worlds/mediterranean/curated-heroes/culinary-local.png',
+    photography_workshop: '/design-library/worlds/mediterranean/curated-heroes/photography-workshop.png'
+  },
+  welcomeHero: '/design-library/worlds/mediterranean/curated-heroes/welcome.png',
+  closingHero: '/design-library/worlds/mediterranean/curated-heroes/closing.png',
+  curatedAccents: {
+    notes: '/design-library/worlds/mediterranean/curated-accents/notes.png'
+  }
+};
+
 const worldAssetRegistry: ReadonlyMap<string, WorldAssetManifest> = new Map([
   ['fjord', fjordAssets],
-  ['baltic', balticAssets]
+  ['baltic', balticAssets],
+  ['mediterranean', mediterraneanAssets]
 ]);
 
 export function worldAssetManifestFor(worldId: string | undefined): WorldAssetManifest | null {

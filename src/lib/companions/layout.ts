@@ -29,10 +29,12 @@ export const fjordCompanionLayout: CompanionLayoutRule = {
 };
 
 export const balticCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
+export const mediterraneanCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
 
 const companionLayoutRegistry: ReadonlyMap<string, CompanionLayoutRule> = new Map([
   ['fjord-companion-layout', fjordCompanionLayout],
-  ['baltic-companion-layout', balticCompanionLayout]
+  ['baltic-companion-layout', balticCompanionLayout],
+  ['mediterranean-companion-layout', mediterraneanCompanionLayout]
 ]);
 
 export function loadCompanionLayout(id: string | undefined): CompanionLayoutRule | null {
