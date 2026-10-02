@@ -30,11 +30,13 @@ export const fjordCompanionLayout: CompanionLayoutRule = {
 
 export const balticCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
 export const mediterraneanCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
+export const britainCompanionLayout: CompanionLayoutRule = { ...fjordCompanionLayout };
 
 const companionLayoutRegistry: ReadonlyMap<string, CompanionLayoutRule> = new Map([
   ['fjord-companion-layout', fjordCompanionLayout],
   ['baltic-companion-layout', balticCompanionLayout],
-  ['mediterranean-companion-layout', mediterraneanCompanionLayout]
+  ['mediterranean-companion-layout', mediterraneanCompanionLayout],
+  ['britain-companion-layout', britainCompanionLayout]
 ]);
 
 export function loadCompanionLayout(id: string | undefined): CompanionLayoutRule | null {
