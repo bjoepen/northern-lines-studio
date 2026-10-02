@@ -1,12 +1,14 @@
 import { fjordWorld } from './fjord/world';
 import { balticWorld } from './baltic/world';
 import { mediterraneanWorld } from './mediterranean/world';
+import { britainWorld } from './britain/world';
 import type { EditorialWorldDefinition } from './types';
 
 const worldRegistry: ReadonlyMap<string, EditorialWorldDefinition> = new Map([
   [fjordWorld.id, fjordWorld],
   [balticWorld.id, balticWorld],
-  [mediterraneanWorld.id, mediterraneanWorld]
+  [mediterraneanWorld.id, mediterraneanWorld],
+  [britainWorld.id, britainWorld]
 ]);
 
 export function loadEditorialWorld(id: string | undefined): EditorialWorldDefinition | null {
