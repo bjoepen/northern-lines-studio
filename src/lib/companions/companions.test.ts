@@ -40,8 +40,12 @@ describe('companion collection', () => {
 
   it('preserves planned companions without shipping their Editorial Worlds', () => {
     expect(requireCompanion('arctic-walrus').status).toBe('planned');
-    expect(requireCompanion('britain-red-grouse').status).toBe('planned');
     expect(requireCompanion('candidate-squirrel').editorialWorldId).toBeNull();
+  });
+
+  it('activates the British Isles Moorhuhn with its World', () => {
+    expect(requireCompanion('britain-red-grouse').status).toBe('active');
+    expect(requireCompanion('britain-red-grouse').editorialWorldId).toBe('britain');
   });
 
   it('records that the Canary source still needs transparency cleanup', () => {
