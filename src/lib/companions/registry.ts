@@ -29,7 +29,7 @@ const companions: readonly CompanionDefinition[] = [
     editorialWorldId: 'britain',
     name: 'Moorhuhn',
     role: 'editorial_companion',
-    status: 'planned',
+    status: 'active',
     character: 'zurückhaltend, erdig, heideverbunden',
     editorialMood: ['Moor', 'Heide', 'Weite'],
     assetPath: 'design-library/companions/britain/companion.png',
