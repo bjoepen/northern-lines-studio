@@ -1,12 +1,14 @@
 import { fjordLayoutSystem } from './fjord';
 import { balticLayoutSystem } from './baltic';
 import { mediterraneanLayoutSystem } from './mediterranean';
+import { britainLayoutSystem } from './britain';
 import type { EditorialLayoutSystem } from './types';
 
 const layoutRegistry: ReadonlyMap<string, EditorialLayoutSystem> = new Map([
   [fjordLayoutSystem.worldId, fjordLayoutSystem],
   [balticLayoutSystem.worldId, balticLayoutSystem],
-  [mediterraneanLayoutSystem.worldId, mediterraneanLayoutSystem]
+  [mediterraneanLayoutSystem.worldId, mediterraneanLayoutSystem],
+  [britainLayoutSystem.worldId, britainLayoutSystem]
 ]);
 
 export function layoutSystemForWorld(worldId: string | undefined): EditorialLayoutSystem | null {
