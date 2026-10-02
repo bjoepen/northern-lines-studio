@@ -2,7 +2,7 @@
   "id": "britain-red-grouse",
   "world": "britain",
   "name": "Moorhuhn",
-  "status": "planned",
+  "status": "active",
   "character": "zurückhaltend, erdig, heideverbunden",
   "role": "editorial_companion",
   "asset": "companion.png",
@@ -19,5 +19,5 @@
     "Heide",
     "Weite"
   ],
-  "note": "Britain Companion concept; exact species label remains an editorial validation item before production use."
+  "note": "British Isles Editorial Companion; production identity approved as Moorhuhn for the World contract."
 }
