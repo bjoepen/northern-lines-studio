@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   balticCompanionLayout,
+  britainCompanionLayout,
   fjordCompanionLayout,
   mediterraneanCompanionLayout,
   loadCompanionLayout,
@@ -12,6 +13,7 @@ describe('Companion layout registry', () => {
     expect(loadCompanionLayout('fjord-companion-layout')).toBe(fjordCompanionLayout);
     expect(loadCompanionLayout('baltic-companion-layout')).toBe(balticCompanionLayout);
     expect(loadCompanionLayout('mediterranean-companion-layout')).toBe(mediterraneanCompanionLayout);
+    expect(loadCompanionLayout('britain-companion-layout')).toBe(britainCompanionLayout);
   });
 
   it('returns null for unknown layouts and fails closed when required', () => {
