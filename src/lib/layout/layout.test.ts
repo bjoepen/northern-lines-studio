@@ -9,7 +9,7 @@ describe('editorial layout systems', () => {
   });
 
   it('keeps the destination layout vocabulary intentionally small', () => {
-    for (const worldId of ['fjord', 'baltic', 'mediterranean']) {
+    for (const worldId of ['fjord', 'baltic', 'mediterranean', 'britain']) {
       expect(requireLayoutSystem(worldId).destinationLayouts.map((layout) => layout.label)).toEqual([
         'Weite',
         'Bild links',
@@ -19,7 +19,7 @@ describe('editorial layout systems', () => {
   });
 
   it('uses Weite as the destination default across registered worlds', () => {
-    for (const worldId of ['fjord', 'baltic', 'mediterranean']) {
+    for (const worldId of ['fjord', 'baltic', 'mediterranean', 'britain']) {
       expect(requireLayoutSystem(worldId).defaultLayoutByPageType.destination).toBe('destination-hero-banner');
     }
   });
@@ -28,11 +28,14 @@ describe('editorial layout systems', () => {
     expect(requireLayoutSystem('fjord').companionLayoutId).toBe('fjord-companion-layout');
     expect(requireLayoutSystem('baltic').companionLayoutId).toBe('baltic-companion-layout');
     expect(requireLayoutSystem('mediterranean').companionLayoutId).toBe('mediterranean-companion-layout');
+    expect(requireLayoutSystem('britain').companionLayoutId).toBe('britain-companion-layout');
   });
 
-  it('loads Ostsee and Mittelmeer without changing the shared destination vocabulary', () => {
+  it('loads Ostsee, Mittelmeer and British Isles without changing the shared destination vocabulary', () => {
     expect(requireLayoutSystem('baltic').name).toBe('Ostsee Layout Language');
     expect(requireLayoutSystem('mediterranean').name).toBe('Mittelmeer Layout Language');
+    expect(requireLayoutSystem('britain').name).toBe('British Isles Layout Language');
+    expect(requireLayoutSystem('britain').accentFamily).toContain('Snell Roundhand');
   });
 
   it('does not invent layout languages for unknown worlds', () => {
