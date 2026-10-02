@@ -27,6 +27,7 @@ export interface EditorialLayoutSystem {
   quietTone: string;
   headingFamily: string;
   bodyFamily: string;
+  accentFamily?: string;
   footer: EditorialFooterDefinition;
   companionLayoutId: string;
   destinationLayouts: readonly DestinationLayoutVariant[];
